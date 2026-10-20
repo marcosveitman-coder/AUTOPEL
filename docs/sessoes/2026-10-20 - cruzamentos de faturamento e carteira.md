@@ -113,6 +113,10 @@ foi testado de ponta a ponta: 13 minutos e resultado idêntico, célula a célul
 
 ## 7. Organização do repositório
 
+- Criado o repositório git na pasta `Bases Claude` (ramo `main`) e enviado para o GitHub (`origin`). O `.gitignore` é
+  lista de permissão (só código e documentação). Conferido no primeiro commit: nenhuma planilha ou CSV entrou.
+- O repositório é **público por decisão do usuário**, tomada depois do aviso de que os scripts mostram as regras de
+  cruzamento.
 - Criados o `CLAUDE.md` (contexto, regras de cruzamento, cuidados com planilhas, repo público) e a
   **golden rule nº 1**: documentar e versionar ao fim de cada sessão.
 - Scripts avulsos da sessão salvos em `scripts cruzamento/avulsos/`, sem caminhos pessoais e sem nomes de clientes.
