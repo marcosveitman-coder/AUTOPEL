@@ -1,0 +1,108 @@
+CRUZAMENTO SUPERMERCADOS x FATURAMENTO
+======================================
+
+O que faz
+---------
+Cruza a planilha "supermercados.xlsx" com todas as bases de faturamento "fat *.xlsx"
+e gera "supermercados - cruzamento faturamento.xlsx" na pasta Bases Claude.
+O resultado é uma cópia da planilha de supermercados com 4 colunas no final:
+
+  AA  Última venda (faturamento)         data da última venda (em branco = nunca vendemos)
+  AB  Vendedor da última venda           NOME_VENDEDOR da última venda
+  AC  Critério do cruzamento             como o supermercado foi encontrado (ver abaixo)
+  AD  Cliente encontrado no faturamento  razão social, CNPJ e segmento do cliente
+                                         (e o produto, quando achado pela descrição)
+
+O arquivo supermercados.xlsx original NUNCA é alterado.
+
+
+COMO RODAR DE NOVO (jeito fácil)
+--------------------------------
+1. Coloque as bases atualizadas na pasta "Bases Claude".
+   - Toda planilha cujo nome começa com "fat " e termina com ".xlsx" é lida
+     automaticamente (ex.: "fat 2026.3.xlsx"). Todas as abas de cada arquivo são lidas.
+   - Se precisar, substitua o "supermercados.xlsx" por uma versão nova (mesmas colunas).
+2. FECHE o arquivo "supermercados - cruzamento faturamento.xlsx" se ele estiver aberto
+   no Excel, porque ele será substituído.
+3. Dê dois cliques em "rodar_cruzamento.bat" (nesta pasta).
+4. Aguarde. A leitura do faturamento leva de 10 a 15 minutos. No fim aparece "Concluido."
+   e um resumo de quantos supermercados foram encontrados por critério.
+
+
+Pelo terminal (alternativa)
+---------------------------
+Para rodar tudo de uma vez, nesta pasta:  .\rodar_cruzamento.bat   (com o .\ na frente)
+
+Ou, passo a passo, rode em ordem:
+    python extract.py 4     (lê o faturamento; o "4" é o nº de processos em paralelo)
+    python match.py         (faz o cruzamento, leva segundos)
+    python build.py         (gera a planilha)
+
+Se só o supermercados.xlsx mudou e o faturamento é o mesmo, dá para pular o extract.py
+e rodar só match.py + build.py. Isso funciona enquanto os arquivos intermediários ainda
+existirem em %TEMP%\cruzamento_supermercados. Se der erro, rode os três passos.
+
+
+Requisitos
+----------
+Python 3 com pandas e openpyxl. Se faltar alguma biblioteca:
+    python -m pip install pandas openpyxl
+
+
+Colunas usadas
+--------------
+supermercados.xlsx : C = UF, D = Nome fantasia, E = Razão social, F = CNPJ,
+                     H = Razão social no cadastro (CNPJ achado)
+fat *.xlsx         : lidas PELO NOME DO CABEÇALHO, não pela letra (as bases de 2026 têm uma
+                     coluna a mais): EMISSAO, NOME_VENDEDOR, CNPJ, Estado, CLIENTE,
+                     DES_PROD, VLR_TOTAL, SEGMENTO.
+                     Aba sem esses cabeçalhos é IGNORADA e aparece um aviso na tela.
+
+
+Regras do cruzamento
+--------------------
+Fortes (têm prioridade):
+  - CNPJ raiz       : os 8 primeiros dígitos do CNPJ batem (pega todas as filiais)
+  - Razão social    : razão social igual à do cliente no faturamento (ignorando acento,
+                      pontuação, LTDA, S/A, EIRELI, ME, EPP; "&" = "E")
+Fracos (só valem na MESMA UF e para cliente do segmento SUPERMERCADISTA; ALIMENTACAO e
+REDE DE LOJAS valem com regras mais rígidas):
+  - Nome fantasia + UF   : o nome do cliente é a própria marca (ex.: "LOPES SUPERMERCADOS LTDA"
+                           para "Lopes Supermercados")
+  - Descrição do produto : a marca aparece no fim da descrição de um produto personalizado,
+                           depois da medida (ex.: "BOBINA TS KPH BC 80X40M ARCOMIX SUPERMERCADO")
+  Nomes genéricos (Bom Preço, Total, Ideal, Santa..., sobrenomes isolados dentro de outro
+  nome etc.) não são aceitos sozinhos, para evitar falsos positivos.
+
+Depois que a empresa é identificada, a data e o vendedor são os da ÚLTIMA venda para
+aquele CNPJ (qualquer produto). Se houver mais de um vendedor nesse dia, fica o de maior
+valor faturado no dia.
+Um critério fraco só substitui um forte se for mais recente E se o próprio cliente
+comprador tiver o nome da rede (ex.: Atacadão faturando como "ATACADAO S A").
+
+
+Conferência (opcional)
+----------------------
+Depois do match.py, dá para listar o que cada critério encontrou:
+    python conferir.py resumo
+    python conferir.py desc so        (achados só pela descrição, sem CNPJ/razão)
+    python conferir.py fantasia so
+    python conferir.py conflito       (critério fraco mais recente que o forte)
+
+
+Arquivos desta pasta
+--------------------
+  rodar_cruzamento.bat  executa tudo
+  extract.py            lê as bases de faturamento e resume a última venda por CNPJ/cliente/produto
+  match.py              aplica as regras de cruzamento
+  build.py              grava a planilha final
+  common.py             funções e caminhos compartilhados
+  conferir.py           relatórios de conferência
+
+
+Problemas comuns
+----------------
+- "feche o arquivo no Excel": a planilha de resultado está aberta. Feche-a e rode de novo.
+- "'python' não é reconhecido": o Python não está instalado ou não está no PATH.
+- Aba "IGNORADA": essa aba não tem o cabeçalho padrão do faturamento (é esperado em abas
+  de resumo ou tabela dinâmica).

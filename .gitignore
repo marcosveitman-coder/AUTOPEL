@@ -1,0 +1,12 @@
+# ignora tudo...
+*
+# ...menos as pastas (para o git conseguir olhar dentro)
+!*/
+# ...e os arquivos de código/documentação
+!.gitignore
+!*.py
+!*.bat
+!*.txt
+!*.md
+!*.sql
+__pycache__/
