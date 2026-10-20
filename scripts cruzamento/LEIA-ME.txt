@@ -67,10 +67,10 @@ Fortes (têm prioridade):
                       pontuação, LTDA, S/A, EIRELI, ME, EPP; "&" = "E")
 Fracos (só valem na MESMA UF e para cliente do segmento SUPERMERCADISTA; ALIMENTACAO e
 REDE DE LOJAS valem com regras mais rígidas):
-  - Nome fantasia + UF   : o nome do cliente é a própria marca (ex.: "LOPES SUPERMERCADOS LTDA"
-                           para "Lopes Supermercados")
+  - Nome fantasia + UF   : o nome do cliente é a própria marca (ex.: "FULANO SUPERMERCADOS LTDA"
+                           para "Fulano Supermercados")
   - Descrição do produto : a marca aparece no fim da descrição de um produto personalizado,
-                           depois da medida (ex.: "BOBINA TS KPH BC 80X40M ARCOMIX SUPERMERCADO")
+                           depois da medida (ex.: "BOBINA TS KPH BC 80X40M MARCAX SUPERMERCADO")
   Nomes genéricos (Bom Preço, Total, Ideal, Santa..., sobrenomes isolados dentro de outro
   nome etc.) não são aceitos sozinhos, para evitar falsos positivos.
 
@@ -78,7 +78,7 @@ Depois que a empresa é identificada, a data e o vendedor são os da ÚLTIMA ven
 aquele CNPJ (qualquer produto). Se houver mais de um vendedor nesse dia, fica o de maior
 valor faturado no dia.
 Um critério fraco só substitui um forte se for mais recente E se o próprio cliente
-comprador tiver o nome da rede (ex.: Atacadão faturando como "ATACADAO S A").
+comprador tiver o nome da rede (ex.: rede cuja bandeira fatura com a própria razão social).
 
 
 Conferência (opcional)
