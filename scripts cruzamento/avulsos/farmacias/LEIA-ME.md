@@ -32,3 +32,26 @@ Pipeline usado em 21/10/2026. Rodar nesta ordem, numa pasta de trabalho (os `.pk
   - rede ou associação: produto personalizado, nome do cliente com núcleo igual à bandeira, domínio de e-mail do cadastro e compras das associadas;
   - rede com CNPJ próprio: só conta comprador do próprio grupo.
 - **Status:** ATIVO se comprou nos últimos 360 dias.
+
+## Aba "FARMACIA VF" (pasta `vf/`): consolidada + Ranking de redes 2025
+
+Junta a base consolidada (sem as BAIXADAS que o usuário apagou) com a aba Ranking de
+`ranking_redes_farmacias_brasil_2025.xlsx` e grava na aba vazia "FARMACIA VF", rankeada pelo nº de lojas.
+
+| # | Script | O que faz |
+|---|---|---|
+| 1 | `vf/liga_ranking.py` | liga cada rede do Ranking às redes de `redes.py` (núcleo do nome). Saída: `ranking_lig.pkl` |
+| 2 | `vf/soma2025.py` | soma o VLR_TOTAL de 2025 por raiz, COD_CLI e produto (lê `fat 2025*`/`fat 2026*`, ~5 min) |
+| 3 | `vf/busca_vf.py` | busca na Receita (precisa dos zips) a razão/fantasia das redes novas do Ranking |
+| 4 | `vf/vf_build.py` | monta a base: dados do Ranking, linhas das redes novas, última compra, valor 2025, porte. Saída: `vf.pkl` |
+| 5 | `vf/grava_vf.py` | grava a aba "FARMACIA VF" pelo XML (só essa parte do arquivo muda) |
+
+- `vf/redes_vf.py`: bandeiras e UF das redes do Ranking que não estavam em `redes.py`, mais as correções de ligação.
+- `assoc_cnpj_vf.json` (local, fora do git): CNPJ das associações novas.
+- Variável extra: `AUTOPEL_FARM_CACHE` = pasta dos `.pkl` gerados pela base consolidada (`cruz.pkl`, `rf_*.pkl`, `municipios.pkl`).
+- **Nº de lojas considerado:** o do Ranking quando existe. Senão, para rede ou associação, o maior entre o da pesquisa e o
+  da Receita; para uma farmácia, o da Receita.
+- **Faturamento da farmácia 2025:** o estimado do Ranking (R$). **Valor faturado Autopel 2025:** soma do VLR_TOTAL de
+  2025 da raiz. Para uma associação, soma as raízes das compradoras com a bandeira, sem as associadas que já têm linha própria.
+- **Rede com mais de uma raiz** (ex.: grupo com duas empresas): a 1ª leva os dados do Ranking e as outras ficam
+  marcadas na observação, com as lojas da Receita, para não contar a rede duas vezes.

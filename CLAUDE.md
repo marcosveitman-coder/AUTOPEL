@@ -100,6 +100,8 @@ Fontes de dados fora desta pasta (só leitura):
   cerca de 120 mil lojas e 92 mil empresas.
 - **Nº de lojas** de uma empresa = estabelecimentos **ativos** da raiz, filtrados pelo CNAE do segmento.
 - Scripts em `scripts cruzamento/avulsos/farmacias/` (pipeline completo da base de farmácias).
+- **Consulta pontual de CNPJ:** BrasilAPI `https://brasilapi.com.br/api/cnpj/v1/<14 dígitos>`. Usar via `curl`, porque o
+  urllib do Python leva 403.
 - **CNPJ vindo de base de terceiros** (ex.: Neoway): validar o dígito verificador. Cerca de 28% vieram corrompidos;
   a razão social costuma estar certa e serve para corrigir.
 

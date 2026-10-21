@@ -1,7 +1,7 @@
 """Soma o VLR_TOTAL faturado em 2025 por raiz de CNPJ, por COD_CLI e por (DES_PROD -> raiz).  Saida: soma2025.pkl"""
 import os, sys, glob, re, pickle, time, collections
 from multiprocessing import Pool
-sys.path.insert(0, r"C:\Users\marcos.veitman\OneDrive - autopel.com\Área de Trabalho\Bases Claude\scripts cruzamento")
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", ".."))
 from common import BASE
 from extract import to_int_date
 NEED = ["EMISSAO", "COD_CLI", "CNPJ", "DES_PROD", "VLR_TOTAL"]

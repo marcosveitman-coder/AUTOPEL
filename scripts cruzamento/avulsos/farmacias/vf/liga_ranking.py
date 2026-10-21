@@ -2,8 +2,8 @@ import os
 """Liga cada rede do Ranking (arquivo de ontem) as redes/linhas da base consolidada.  Saida: ranking_lig.pkl"""
 import re, sys, pickle, collections
 import openpyxl
-sys.path.insert(0, r"C:\Users\marcos.veitman\OneDrive - autopel.com\Área de Trabalho\Bases Claude\scripts cruzamento")
-sys.path.insert(0, r"C:\Users\marcos.veitman\OneDrive - autopel.com\Área de Trabalho\Bases Claude\scripts cruzamento\avulsos\farmacias")
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", ".."))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 from common import norm
 from redes import REDES
 
