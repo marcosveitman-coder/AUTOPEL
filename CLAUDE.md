@@ -53,6 +53,7 @@ Bases Claude/                       (fora do git: fat *.xlsx, supermercados*.xls
     ├── extract.py / match.py / build.py / common.py / conferir.py
     ├── LEIA-ME.txt                 como rodar e regras, para o usuário
     └── avulsos/                    scripts das entregas pontuais (IRTT, ABRAS, vendedor, XML…) + LEIA-ME.md
+        └── farmacias/              base consolidada de farmácias (Receita + redes + faturamento) + LEIA-ME.md
 ```
 
 Fontes de dados fora desta pasta (só leitura):
@@ -79,6 +80,28 @@ Fontes de dados fora desta pasta (só leitura):
 - Quando o pedido for "2019 até 2026", pular o pkl de 2018.
 - O `SEGMENTO` do faturamento é pouco confiável: há rede de lojas classificada como DROGARIAS e distribuidor como
   REVENDA. Não usar como única trava.
+
+---
+
+## 🏛️ Dados abertos do CNPJ (Receita Federal)
+
+- **Fonte oficial** para completar e validar CNPJ, razão social, nome fantasia, situação, município e nº de lojas.
+  O usuário autoriza o download.
+- **Onde baixar:** `https://arquivos.receitafederal.gov.br/public.php/webdav/AAAA-MM/` (WebDAV, usuário
+  `YggdBLfdninEJX9`, senha vazia).
+- **Arquivos:** `Estabelecimentos0-9.zip` (~5,3 GB), `Empresas0-9.zip` (~1,3 GB) e `Municipios.zip`.
+  Baixar em `%TEMP%\receita_cnpj` e **apagar no fim**.
+- **Estabelecimentos**, separados por `";"`, em latin-1. Índices das colunas:
+  - 0 raiz, 1 ordem, 2 DV, 3 matriz/filial (1/2), 4 nome fantasia;
+  - 5 situação: 2 ativa, 3 suspensa, 4 inapta, 8 baixada;
+  - 11 CNAE principal, 19 UF, 20 código do município, 27 e-mail.
+- **Empresas:** 0 raiz, 1 razão social, 2 natureza, 4 capital, 5 porte.
+- **Farmácia** = CNAE principal 4771-7/01, /02 ou /03. O 4771-7/04 é veterinária e fica fora. O universo ativo tem
+  cerca de 120 mil lojas e 92 mil empresas.
+- **Nº de lojas** de uma empresa = estabelecimentos **ativos** da raiz, filtrados pelo CNAE do segmento.
+- Scripts em `scripts cruzamento/avulsos/farmacias/` (pipeline completo da base de farmácias).
+- **CNPJ vindo de base de terceiros** (ex.: Neoway): validar o dígito verificador. Cerca de 28% vieram corrompidos;
+  a razão social costuma estar certa e serve para corrigir.
 
 ---
 
@@ -114,7 +137,16 @@ Armadilhas reais já vistas:
 - sobrenomes (LOPES, ALMEIDA) e palavras comuns (VERDE, MODELO, TORRE) casando com qualquer cliente;
 - loja de calçados com o mesmo nome de supermercado;
 - código de cliente reaproveitado por outra empresa;
-- lista de códigos do IRTT cortada com "…".
+- lista de códigos do IRTT cortada com "…";
+- bandeira "contida" no nome de outra empresa ("Drogaria Rosário" × "Farmácia N. S. do Rosário", "Araujo" ×
+  "Araujo & Tomaz"). Exigir **núcleo igual**, e em rede com CNPJ próprio só aceitar comprador do próprio grupo.
+
+**Associações e franquias de farmácia** (Farmarcas, Farmácias Associadas, Agafarma…):
+- cada associada é uma empresa;
+- a base leva **uma linha para a rede** (CNPJ da associação, quando existir) e as associadas nas suas próprias linhas,
+  com a coluna "Rede/associação";
+- a Receita só identifica a associada que leva a bandeira no nome, então manter ao lado o nº de lojas da pesquisa;
+- a rede-mãe (ex.: Farmarcas) herda a compra mais recente das suas bandeiras.
 
 ---
 
@@ -125,6 +157,9 @@ Armadilhas reais já vistas:
 - Gravar **só** as colunas pedidas. Depois conferir célula a célula que as outras colunas e abas ficaram iguais.
 - Pasta com **tabela dinâmica, gráfico ou segmentação** (ex.: MAPA MERCADO): **não salvar pelo openpyxl**. Gravar
   direto no XML da aba com `scripts cruzamento/avulsos/gravar_coluna_xml.py` e conferir que só a parte daquela aba mudou.
+  - **Aba inteira nova** (dezenas de milhares de linhas): trocar o `<sheetData/>` da aba vazia (modelo em
+    `avulsos/farmacias/grava_consolidado.py`, com cabeçalho congelado e filtro).
+  - O nome da aba pode ter aspas: no `workbook.xml` vem como `&quot;`.
 - Datas no formato `DD/MM/YYYY`. Copiar o estilo do cabeçalho vizinho.
 - Se o nome da coluna que o usuário citou não bater com o pedido (ex.: pediu a data na "E", que se chama "Status"),
   perguntar antes de gravar.
