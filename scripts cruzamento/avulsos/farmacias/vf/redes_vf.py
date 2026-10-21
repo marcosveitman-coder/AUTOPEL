@@ -1,0 +1,70 @@
+"""Redes do Ranking que nao estavam na lista de ontem (palavras da bandeira, UF restrita p/ nomes genericos)
+e bandeiras extras das redes ja conhecidas.  Chave = nome no Ranking."""
+SUL = {"RS", "SC", "PR"}; SE = {"SP", "RJ", "MG", "ES"}; CO = {"GO", "DF", "MT", "MS"}
+NE = {"BA", "SE", "AL", "PE", "PB", "RN", "CE", "PI", "MA"}
+
+NOVAS = {
+    "MasterFarma (inclui bandeira Super Popular SC)": (["MASTERFARMA", "MASTER FARMA"], SUL),
+    "AMR Saúde (Drogaria Americana, Farma Justa, Poupe Já)": (["AMR SAUDE", "DROGARIA AMERICANA", "FARMA JUSTA", "POUPE JA"], SE),
+    "Rede Melhor Compra": (["MELHOR COMPRA"], {"MG", "ES", "RJ", "SP", "GO", "DF", "BA"}),
+    "Rede MultiDrogas": (["MULTIDROGAS", "MULTI DROGAS"], None),
+    "Coop Drogarias (Coop – Cooperativa de Consumo)": (["COOP DROGARIA", "DROGARIA COOP"], {"SP"}),
+    "Rede Líder Farma": (["LIDER FARMA", "LIDERFARMA"], SUL),
+    "Farmácias Zé do Bairro": (["ZE DO BAIRRO"], NE),
+    "Rede Economize": (["ECONOMIZE"], CO),
+    "Natus Farma": (["NATUS FARMA", "NATUSFARMA"], None),
+    "Farmácia Artesanal (manipulação)": (["FARMACIA ARTESANAL"], None),
+    "Drogarias Max": (["DROGARIAS MAX", "DROGARIA MAX"], {"RJ"}),
+    "Grupo CB Drogarias (Compre Bem)": (["COMPRE BEM", "CB DROGARIAS"], {"MG"}),
+    "Droga Líder": (["DROGA LIDER", "DROGALIDER"], {"MG"}),
+    "Grupo Master Brasil (Drogarias Minas Master)": (["MINAS MASTER", "MASTER BRASIL"], {"MG"}),
+    "Grupo Conceito Farma": (["CONCEITO FARMA"], {"RJ"}),
+    "Farmácia Nacional": (["FARMACIA NACIONAL", "FARMACIAS NACIONAL"], {"MG"}),
+    "Rede Sanar": (["SANAR"], SUL),
+    "Droga Clara": (["DROGA CLARA", "DROGACLARA"], {"MG"}),
+    "Farmácias São Rafael": (["FARMACIAS SAO RAFAEL", "FARMACIA SAO RAFAEL"], {"SC"}),
+    "Stylofarma": (["STYLOFARMA", "STYLO FARMA"], None),
+    "DrogaShop": (["DROGASHOP", "DROGA SHOP"], CO),
+    "Redefarma": (["REDEFARMA"], {"MG"}),
+    "Drogaria Exata": (["DROGARIA EXATA", "DROGARIAS EXATA"], {"RJ"}),
+    "Farmagente": (["FARMAGENTE", "FARMA GENTE"], {"SP"}),
+    "Farmavip": (["FARMAVIP", "FARMA VIP"], {"SP"}),
+    "Fazfarma": (["FAZFARMA", "FAZ FARMA"], {"SP"}),
+    "Drogarias Farmáxima": (["FARMAXIMA"], {"SP"}),
+    "Farmácias Conviva": (["CONVIVA"], NE),
+    "Farmácias Santa Branca": (["SANTA BRANCA"], {"CE"}),
+    "Drogarias Medfácil": (["MEDFACIL"], CO),
+    "Unidasfarma": (["UNIDASFARMA", "UNIDAS FARMA"], {"RJ"}),
+    "Droga Rede": (["DROGA REDE", "DROGAREDE"], {"MG"}),
+    "Drogaria Atual": (["DROGARIA ATUAL"], {"RJ"}),
+    "Drogarias Ofertão": (["OFERTAO"], {"RJ"}),
+    "Drogarias Viva Mais": (["VIVA MAIS"], {"RJ"}),
+    "Frankfarma": (["FRANKFARMA"], None),
+    "Grupo DC": ([], None), "Grupo MF": ([], None), "MSV": ([], None),
+    "Grupo NR Drogarias": (["NR DROGARIA", "NR DROGARIAS"], {"RJ"}),
+    "Grupo RedeMed": (["REDEMED", "REDE MED"], NE),
+    "In Farma": (["IN FARMA", "INFARMA"], SUL),
+    "Inovfarma": (["INOVFARMA"], None),
+    "Lucremais": (["LUCREMAIS", "LUCRE MAIS"], None),
+    "Mais Vale": (["MAIS VALE"], SUL),
+    "Maisfarma": (["MAISFARMA", "MAIS FARMA"], NE),
+    "Pix Farma": (["PIX FARMA", "PIXFARMA"], None),
+    "Pulsafarma": (["PULSAFARMA"], None),
+    "Rede MG Farma": (["MG FARMA"], {"MG"}),
+    "Super Farma": (["SUPER FARMA", "SUPERFARMA"], {"BA"}),
+    "Tchê Farmácias": (["TCHE FARMACIA", "TCHE FARMACIAS"], {"RS"}),
+    "Ultra Descontão": (["ULTRA DESCONTAO"], SUL),
+    "WCL Saúde": (["WCL"], {"MG"}),
+}
+# bandeiras extras das redes do Ranking ja ligadas a redes de ontem
+EXTRAS = {
+    "Hiper Saúde (ex-RM Farma: Hiper Popular, Minas Farma)": ["HIPER POPULAR", "MINAS FARMA", "HIPER SAUDE"],
+    "DSG Farma (DSG Popular, Poupe Brasil, Mais Brasil)": ["DSG POPULAR", "POUPE BRASIL", "MAIS BRASIL"],
+    "Mova Marcas (Farmácias Preço Baixo, Farmavocê)": ["FARMAVOCE", "FARMACIAS PRECO BAIXO"],
+    "Grupo Adm Pharma (Rede Usifarma)": ["ADMPHARMA"],
+}
+# correcoes da ligacao automatica Ranking -> redes de ontem
+LIGA_FIX = {
+    "Grupo DPSP (Drogaria São Paulo, Drogarias Pacheco)": ["DPSP (DROGARIA SÃO PAULO + PACHECO)"],
+    "Rede Universal": ["REDE UNIVERSAL FARMA"],
+}
