@@ -162,6 +162,8 @@ Armadilhas reais já vistas:
   - **Aba inteira nova** (dezenas de milhares de linhas): trocar o `<sheetData/>` da aba vazia (modelo em
     `avulsos/farmacias/grava_consolidado.py`, com cabeçalho congelado e filtro).
   - O nome da aba pode ter aspas: no `workbook.xml` vem como `&quot;`.
+- Ler com openpyxl `read_only` e gravar no mesmo processo: fechar o workbook (`wb.close()`) antes de trocar o arquivo.
+  Senão o Windows nega o `os.replace`.
 - Datas no formato `DD/MM/YYYY`. Copiar o estilo do cabeçalho vizinho.
 - Se o nome da coluna que o usuário citou não bater com o pedido (ex.: pediu a data na "E", que se chama "Status"),
   perguntar antes de gravar.

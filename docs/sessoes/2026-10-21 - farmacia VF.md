@@ -84,3 +84,29 @@ Colunas:
 - Na `<sheetView>` da aba vazia vinha um `<selection>`. Para congelar o cabeçalho, trocar o bloco `<sheetViews>`
   inteiro.
 - Os zips da Receita foram apagados no fim (`%TEMP%\receita_cnpj`).
+
+## Ajuste: porte A–D na coluna U (pedido do usuário depois da entrega)
+O usuário pediu que a coluna U ("PORTE (RECEITA)") siga a mesma lógica dos supermercados (coluna "Porte": A Grande,
+B Média, C Regional, D Pequena/local), com as faixas adaptadas para farmácia.
+
+- O cabeçalho passou a ser "PORTE". O porte da Receita (ME/EPP/DEMAIS) saiu da aba.
+- **Base do cálculo:**
+  - o faturamento 2025 do Ranking (coluna S);
+  - quando não há esse valor, o nº de lojas considerado (coluna H) × R$ 2,2 mi por loja/ano, que é a mediana do Ranking.
+- **Faixas:**
+
+  | Porte | Faixa |
+  |---|---|
+  | A – Grande | ≥ R$ 1 bi (igual a supermercados) |
+  | B – Média | R$ 300 mi a 1 bi (igual a supermercados) |
+  | C – Regional | R$ 20 mi a 300 mi (≈ 10 a 136 lojas) |
+  | D – Pequena / local | < R$ 20 mi (até 9 lojas) |
+
+- **Resultado:** A 38, B 38, C 297, D 90.818. A aba agora tem 91.191 linhas, porque o usuário apagou 2 desde a
+  gravação.
+- **Como foi gravado:** lendo a aba como estava no arquivo, por `vf/porte_vf.py` + `gravar_coluna_xml.py`, este agora
+  com a opção `sobrescrever`. Só a `sheet19.xml` mudou, e nenhuma célula fora da U mudou.
+- **Lições:**
+  - `gravar_coluna_xml` não achava aba com aspas no nome; agora escapa `"` como `&quot;`;
+  - um workbook do openpyxl em `read_only` aberto no mesmo processo impede o `os.replace` no Windows ("Acesso negado"),
+    então é preciso fechar com `wb.close()` antes de gravar.

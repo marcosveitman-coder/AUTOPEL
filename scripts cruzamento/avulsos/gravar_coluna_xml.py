@@ -7,6 +7,7 @@ Todas as outras partes do arquivo sao copiadas byte a byte.
     gravar_coluna("pasta.xlsx", "Minha aba", "AJ", {5: "texto", 6: "outro"}, cabecalho=(4, "Vendedor"))
 
 - Celula ja existente e vazia (<c r="AJ5" s="110"/>) e preenchida mantendo o estilo.
+- Celula ja preenchida: erro, a menos que sobrescrever=True (troca o valor e mantem o estilo).
 - Celula inexistente e criada na posicao certa da linha, com o estilo da celula vizinha a esquerda.
 - Ajusta <dimension>, <autoFilter> e spans quando a coluna nova passa do limite atual.
 Feche o arquivo no Excel antes; faca backup antes.
@@ -25,7 +26,7 @@ def _sheet_path(z, nome):
         relmap[a["Id"]] = a["Target"]
     for m in re.finditer(r"<sheet ([^>]*)/>", wbx):
         a = dict(re.findall(r'([\w:]+)="([^"]*)"', m.group(1)))
-        if a["name"] == escape(nome):
+        if a["name"] == escape(nome, {"\"": "&quot;"}):
             t = relmap[a["r:id"]].lstrip("/")
             return t if t.startswith("xl/") else "xl/" + t
     raise KeyError(f"aba nao encontrada: {nome}")
@@ -35,7 +36,7 @@ def _col_of(ref):
     return column_index_from_string(re.match(r"[A-Z]+", ref).group(0))
 
 
-def gravar_coluna(xlsx, aba, col, valores, cabecalho=None, backup=True):
+def gravar_coluna(xlsx, aba, col, valores, cabecalho=None, backup=True, sobrescrever=False):
     if backup:
         shutil.copy2(xlsx, xlsx + ".bak")
     ci = column_index_from_string(col)
@@ -59,7 +60,10 @@ def gravar_coluna(xlsx, aba, col, valores, cabecalho=None, backup=True):
         vazio = re.search(r'<c r="%s%d"( s="(\d+)")?\s*/>' % (col, r), body)
         if vazio:
             return head + body.replace(vazio.group(0), cel(r, vazio.group(2), texto)) + "</row>"
-        if re.search(r'<c r="%s%d"' % (col, r), body):
+        cheia = re.search(r'<c r="%s%d"( s="(\d+)")?[^>]*?>.*?</c>' % (col, r), body, re.S)
+        if cheia and sobrescrever:
+            return head + body.replace(cheia.group(0), cel(r, cheia.group(2), texto)) + "</row>"
+        if cheia:
             raise ValueError(f"{col}{r} ja tem valor; nao sobrescrevo")
         cells = list(re.finditer(r'<c r="([A-Z]+)\d+"([^>]*?)(/>|>.*?</c>)', body, re.S))
         antes = [c for c in cells if _col_of(c.group(1)) < ci]
