@@ -78,6 +78,8 @@ Fontes de dados fora desta pasta (só leitura):
   `%TEMP%\cruzamento_supermercados\agg\*.pkl` (por raiz de CNPJ, por cliente+UF, por produto+UF). Reaproveitar o
   cache em vez de reler.
 - Quando o pedido for "2019 até 2026", pular o pkl de 2018.
+- **IRTT (Ranking-Top300-IRTT.xlsx):** venda e lojas vêm com o ponto de milhar lido como decimal (120,6 = R$ 120.600 mi;
+  1,007 = 1.007 lojas). Valores abaixo de R$ 50 mi são dado não divulgado. Os números são de 2024 por grupo, não por bandeira.
 - O `SEGMENTO` do faturamento é pouco confiável: há rede de lojas classificada como DROGARIAS e distribuidor como
   REVENDA. Não usar como única trava.
 
@@ -90,7 +92,12 @@ Fontes de dados fora desta pasta (só leitura):
 - **Onde baixar:** `https://arquivos.receitafederal.gov.br/public.php/webdav/AAAA-MM/` (WebDAV, usuário
   `YggdBLfdninEJX9`, senha vazia).
 - **Arquivos:** `Estabelecimentos0-9.zip` (~5,3 GB), `Empresas0-9.zip` (~1,3 GB) e `Municipios.zip`.
-  Baixar em `%TEMP%\receita_cnpj` e **apagar no fim**.
+- **Cópia local permanente** (decisão do usuário, 21/10/2026): `C:\dados_receita\AAAA-MM\` (hoje `2026-10`, 6,4 GB),
+  fora do OneDrive e do git. Os scripts leem de `AUTOPEL_RECEITA` ou da pasta mais nova em `C:\dados_receita`.
+  **Não baixar de novo nem apagar.** Só baixar o mês novo quando o usuário pedir ou a cópia passar de um mês; aí
+  apagar a pasta do mês antigo.
+  - Não vai para o GitHub: arquivos de até 2,3 GB, acima do limite de 100 MB, e o repositório é público.
+  - Inclui `Municipios.zip` (código → nome do município).
 - **Estabelecimentos**, separados por `";"`, em latin-1. Índices das colunas:
   - 0 raiz, 1 ordem, 2 DV, 3 matriz/filial (1/2), 4 nome fantasia;
   - 5 situação: 2 ativa, 3 suspensa, 4 inapta, 8 baixada;
@@ -164,6 +171,8 @@ Armadilhas reais já vistas:
   - O nome da aba pode ter aspas: no `workbook.xml` vem como `&quot;`.
 - Ler com openpyxl `read_only` e gravar no mesmo processo: fechar o workbook (`wb.close()`) antes de trocar o arquivo.
   Senão o Windows nega o `os.replace`.
+- Várias colunas (texto, número, data) de uma vez: `gravar_celulas` em `avulsos/gravar_coluna_xml.py`. Estilo de
+  número novo entra no fim de `cellXfs`; aí `styles.xml` também muda, e é preciso avisar.
 - Datas no formato `DD/MM/YYYY`. Copiar o estilo do cabeçalho vizinho.
 - Se o nome da coluna que o usuário citou não bater com o pedido (ex.: pediu a data na "E", que se chama "Status"),
   perguntar antes de gravar.
