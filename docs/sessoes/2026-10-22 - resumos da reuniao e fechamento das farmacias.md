@@ -151,3 +151,117 @@ ATIVO passou de 782 para 783 na CONSOLIDADO e de 790 para 791 na VF. Os homônim
 - No PowerShell 5.1, passar número vindo do JSON direto para `Range.Value2` dá erro de tipo: converter para `[double]` ou `[string]`.
 - Somar o potencial de uma base-universo exige conferir a soma de lojas contra o universo (aqui, ~120,7 mil).
 - Validar uma fonte nova contra as bases antes de usar (data por raiz). Aqui isso mostrou as notas fora das bases de venda.
+
+---
+
+## 2ª rodada (tarde): nº de lojas, duplicidades e resumos refeitos
+
+### Pedidos
+1. Supermercados: esquecer as colunas N–T (modelo antigo). O cálculo vale pelas colunas AI e AJ.
+2. Buscar o nº de lojas das 448 linhas da aba "SUPERMERCADOS (reuniao)" que estavam com L = 0. Busca na internet liberada.
+3. As "29 empresas repetidas" eram de supermercados. O usuário pediu para excluir as duplicidades e deixar cada empresa
+   uma vez só.
+4. Corrigir as três abas de resumo, se preciso.
+
+### Entrega
+`MAPA MERCADO.xlsx`. As alterações na aba "SUPERMERCADOS (reuniao)" foram feitas pelo Excel (COM):
+- coluna L preenchida;
+- nova coluna **AO "Fonte do nº de lojas (L) / linha unificada"**;
+- 51 linhas excluídas;
+- data, status e vendedor da compra mais recente levados para 2 linhas unificadas.
+
+Depois disso:
+- as tabelas dinâmicas da aba "TAB DIN. SUPERMERCADOS final" (do usuário) foram atualizadas. Elas já estavam
+  desatualizadas antes: mostravam 2.434 linhas; agora mostram 2.376;
+- as três abas de resumo foram limpas e refeitas (`td_resumos.ps1 -Limpar`). O texto de supermercados não fala mais do
+  modelo N–T e ganhou a seção "ajustes feitos".
+
+### Nº de lojas das linhas com L = 0
+**Regra (a mesma da coluna L, que bate com a Receita em 1.736 de 1.945 empresas):**
+- conta os estabelecimentos **ativos** da raiz;
+- CNAEs aceitos: supermercado/hiper (4711-3/01, /02), minimercado (4712-1/00), varejo alimentício (4729-6/99) e
+  atacarejo (4691-5/00, 4639-7/01, 4639-7/02, 4693-1/00);
+- fica fora estabelecimento com nome de CD, depósito, escritório ou manutenção.
+- O atacarejo costuma ter CNAE de atacado. Com o filtro antigo, que só aceitava os CNAEs de supermercado, a Tenda dava 0.
+
+**Como achar a raiz de quem não tinha CNPJ (264 linhas):**
+1. razão social igual + UF;
+2. miolo da razão igual;
+3. miolo dentro do nome fantasia, na UF e em estabelecimento de loja;
+4. razão com iniciais e sem o CPF do fim (empresário individual).
+
+A raiz só vale se tiver loja ativa na UF. Exemplos de nome que casou com a empresa errada e foi recusado: uma razão
+genérica de grupo que casou com uma empresa de serviços de escritório, e a holding sem lojas.
+
+**Internet** (fonte e data na coluna AO), para grupos com várias bandeiras, holding sem lojas ou CNPJ sem
+estabelecimento ativo: 9 linhas. A Market4u (2.554 minimercados autônomos) ficou com 0, com a nota.
+
+**Mínimo de 1 loja:** para a empresa com faturamento no Ranking ABRAS cujo CNPJ não foi localizado. Na internet só
+apareciam homônimos de outras cidades, e nenhum foi usado.
+
+**Resultado:**
+
+| Situação | Linhas |
+|---|---|
+| Saíram por duplicidade | 6 |
+| Ganharam lojas (1.403 lojas, +21.527 caixas) | 289 |
+| — pela Receita | 228 |
+| — pela internet | 8 |
+| — com o mínimo de 1 loja | 53 |
+| Continuam com 0 | 153 |
+| — CNPJ inapto na Receita | 129 |
+| — CNPJ ativo de outro ramo | 21 |
+| — outras (associação Rede Paraíba, Market4u, CNPJ baixado) | 3 |
+
+### Duplicidades (51 linhas excluídas, 45 empresas)
+**Critérios:**
+- mesma raiz de CNPJ (da aba ou achada na Receita): 12 casos eram a mesma empresa na lista do Ranking ABRAS e na lista
+  de leads;
+- mesma posição no ranking (pela regra da própria aba, "linhas da mesma empresa dividem a mesma posição");
+- bandeiras da mesma rede confirmadas na internet: Plurix (Superpão, Paraná), Mart Minas (Dom Atacadista MG/RJ) e
+  Costazul Alimentos = Super Bom/Grupo Barcelos.
+
+**Qual linha fica:**
+1. a da rede confirmada;
+2. senão, a que já tem lojas;
+3. senão, a de maior porte (ranking) e a compra mais recente.
+
+Ela recebe o nº de lojas da empresa e a última compra do grupo.
+
+**Ficaram de fora de propósito:** nomes iguais com **CNPJs diferentes** (ex.: vários "Supermercado Santiago" em RO, cada
+um com 1 loja). São empresas distintas, e em 79 de 105 grupos a L de cada linha bate com a Receita daquele CNPJ.
+
+### Números de conferência
+- Linhas: 2.427 → 2.376.
+- Caixas/mês: 178.301 + 21.527 (lojas preenchidas) − 6.042 (linhas repetidas) = **193.786**. Ativos: 95.986 (304 linhas).
+- Aba da reunião conferida célula a célula contra o original (linha velha → linha nova): só mudaram L (289), AJ (289,
+  sempre AI × L), AO (472) e AK/AL/AN (2 linhas unificadas). As fórmulas continuam iguais. 0 erro.
+- As outras abas ficaram idênticas, menos a "TAB DIN. SUPERMERCADOS final", que foi atualizada. As 15 tabelas
+  dinâmicas estão preservadas. Nas 9 tabelas dos resumos, cada célula foi recalculada a partir dos dados: 0 divergência.
+- Farmácias: sem mudança de dados. Os resumos foram refeitos com os mesmos números.
+
+### Pontos de atenção (estão no resumo)
+- A Rede Supermarket (143 lojas) é uma associação, e associadas com linha própria (ex.: uma com 43 lojas) podem estar
+  contadas duas vezes.
+- Market4u fora do potencial. Se for contada: +38.310 caixas.
+- 26 grupos com nome igual e CNPJs diferentes têm L diferente da Receita. A L não foi mexida.
+
+### Scripts
+Pasta `scripts cruzamento/avulsos/resumos/`:
+- `receita/receita_l0.py`, `receita/pass2.py`, `receita/pass3.py`: rodadas na Receita;
+- `rf_l0.py`, `dups.py`: diagnóstico;
+- `consolida_reuniao.py`: decide o nº de lojas, a fonte e as linhas que saem;
+- `ajusta_reuniao.ps1`: grava e exclui pelo Excel;
+- `confere_reuniao.py`: conferência linha velha → nova.
+
+Ficam locais, fora do git, por terem nomes de redes com números: `web_lojas.json` (números da internet com a fonte) e
+`raiz_manual.json` (2 raízes conferidas à mão).
+
+### Lições
+- A busca de nome na Receita sem índice fica inviável (60 milhões de razões × 200 nomes). Indexar pela 1ª palavra e
+  comparar o miolo igual.
+- Ao juntar listas de estabelecimentos de duas rodadas, remover repetição pelo **número do estabelecimento**. Pelo nome
+  fantasia, lojas com o mesmo nome viravam uma só (uma rede de 43 lojas deu 3).
+- `Range.Copy()` + `CutCopyMode` falha no PowerShell. Usar `Range.Copy(destino)`.
+- A lista da reunião junta o Ranking ABRAS (sem CNPJ) com uma lista de leads (com CNPJ). A mesma rede aparece nas duas,
+  e a Receita (raiz pela razão social) é o que revela isso.

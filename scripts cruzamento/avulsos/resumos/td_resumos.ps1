@@ -1,7 +1,8 @@
 # Grava as abas de resumo do MAPA MERCADO pelo proprio Excel (textos, tabelas e tabelas dinamicas).
 # Le a especificacao gerada por gerar_spec.py.  Use numa COPIA do arquivo; feche o arquivo no Excel antes.
 #   powershell -ExecutionPolicy Bypass -File td_resumos.ps1 -Xlsx C:\...\copia.xlsx -Spec C:\...\resumos_spec.json
-param([Parameter(Mandatory = $true)][string]$Xlsx, [Parameter(Mandatory = $true)][string]$Spec)
+#   -Limpar: apaga antes o conteudo e as tabelas dinamicas das abas de resumo (para refazer)
+param([Parameter(Mandatory = $true)][string]$Xlsx, [Parameter(Mandatory = $true)][string]$Spec, [switch]$Limpar)
 $ErrorActionPreference = 'Stop'
 $S = Get-Content -Raw -Encoding UTF8 -Path $Spec | ConvertFrom-Json
 
@@ -11,6 +12,11 @@ try {
     $wb = $xl.Workbooks.Open($Xlsx, 0, $false)
     foreach ($a in $S.abas) {
         $ws = $wb.Worksheets.Item($a.aba)
+        if ($Limpar) {
+            foreach ($pt in @($ws.PivotTables())) { $pt.TableRange2.Clear() | Out-Null }
+            $ws.Cells.Clear() | Out-Null
+            $ws.Columns.ColumnWidth = 8.43
+        }
         if ($xl.WorksheetFunction.CountA($ws.Cells) -gt 0 -or $ws.PivotTables().Count -gt 0) { throw "aba nao esta vazia: $($a.aba)" }
 
         foreach ($l in $a.linhas) {

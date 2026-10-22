@@ -106,6 +106,12 @@ Fontes de dados fora desta pasta (só leitura):
 - **Farmácia** = CNAE principal 4771-7/01, /02 ou /03. O 4771-7/04 é veterinária e fica fora. O universo ativo tem
   cerca de 120 mil lojas e 92 mil empresas.
 - **Nº de lojas** de uma empresa = estabelecimentos **ativos** da raiz, filtrados pelo CNAE do segmento.
+  - **Supermercado:** CNAEs 4711-3/01, 4711-3/02, 4712-1/00, 4729-6/99 **e os de atacarejo** (4691-5/00, 4639-7/01,
+    4639-7/02, 4693-1/00), sem estabelecimento chamado CD, depósito ou escritório. Atacarejo usa CNAE de atacado: sem eles,
+    a Tenda dá 0 loja.
+  - **Achar a raiz pelo nome:** razão igual + UF; depois o miolo igual (sem palavras de tipo, com iniciais, sem o CPF
+    do fim). A raiz só vale se tiver loja ativa na UF, porque razão genérica de grupo casa com holding ou empresa de
+    serviços. Para busca em massa, indexar pela 1ª palavra (`avulsos/resumos/receita/`).
 - Scripts em `scripts cruzamento/avulsos/farmacias/` (pipeline completo da base de farmácias).
 - **Consulta pontual de CNPJ:** BrasilAPI `https://brasilapi.com.br/api/cnpj/v1/<14 dígitos>`. Usar via `curl`, porque o
   urllib do Python leva 403.
@@ -173,6 +179,17 @@ Armadilhas reais já vistas:
   universo (~120,7 mil farmácias ativas).
 - Premissa de caixas/mês por loja: supermercados A 20, B 15, C 10, D 8; farmácias A 17, B 12, C 7, D 4.
 
+**Aba "SUPERMERCADOS (reuniao)" do MAPA MERCADO** (decisões de 22/10/2026):
+- vale o cálculo das colunas AI/AJ. As colunas N–T são um modelo antigo, que o usuário mandou esquecer;
+- **uma linha por empresa.** É duplicidade: mesma raiz de CNPJ, mesma posição no ranking (regra da aba) ou bandeira
+  da mesma rede. Fica a linha do ranking, com o nº de lojas da empresa e a compra mais recente. Nome igual com CNPJ
+  diferente é outra empresa e fica. A aba junta o Ranking ABRAS (sem CNPJ) e uma lista de leads (com CNPJ), e a mesma
+  rede aparece nas duas;
+- a coluna AO guarda a fonte do nº de lojas e a unificação;
+- empresa do ranking sem CNPJ localizado: mínimo de 1 loja, com a nota. Associação (ex.: rede de associados) e
+  minimercado autônomo ficam com 0, com a nota;
+- a aba "TAB DIN. SUPERMERCADOS final" (do usuário) usa esta aba: atualizar as tabelas dela depois de mexer.
+
 ---
 
 ## 📝 Gravar em planilha do usuário
@@ -196,6 +213,10 @@ Armadilhas reais já vistas:
     campo da coluna.
   - A fonte não pode ter cabeçalho vazio (ex.: coluna D da CONSOLIDADO): começar a faixa depois dela.
   - O Python daqui não tem `pywin32`: usar PowerShell.
+  - Refazer um resumo: `td_resumos.ps1 -Limpar` (apaga as tabelas e o conteúdo da aba antes).
+- **Excluir linhas** de aba usada por tabela dinâmica: pelo Excel (`avulsos/resumos/ajusta_reuniao.ps1`), de baixo para
+  cima. Depois conferir linha velha → linha nova (`confere_reuniao.py`). Para copiar formato, usar `Range.Copy(destino)`:
+  `CutCopyMode` falha no PowerShell.
 - Datas no formato `DD/MM/YYYY`. Copiar o estilo do cabeçalho vizinho.
 - Se o nome da coluna que o usuário citou não bater com o pedido (ex.: pediu a data na "E", que se chama "Status"),
   perguntar antes de gravar.

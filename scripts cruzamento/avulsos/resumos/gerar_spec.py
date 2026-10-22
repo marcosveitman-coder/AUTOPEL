@@ -5,9 +5,10 @@ td_resumos.ps1, que grava pelo proprio Excel.
 Entradas (na pasta de trabalho):
   abas.pkl       linhas das abas SUPERMERCADOS (reuniao), "FARMACIA CONSOLIDADO" e "FARMACIA VF" (valores)
   farm_final.pkl resultado de ../farmacias/final/farm_final.py
-  lojas_sup.pkl  {raiz: [estab. ativos, estab. ativos de supermercado]} da Receita (conta_sup.py)
+  consolida.pkl  resultado de consolida_reuniao.py (nº de lojas preenchido e linhas unificadas)
+  abas_antes.pkl a aba da reuniao antes desses ajustes (numeros de antes/depois)
 """
-import json, pickle, re, statistics as st, collections as C
+import json, pickle, re, collections as C
 from openpyxl.utils import column_index_from_string as ci
 
 D = lambda x: re.sub(r"\D", "", str(x or ""))
@@ -15,10 +16,10 @@ n0 = lambda v: f"{v:,.0f}".replace(",", ".")
 n1 = lambda v: f"{v:,.1f}".replace(",", "X").replace(".", ",").replace("X", ".")
 pct = lambda a, b: f"{100 * a / b:.1f}%".replace(".", ",")
 HOJE = "22/10/2026"
-TICKET_MERCADO = 135  # R$ por compra: Neogrid 2023 = R$ 125 + alta de ~6% (Scanntech 2025)
 
 
-def supermercados(abas, R, lojas_rf):
+def supermercados(abas, R, K, antes):
+    """K: consolida.pkl (lojas preenchidas e linhas unificadas); antes: linhas da aba antes dos ajustes de 22/10."""
     a = abas["SUPERMERCADOS (reuniao)"]
     g = lambda r, c: r[ci(c) - 1]
     rows = [r for r in a[4:] if any(v is not None for v in r)]
@@ -28,67 +29,37 @@ def supermercados(abas, R, lojas_rf):
     tot = sum(g(r, "AJ") for r in rows)
     at = [r for r in rows if ativo(r)]
     cx_at = sum(g(r, "AJ") for r in at)
-    L0 = [r for r in rows if not g(r, "L")]
-    sem_cnpj = sum(1 for r in L0 if len(D(g(r, "F"))) != 14)
-    vistos, sem_loja, com, lj_rf, cx_rf = set(), 0, 0, 0, 0
-    for r in L0:
-        c = D(g(r, "F"))
-        if len(c) != 14 or c[:8] in vistos:
-            continue
-        vistos.add(c[:8])
-        v = lojas_rf.get(c[:8])
-        if not v or v[1] == 0:
-            sem_loja += 1
-        else:
-            com += 1; lj_rf += v[1]; cx_rf += v[1] * AI[g(r, "J")]
-    falta, redes_ab, ex_ab = 0, 0, []
-    for p in "AB":
-        fl = st.median([g(r, "K") / g(r, "L") for r in rows if g(r, "J") == p and g(r, "L") and (g(r, "K") or 0) > 0])
-        vis = set()
-        for r in sorted(rows, key=lambda r: -(g(r, "K") or 0)):
-            if g(r, "J") == p and not g(r, "L") and (g(r, "K") or 0) > 0 and g(r, "A") not in vis:
-                vis.add(g(r, "A")); falta += g(r, "K") / fl * AI[p]
-                if len(ex_ab) < 6:
-                    ex_ab.append(str(g(r, "D")))
-        redes_ab += sum(1 for r in rows if g(r, "J") == p and not g(r, "L"))
-    br = C.defaultdict(list)
-    for r in rows:
-        c = D(g(r, "F"))
-        if len(c) == 14:
-            br[c[:8]].append(r)
-    dup = {k: v for k, v in br.items() if len(v) > 1}
-    cx_dup = sum(sum(g(r, "AJ") for r in v) - max(g(r, "AJ") for r in v) for v in dup.values())
-    conf = sum(1 for v in dup.values() if len({g(r, "AL") for r in v}) > 1)
-    # premissa x modelo N-T (caixas/loja/mes = faturamento mensal por loja / 1,82 mi), com o nº de lojas da coluna L
-    modelo = {}
-    for p in "ABC":
-        v = [g(r, "K") / g(r, "L") / 12 / 1.82e6 for r in rows if g(r, "J") == p and (g(r, "K") or 0) > 0 and g(r, "L")]
-        modelo[p] = (len(v), st.median(v))
-    soma_L, soma_M = sum(g(r, "L") or 0 for r in rows), sum(g(r, "M") or 0 for r in rows)
-    igual_rf = sum(1 for r in rows if g(r, "L") and len(D(g(r, "F"))) == 14 and D(g(r, "F"))[:8] in lojas_rf
-                   and lojas_rf[D(g(r, "F"))[:8]][1] == g(r, "L"))
-    base_rf = sum(1 for r in rows if g(r, "L") and len(D(g(r, "F"))) == 14 and D(g(r, "F"))[:8] in lojas_rf
-                  and lojas_rf[D(g(r, "F"))[:8]][1] > 0)
-    ad_al = sum(1 for r in rows if str(g(r, "AD")).lower() != ("ativo" if ativo(r) else "a trabalhar"))
-    sem_vend = sum(1 for r in rows if not ativo(r) and not g(r, "AN"))
-    ex_cli = sum(1 for r in rows if not ativo(r) and g(r, "AN"))
-    vf = R["vf"]
-    vfr = {c[:8]: i for i, c in enumerate(vf["cnpj"]) if len(c) == 14}
-    ov = [k for k in br if k in vfr and vf["cx"][vfr[k]] > 0]
-    cx_ov = sum(vf["cx"][vfr[k]] for k in ov)
-
+    old = {i + 1: r for i, r in enumerate(antes) if i >= 4 and any(v is not None for v in r)}
+    tot_antes = sum(g(r, "AJ") for r in old.values())
+    ex = set(K["excluir"])
+    # nº de lojas preenchido (linhas que estavam com L = 0 e ficaram)
+    l0 = {n: v for n, v in K["fonte"].items() if n not in ex}
+    ganhou = [n for n in l0 if K["cel"].get(n, {}).get("L", 0) > 0]
+    lojas_novas = sum(K["cel"][n]["L"] for n in ganhou)
+    cx_novas = sum(AI[g(old[n], "J")] * K["cel"][n]["L"] for n in ganhou)
+    por = C.Counter()
+    for n in ganhou:
+        f = K["fonte"][n]
+        por["Receita" if f.startswith("Receita") else "internet" if f.startswith("Internet") else "mínimo"] += 1
+    zero = C.Counter()
+    for n, f in l0.items():
+        if K["cel"].get(n, {}).get("L", 0) == 0:
+            zero["inapto" if "inapto" in f else "outro ramo" if "sem estabelecimento" in f else "outros"] += 1
+    # linhas repetidas
+    cx_saiu = sum(g(old[n], "AJ") for n in ex)
     T1 = [["Porte (coluna J)", "Caixas por loja (AI)", "Linhas", "Linhas ativas", "Lojas (L)", "Caixas/mês (AJ)", "% das caixas"]]
     for p in "ABCD":
         rr = [r for r in rows if g(r, "J") == p]
         cx = sum(g(r, "AJ") for r in rr)
-        T1.append([p, AI[p], len(rr), sum(1 for r in rr if ativo(r)), sum(g(r, "L") for r in rr), cx, pct(cx, tot)])
-    T1.append(["Total", "", len(rows), len(at), soma_L, tot, "100,0%"])
-    T2 = [["Porte", "Premissa AI (caixas/loja/mês)", "Modelo N–T, ticket R$ 450", f"Modelo N–T, ticket R$ {TICKET_MERCADO}",
-           "Redes com faturamento"]]
-    for p in "ABC":
-        n, m = modelo[p]
-        T2.append([p, AI[p], n1(m), n1(m * 450 / TICKET_MERCADO), n])
-
+        T1.append([p, AI[p], len(rr), sum(1 for r in rr if ativo(r)), sum(g(r, "L") or 0 for r in rr), cx, pct(cx, tot)])
+    T1.append(["Total", "", len(rows), len(at), sum(g(r, "L") or 0 for r in rows), tot, "100,0%"])
+    vf = R["vf"]
+    vfr = {c[:8]: i for i, c in enumerate(vf["cnpj"]) if len(c) == 14}
+    roots = {D(g(r, "F"))[:8] for r in rows if len(D(g(r, "F"))) == 14}
+    ov = [k for k in roots if k in vfr and vf["cx"][vfr[k]] > 0]
+    sem_vend = sum(1 for r in rows if not ativo(r) and not g(r, "AN"))
+    ex_cli = sum(1 for r in rows if not ativo(r) and g(r, "AN"))
+    rede_sup = sum(g(r, "L") or 0 for r in rows if str(g(r, "D")).startswith("Rede Supermarket"))
     L = []
     add = lambda cel, txt, neg=False, tam=None: L.append(dict(cel=cel, txt=txt, neg=neg, tam=tam))
     add("A1", f"RESUMO – SUPERMERCADOS (REUNIÃO)   |   base: aba SUPERMERCADOS (reuniao), {n0(len(rows))} linhas   |   posição de {HOJE}", True, 14)
@@ -96,25 +67,21 @@ def supermercados(abas, R, lojas_rf):
     add("A4", '1) Coluna AI "QUANTIDADE DE CAIXA POR LOJA": premissa fixa pelo porte da coluna J – A = 20, B = 15, C = 10 e D = 8 caixas por loja/mês. Fórmula: =SE(J5="A";20;SE(J5="B";15;SE(J5="C";10;SE(J5="D";8)))).')
     add("A5", '2) Coluna AJ "Total de caixas/ mês" = AI × L (nº de lojas da coluna L, "nª de LOJA (antonio)"). Exemplo, linha 5: porte A com 500 lojas → 20 × 500 = 10.000 caixas/mês.')
     add("A6", "3) Porte (colunas I e J): A = faturamento 2025 ≥ R$ 1 bi; B = R$ 300 mi a 1 bi; C = abaixo de R$ 300 mi; D = pequena/local, sem faturamento publicado (classificada pelo capital social e nº de lojas, coluna V).")
-    add("A7", f'4) Status (coluna AL "status final (reuniao)"): ativo = última compra (coluna AK) há até 360 dias; sem compra ou mais antiga = a trabalhar. Conferido: a AL bate com a data da AK em 100% das linhas.')
+    add("A7", '4) Status (coluna AL "status final (reuniao)"): ativo = última compra (coluna AK) há até 360 dias; sem compra ou mais antiga = a trabalhar.')
     add("A8", f"5) Total (célula AJ3, que respeita o filtro): {n0(tot)} caixas/mês = {n0(cx_at)} de clientes ativos ({n0(len(at))} linhas, {pct(cx_at, tot)}) + {n0(tot - cx_at)} a trabalhar ({n0(len(rows) - len(at))} linhas).")
     tabs = [dict(cel="A10", linhas=T1)]
     r0 = 10 + len(T1) + 1
-    add(f"A{r0}", "PONTOS DE ATENÇÃO (conferidos antes de usar o número)", True, 12)
-    add(f"A{r0 + 1}", f"a) {n0(len(L0))} linhas estão com 0 loja na coluna L, e portanto 0 caixa: {sem_cnpj} sem CNPJ na aba, {sem_loja} com CNPJ mas sem loja de supermercado ativa na Receita (out/2026) e {com} com {lj_rf} lojas na Receita (+{n0(cx_rf)} caixas).")
-    add(f"A{r0 + 2}", f"   Entre elas estão {redes_ab} linhas de porte A e B (ex.: {', '.join(ex_ab)}). Pelo faturamento por loja mediano do porte, faltam cerca de {n0(round(falta, -2))} caixas/mês ({pct(falta, tot)} do total). Recomendação: preencher a coluna L dessas redes.")
-    add(f"A{r0 + 3}", f'b) {len(dup)} empresas (mesma raiz de CNPJ) aparecem em {sum(len(v) for v in dup.values())} linhas com o mesmo nº de lojas: {n0(cx_dup)} caixas estão contadas duas vezes no total. Em {conf} delas a mesma empresa está "ativo" numa linha e "a trabalhar" na outra.')
-    add(f"A{r0 + 4}", f"c) A premissa da AI está acima do consumo calculado pelas colunas N–T (RACIONAL POTENCIAL) para as redes com faturamento (tabela abaixo). O modelo divide o faturamento por um ticket médio de R$ 450 (coluna P); o mercado gira em torno de R$ 125 a 140 por compra (Neogrid 2023: R$ 125,34; alta de ~6% em 2025, Scanntech).")
-    add(f"A{r0 + 5}", f"   Leitura das fórmulas N–T: faturamento por loja/mês ÷ ticket = cupons → × 0,3 m de papel por cupom → ÷ 40 m por bobina → ÷ 30 bobinas por caixa. Com ticket de ~R$ {TICKET_MERCADO}, o modelo chega perto da premissa no porte A, mas fica bem abaixo em B e C. Vale validar a premissa por porte.")
-    tabs.append(dict(cel=f"A{r0 + 6}", linhas=T2))
-    r1 = r0 + 6 + len(T2) + 1
-    add(f"A{r1}", f"d) As colunas N–T usam a coluna M (Lojas); a AJ usa a coluna L (antonio). Soma da L = {n0(soma_L)} lojas × M = {n0(soma_M)}. Pela Receita, a L bate exatamente em {n0(igual_rf)} de {n0(base_rf)} empresas com CNPJ: a L é a mais confiável.")
-    add(f"A{r1 + 1}", f'e) {ad_al} linhas têm "Status no CRM FINAL" (AD, fórmula com a data do CRM) diferente do status final (AL, com a data final da AK). As tabelas usam a AL.')
-    add(f"A{r1 + 2}", 'f) A AL está escrita "a tarbalhar"; nas tabelas dinâmicas aparece como "a trabalhar" (só o rótulo; a aba não foi alterada).')
-    add(f"A{r1 + 3}", "g) UF = UF da linha na lista (estado da rede). Lojas de uma rede em outros estados contam nessa UF.")
-    add(f"A{r1 + 4}", f'h) Vendedor (AN): vazio em {n0(sem_vend)} linhas a trabalhar (empresas sem cadastro na Autopel), que aparecem como "Sem vendedor". Outras {ex_cli} linhas a trabalhar já têm vendedor na carteira (ex-clientes).')
-    add(f"A{r1 + 5}", f"i) {len(ov)} empresas desta lista também estão nas abas de farmácia (pelas lojas de drogaria delas). Não somar o potencial das duas abas sem descontar essas {n0(cx_ov)} caixas.")
-    r2 = r1 + 7
+    add(f"A{r0}", f"AJUSTES FEITOS NA ABA EM {HOJE}   (antes: {n0(len(old))} linhas e {n0(tot_antes)} caixas/mês; agora: {n0(len(rows))} linhas e {n0(tot)} caixas/mês)", True, 12)
+    add(f"A{r0 + 1}", f"a) Nº de lojas (coluna L) das linhas que estavam com 0: {n0(len(ganhou))} linhas ganharam {n0(lojas_novas)} lojas (+{n0(cx_novas)} caixas) – {por['Receita']} pela Receita Federal (estabelecimentos ativos de supermercado/atacarejo do CNPJ, out/2026), {por['internet']} pela internet e {por['mínimo']} com o mínimo de 1 loja (empresa com faturamento no Ranking ABRAS, mas CNPJ não localizado).")
+    add(f"A{r0 + 2}", f"   Continuam com 0 ({n0(len(l0) - len(ganhou))} linhas): {zero['inapto']} com CNPJ inapto na Receita (nenhuma loja ativa), {zero['outro ramo']} com CNPJ ativo de outro ramo e {zero['outros']} outras (associação, minimercado autônomo, CNPJ baixado). A fonte de cada número está na nova coluna AO.")
+    add(f"A{r0 + 3}", f"b) Linhas repetidas: {n0(len(ex))} linhas excluídas ({len(K['grupos'])} empresas apareciam mais de uma vez; repetição confirmada pelo mesmo CNPJ, pela mesma posição no ranking ou por serem bandeiras da mesma rede, ex.: Plurix, Mart Minas/Dom Atacadista, Super Bom/Costazul). Elas somavam {n0(cx_saiu)} caixas. Conta: {n0(tot_antes)} + {n0(cx_novas)} − {n0(cx_saiu)} = {n0(tot)}.")
+    add(f"A{r0 + 4}", "   Ficou uma linha por empresa (a do ranking, de maior porte), com o nº de lojas da empresa e a compra mais recente do grupo (data, status e vendedor). A coluna AO diz com quais nomes ela também aparecia.")
+    add(f"A{r0 + 5}", "PONTOS DE ATENÇÃO", True, 12)
+    add(f"A{r0 + 6}", f"c) Rede Supermarket (linha da associação, {n0(rede_sup)} lojas): é uma rede de associados, e algumas associadas também têm linha própria (ex.: Alvorada, com 43 lojas). Pode haver lojas contadas nas duas.")
+    add(f"A{r0 + 7}", "d) Market4u: 2.554 minimercados autônomos em condomínios (sem caixa nem bobina) – deixado com 0 loja. Se quiser contar, L = 2.554 (+38.310 caixas).")
+    add(f"A{r0 + 8}", 'e) A AL está escrita "a tarbalhar"; nas tabelas dinâmicas aparece como "a trabalhar" (só o rótulo). UF = UF da linha na lista: lojas de uma rede em outros estados contam nessa UF.')
+    add(f"A{r0 + 9}", f'f) Vendedor (AN): vazio em {n0(sem_vend)} linhas a trabalhar (empresas sem cadastro na Autopel), que aparecem como "Sem vendedor"; outras {ex_cli} linhas a trabalhar já têm vendedor (ex-clientes). {len(ov)} empresas desta lista também estão nas abas de farmácia (pelas lojas de drogaria): não somar os dois potenciais sem descontar.')
+    r2 = r0 + 11
     add(f"A{r2}", f"PARTE 2 – TABELAS DINÂMICAS   (fonte: SUPERMERCADOS (reuniao)!A4:AN{ult}; se a aba mudar, clique com o botão direito numa tabela > Atualizar)", True, 12)
     tds = [dict(nome="TD_SUP_UF", campo="UF", titulo="Clientes ativos e a trabalhar por UF + caixas/mês (AJ)", col="A", larg=12, ordena=True),
            dict(nome="TD_SUP_PORTE", campo="Porte", titulo="Clientes ativos e a trabalhar por porte (I) + caixas/mês (AJ)", col="J", larg=30, ordena=False),
@@ -122,8 +89,9 @@ def supermercados(abas, R, lojas_rf):
     for t in tds:
         t["titulo_cel"] = f"{t['col']}{r2 + 2}"; t["cel"] = f"{t['col']}{r2 + 3}"
     return dict(aba="RESUMO SUPERMERCADO (REUNIAO)", linhas=L, tabelas=tabs, fonte_aba="SUPERMERCADOS (reuniao)",
-                fonte_faixa=f"A4:AN{ult}", campo_status="status final (reuniao)", campo_conta="Nome fantasia", campo_caixas="Total de caixas/ mês",
-                renomeia={"a tarbalhar": "a trabalhar"}, vazio="Sem vendedor", primeiro="ativo", tds=tds)
+                fonte_faixa=f"A4:AN{ult}", campo_status="status final (reuniao)", campo_conta="Nome fantasia",
+                campo_caixas="Total de caixas/ mês", renomeia={"a tarbalhar": "a trabalhar"}, vazio="Sem vendedor",
+                primeiro="ativo", tds=tds)
 
 
 def farmacia(R, chave, aba, fonte_faixa, cols, n_antes):
@@ -170,10 +138,11 @@ def farmacia(R, chave, aba, fonte_faixa, cols, n_antes):
 if __name__ == "__main__":
     abas = pickle.load(open("abas.pkl", "rb"))
     R = pickle.load(open("farm_final.pkl", "rb"))
-    lojas_rf = pickle.load(open("lojas_sup.pkl", "rb"))
+    K = pickle.load(open("consolida.pkl", "rb"))
+    antes = pickle.load(open("abas_antes.pkl", "rb"))["SUPERMERCADOS (reuniao)"]
     nco, nvf = R["co"]["n"] + 1, R["vf"]["n"] + 1
     spec = dict(abas=[
-        supermercados(abas, R, lojas_rf),
+        supermercados(abas, R, K, antes),
         farmacia(R, "co", '"FARMACIA CONSOLIDADO"', f"E1:T{nco}", dict(dt="N", st="O", vend="R", porte="S", cx="T"),
                  sum(1 for a in R["co"]["antes"] if a[1] == "ATIVO")),
         farmacia(R, "vf", '"FARMACIA VF"', f"A1:W{nvf}", dict(dt="O", st="P", vend="V", porte="U", cx="W"),
