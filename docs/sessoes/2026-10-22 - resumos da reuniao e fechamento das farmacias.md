@@ -265,3 +265,6 @@ Ficam locais, fora do git, por terem nomes de redes com números: `web_lojas.jso
 - `Range.Copy()` + `CutCopyMode` falha no PowerShell. Usar `Range.Copy(destino)`.
 - A lista da reunião junta o Ranking ABRAS (sem CNPJ) com uma lista de leads (com CNPJ). A mesma rede aparece nas duas,
   e a Receita (raiz pela razão social) é o que revela isso.
+
+### Decisão do usuário (fim da sessão)
+- Market4u fica **fora do potencial** (L = 0, com a nota na coluna AO).
