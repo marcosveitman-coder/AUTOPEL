@@ -9,4 +9,5 @@
 !*.txt
 !*.md
 !*.sql
+!*.ps1
 __pycache__/

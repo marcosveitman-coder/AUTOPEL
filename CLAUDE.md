@@ -137,9 +137,20 @@ personalizado e domínio de e-mail**.
    - "vendedor da última venda" = `NOME_VENDEDOR` do dia (empate → maior valor);
    - "vendedor da carteira" = vendedor do **cadastro** (Clientes - SQL) do cliente que comprou por último. Se não houver,
      usar a raiz e depois os códigos de cliente;
-   - ignorar carteiras que não são pessoas: INATIVOS, CLIENTE SEM COMPRA, RD/REPRESENTANTE, código 000000.
+   - ignorar carteiras que não são pessoas: INATIVOS, CLIENTE SEM COMPRA, RD/REPRESENTANTE, AUTOPEL - VENDA ENCERRADA,
+     código 000000.
 6. Sempre **conferir** contra o que já existe na planilha (datas do CRM, "dias sem comprar", "Vendedor principal") e
    explicar as divergências.
+7. **Razão social igual não vence CNPJ:** se a linha tem CNPJ válido (dígito verificador) e achado na Receita, e o
+   comprador é de **outra raiz**, é homônimo e o vínculo cai. Já vimos 24 casos em farmácias. Exceção: CNPJ da linha
+   corrompido (base de terceiros), em que o comprador tem o CNPJ verdadeiro.
+8. **Relatório "ultimo fat" do TOTVS** (`ultimo fat (dd.mm.aa).xlsx`: por cliente, DT_FAT, vendedor e grupo):
+   - usar a data **só depois do fim das bases de faturamento**. Antes disso vale a data das bases: ~54 raízes tinham
+     nota anterior que não aparece nas bases de venda;
+   - a coluna E "Descrição" é o **grupo do cliente** (ex.: o grupo de uma rede de farmácias). Ligar grupo → rede por um
+     **mapa curado**: os CNPJs dos clientes do grupo caem nas linhas da rede **e** o nome bate; na dúvida, a cidade/UF
+     decide. Grupos têm sufixo de vendedor/região ("GRUPO X - FULANO"). Mapa de farmácias:
+     `avulsos/farmacias/final/grupos_redes.json`, local e fora do git.
 
 Armadilhas reais já vistas:
 - drogaria e supermercado com o mesmo nome;
@@ -156,6 +167,11 @@ Armadilhas reais já vistas:
   com a coluna "Rede/associação";
 - a Receita só identifica a associada que leva a bandeira no nome, então manter ao lado o nº de lojas da pesquisa;
 - a rede-mãe (ex.: Farmarcas) herda a compra mais recente das suas bandeiras.
+- **Potencial (caixas) numa base-universo:** a linha da associação/franquia e a da rede-mãe ficam com 0 loja,
+  porque toda associada já é uma linha, com ou sem a bandeira no nome. A associação com CNPJ próprio fica só com as lojas
+  da sua raiz, e a rede com várias raízes conta o nº considerado uma vez só. Conferir a soma de lojas contra o
+  universo (~120,7 mil farmácias ativas).
+- Premissa de caixas/mês por loja: supermercados A 20, B 15, C 10, D 8; farmácias A 17, B 12, C 7, D 4.
 
 ---
 
@@ -173,6 +189,13 @@ Armadilhas reais já vistas:
   Senão o Windows nega o `os.replace`.
 - Várias colunas (texto, número, data) de uma vez: `gravar_celulas` em `avulsos/gravar_coluna_xml.py`. Estilo de
   número novo entra no fim de `cellXfs`; aí `styles.xml` também muda, e é preciso avisar.
+- **Criar tabela dinâmica:** pelo próprio Excel (COM, `avulsos/resumos/td_resumos.ps1`), numa cópia, depois de gravar
+  os dados pelo XML. Depois conferir todas as outras abas célula a célula e recalcular cada célula das tabelas a partir
+  dos dados.
+  - Contar clientes por um campo sempre preenchido que **não** seja o campo da coluna (status). Senão o Excel tira o
+    campo da coluna.
+  - A fonte não pode ter cabeçalho vazio (ex.: coluna D da CONSOLIDADO): começar a faixa depois dela.
+  - O Python daqui não tem `pywin32`: usar PowerShell.
 - Datas no formato `DD/MM/YYYY`. Copiar o estilo do cabeçalho vizinho.
 - Se o nome da coluna que o usuário citou não bater com o pedido (ex.: pediu a data na "E", que se chama "Status"),
   perguntar antes de gravar.

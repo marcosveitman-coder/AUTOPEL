@@ -55,3 +55,23 @@ Junta a base consolidada (sem as BAIXADAS que o usuário apagou) com a aba Ranki
   2025 da raiz. Para uma associação, soma as raízes das compradoras com a bandeira, sem as associadas que já têm linha própria.
 - **Rede com mais de uma raiz** (ex.: grupo com duas empresas): a 1ª leva os dados do Ranking e as outras ficam
   marcadas na observação, com as lojas da Receita, para não contar a rede duas vezes.
+
+## Fechamento das duas abas (pasta `final/`, 22/10/2026)
+
+`final/farm_final.py` revê a última compra e o status, e grava as colunas novas nas duas abas:
+- CONSOLIDADO: VENDEDOR, PORTE e Total de caixas/ mês;
+- VF: VENDEDOR e Total de caixas/ mês.
+
+Uso: sem argumento, só confere; com `--gravar`, grava pelo XML.
+
+**Fontes novas:**
+- relatório `ultimo fat` (`AUTOPEL_ULTFAT`): DT_FAT só depois do fim das bases e o grupo do cliente (coluna Descrição);
+- `CLIENTES` (`AUTOPEL_CLIENTES_XLSX`): carteira;
+- `grupos_redes.json` (local, fora do git): mapa grupo → rede.
+
+**Regras:**
+- Homônimo por razão social: CNPJ válido na Receita e comprador de outra raiz → o vínculo cai.
+- Caixas = caixas por loja do porte (A 17, B 12, C 7, D 4) × lojas, sem contar loja duas vezes:
+  - associação/franquia e Farmarcas ficam com 0 (ou com as lojas da própria raiz);
+  - rede com várias raízes conta o nº considerado uma vez.
+- `final/confere_xml.py`: confere que só as duas abas e as colunas pedidas mudaram.

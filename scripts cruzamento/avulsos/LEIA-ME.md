@@ -15,6 +15,7 @@ planilhas que mudam a cada pedido. Para reaproveitar, ajuste os caminhos ou use 
 | `vend_irtt.py` | Vendedor da carteira (cadastro) para cada bandeira do IRTT. |
 | `vend_reuniao.py` | Vendedor do cadastro (com recurso ao da última venda) para a lista de supermercados. |
 | `abras_cru.py` | Cruza o ranking ABRAS (razão social + UF) com o faturamento, incluindo domínio de e-mail. |
+| `resumos/` | Abas de resumo do MAPA MERCADO: `gerar_spec.py` calcula textos e números a partir dos dados; `td_resumos.ps1` grava pelo Excel (COM), com textos, tabelas e **tabelas dinâmicas**; `conta_sup.py` conta lojas de supermercado por raiz na Receita; `confere_td.py` e `confere_tudo.py` fazem as conferências. |
 | `conta_filiais.py` | Conta estabelecimentos ativos por raiz de CNPJ nos dados abertos da Receita (`Estabelecimentos*.zip`). |
 
 A extração do PDF do Ranking ABRAS (2025 e 2026) usa `pypdf`: texto por linha, depois uma regex de
