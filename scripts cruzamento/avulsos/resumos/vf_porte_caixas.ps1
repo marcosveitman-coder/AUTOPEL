@@ -1,0 +1,46 @@
+# Aba "FARMACIA VF": coluna W = letra do porte (da coluna U); coluna X = Total de caixas/mes por formula SE, no
+# racional da coluna AI de supermercados (A 17, B 12, C 7, D 4 caixas por loja) x nº de lojas da coluna H.
+# Nas linhas de rede/associacao em que a conta usa outro nº de lojas (sem contar loja duas vezes), a formula leva
+# esse numero no lugar de H.  Use numa COPIA; feche o arquivo no Excel.
+#   powershell -ExecutionPolicy Bypass -File vf_porte_caixas.ps1 -Xlsx C:\...\copia.xlsx -Spec C:\...\vf_wx.json
+param([Parameter(Mandatory = $true)][string]$Xlsx, [Parameter(Mandatory = $true)][string]$Spec)
+$ErrorActionPreference = 'Stop'
+$S = Get-Content -Raw -Encoding UTF8 -Path $Spec | ConvertFrom-Json
+$se = 'IF(W{0}="A",17,IF(W{0}="B",12,IF(W{0}="C",7,IF(W{0}="D",4))))'
+$xl = New-Object -ComObject Excel.Application
+$xl.Visible = $false; $xl.DisplayAlerts = $false; $xl.ScreenUpdating = $false; $xl.EnableEvents = $false
+try {
+    $wb = $xl.Workbooks.Open($Xlsx, 0, $false)
+    $ws = $wb.Worksheets.Item($S.aba)
+    $n = [int]$S.ult
+    if ([string]$ws.Range("U1").Value2 -ne 'PORTE' -or [string]$ws.Range("W1").Value2 -ne ([string][char]0x54 + 'otal de caixas/ m' + [char]0xEA + 's')) { throw "layout inesperado: U1/W1" }
+    # W: letra do porte
+    $u = $ws.Range("U2:U$n").Value2
+    $w = New-Object 'object[,]' ($n - 1), 1
+    for ($i = 1; $i -le $n - 1; $i++) { $t = [string]$u[$i, 1]; $w[($i - 1), 0] = $(if ($t.Length -gt 0) { $t.Substring(0, 1) } else { $null }) }
+    $ws.Range("W2:W$n").Value2 = $w
+    $ws.Range("W2:W$n").HorizontalAlignment = -4108
+    $ws.Range("W1").Value2 = 'P'
+    # X: formula
+    $ws.Range("V1").Copy($ws.Range("X1")) | Out-Null
+    $ws.Range("X1").Value2 = [string][char]0x54 + 'otal de caixas/ m' + [char]0xEA + 's'
+    $ws.Range("X2:X$n").Formula = '=' + ($se -f 2) + '*H2'
+    foreach ($p in $S.excecoes.PSObject.Properties) {
+        $r = [int]$p.Name
+        $ws.Range("X$r").Formula = '=' + ($se -f $r) + '*' + [int]$p.Value
+    }
+    $ws.Range("X2:X$n").NumberFormat = '#,##0'
+    $ws.Columns.Item("W").ColumnWidth = 5
+    $ws.Columns.Item("X").ColumnWidth = 14
+    if ($ws.AutoFilterMode) { $ws.AutoFilterMode = $false }
+    $ws.Range("A1:X$n").AutoFilter() | Out-Null
+    $xl.Calculate()
+    Write-Output ("soma X = {0}" -f $xl.WorksheetFunction.Sum($ws.Range("X2:X$n")))
+    $wb.Save(); $wb.Close($false)
+}
+catch {
+    Write-Output ("ERRO na linha {0}: {1}" -f $_.InvocationInfo.ScriptLineNumber, $_.Exception.Message); throw
+}
+finally {
+    $xl.Quit(); [void][Runtime.InteropServices.Marshal]::ReleaseComObject($xl); [GC]::Collect(); [GC]::WaitForPendingFinalizers()
+}

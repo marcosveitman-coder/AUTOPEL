@@ -268,3 +268,26 @@ Ficam locais, fora do git, por terem nomes de redes com números: `web_lojas.jso
 
 ### Decisão do usuário (fim da sessão)
 - Market4u fica **fora do potencial** (L = 0, com a nota na coluna AO).
+
+## 3ª rodada: "FARMACIA VF" com porte em W e caixas por fórmula em X
+**Pedido.** Na coluna W, só a letra do porte (da coluna U). Na coluna X, o "Total de caixas/ mês" por fórmula SE, no
+mesmo racional da coluna AI de supermercados (A 17, B 12, C 7, D 4). Atualizar o resumo da VF.
+
+**Entrega**, feita pelo Excel com `resumos/vf_porte_caixas.ps1`:
+- W1 = "P" e, nas linhas, a letra do porte;
+- X1 = "Total de caixas/ mês", com `=SE(W="A";17;SE(W="B";12;SE(W="C";7;SE(W="D";4))))*H`;
+- o filtro passou a ir até a X;
+- nas **112 linhas** de rede/associação em que o nº de lojas da conta não é o da H (para não contar loja duas vezes:
+  101 associações, 6 redes com mais de uma raiz e 5 associações com CNPJ próprio), a fórmula multiplica por esse número
+  no lugar da H (ex.: `*0` numa associação). Se fosse `*H` em todas, o total iria a 1.092.584 e contaria lojas em dobro;
+- o resumo da VF foi refeito com a fonte `A1:X`.
+
+**Mudança do usuário respeitada.** O cabeçalho P da VF passou a "STATUS AUTOPEL"; a tabela dinâmica usa esse nome.
+
+**Conferência:**
+- W bate com a 1ª letra da U em todas as linhas;
+- X tem o mesmo valor da W antiga, a soma continua 667.594 e as fórmulas estão como previsto;
+- as colunas A:V, as outras abas e os outros dois resumos ficaram idênticos;
+- nas 3 tabelas da VF, cada célula foi recalculada a partir dos dados: 0 divergência.
+
+**Lição.** No Excel em português, `NumberFormat = 'General'` falha ("Geral"); é melhor não mexer no formato.
