@@ -15,7 +15,8 @@ D = lambda x: re.sub(r"\D", "", str(x or ""))
 n0 = lambda v: f"{v:,.0f}".replace(",", ".")
 n1 = lambda v: f"{v:,.1f}".replace(",", "X").replace(".", ",").replace("X", ".")
 pct = lambda a, b: f"{100 * a / b:.1f}%".replace(".", ",")
-HOJE = "22/10/2026"
+HOJE = "23/10/2026"
+CAB_VF = 6  # linha do cabecalho da aba "FARMACIA VF" (o usuario inseriu 5 linhas no topo em 23/10)
 
 
 def supermercados(abas, R, K, antes):
@@ -119,7 +120,7 @@ def farmacia(R, chave, aba, fonte_faixa, cols, n_antes):
     add("A8", f'3) PORTE (col. {cols["porte"]}): A ≥ R$ 1 bi; B = R$ 300 mi a 1 bi; C = R$ 20 a 300 mi; D < R$ 20 mi – pelo faturamento 2025 do Ranking de redes ou, sem ele, pelo nº de lojas × R$ 2,2 mi por loja/ano (mesma lógica da coluna I de supermercados).' + (" Igual ao da FARMACIA VF para a mesma empresa." if chave == "co" else ""))
     if chave == "vf":
         nexc = sum(1 for i in range(n) if (X["liq"][i] or 0) != (X["lojas"][i] or 0))
-        add("A9", f'4) Coluna W "P" = letra do porte da coluna U. Coluna X "Total de caixas/ mês" = fórmula no mesmo racional da coluna AI de supermercados: =SE(W2="A";17;SE(W2="B";12;SE(W2="C";7;SE(W2="D";4)))) × nº de lojas considerado (col. H). Em {nexc} linhas de rede/associação a fórmula multiplica pelo nº de lojas sem contagem dupla (ex.: ×0 numa associação), no lugar da H.')
+        add("A9", f'4) Coluna W "P" = letra do porte da coluna U. Coluna X "Total de caixas/ mês" = fórmula no mesmo racional da coluna AI de supermercados: =SE(W{CAB_VF + 1}="A";17;SE(W{CAB_VF + 1}="B";12;SE(W{CAB_VF + 1}="C";7;SE(W{CAB_VF + 1}="D";4)))) × nº de lojas considerado (col. H). Em {nexc} linhas de rede/associação a fórmula multiplica pelo nº de lojas sem contagem dupla (ex.: ×0 numa associação), no lugar da H.')
     else:
         add("A9", f'4) Total de caixas/mês (col. {cols["cx"]}) = caixas por loja do porte (A 17, B 12, C 7, D 4) × nº de lojas considerado (o mesmo da FARMACIA VF, col. H).')
     add("A10", f"   Sem contagem dupla: a base é o universo das farmácias ativas da Receita, então toda associada já tem linha própria. Por isso a linha de associação/franquia (e a Farmarcas) fica com 0 caixa ou só com as lojas da própria raiz, e a rede com mais de uma raiz conta o nº considerado uma vez só. Lojas somadas: {n0(lojas)} (o Brasil tem cerca de 120,7 mil farmácias ativas na Receita).")
@@ -149,7 +150,7 @@ if __name__ == "__main__":
         supermercados(abas, R, K, antes),
         farmacia(R, "co", '"FARMACIA CONSOLIDADO"', f"E1:T{nco}", dict(dt="N", st="O", vend="R", porte="S", cx="T"),
                  sum(1 for a in R["co"]["antes"] if a[1] == "ATIVO")),
-        farmacia(R, "vf", '"FARMACIA VF"', f"A1:X{nvf}", dict(dt="O", st="P", vend="V", porte="U", cx="X"),
+        farmacia(R, "vf", '"FARMACIA VF"', f"A{CAB_VF}:X{nvf + CAB_VF - 1}", dict(dt="O", st="P", vend="V", porte="U", cx="X"),
                  sum(1 for a in R["vf"]["antes"] if a[1] == "ATIVO")),
     ])
     json.dump(spec, open("resumos_spec.json", "w", encoding="utf8"), ensure_ascii=True, indent=1)

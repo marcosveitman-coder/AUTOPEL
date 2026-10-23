@@ -12,30 +12,36 @@ $xl.Visible = $false; $xl.DisplayAlerts = $false; $xl.ScreenUpdating = $false; $
 try {
     $wb = $xl.Workbooks.Open($Xlsx, 0, $false)
     $ws = $wb.Worksheets.Item($S.aba)
-    $n = [int]$S.ult
-    if ([string]$ws.Range("U1").Value2 -ne 'PORTE' -or [string]$ws.Range("W1").Value2 -ne ([string][char]0x54 + 'otal de caixas/ m' + [char]0xEA + 's')) { throw "layout inesperado: U1/W1" }
-    # W: letra do porte
-    $u = $ws.Range("U2:U$n").Value2
-    $w = New-Object 'object[,]' ($n - 1), 1
-    for ($i = 1; $i -le $n - 1; $i++) { $t = [string]$u[$i, 1]; $w[($i - 1), 0] = $(if ($t.Length -gt 0) { $t.Substring(0, 1) } else { $null }) }
-    $ws.Range("W2:W$n").Value2 = $w
-    $ws.Range("W2:W$n").HorizontalAlignment = -4108
-    $ws.Range("W1").Value2 = 'P'
-    # X: formula
-    $ws.Range("V1").Copy($ws.Range("X1")) | Out-Null
-    $ws.Range("X1").Value2 = [string][char]0x54 + 'otal de caixas/ m' + [char]0xEA + 's'
-    $ws.Range("X2:X$n").Formula = '=' + ($se -f 2) + '*H2'
+    $n = [int]$S.ult                                   # ultima linha de dados
+    $c = $(if ($S.cab) { [int]$S.cab } else { 1 })      # linha do cabecalho (o usuario pode inserir linhas no topo)
+    $p1 = $c + 1
+    $tot = [string][char]0x54 + 'otal de caixas/ m' + [char]0xEA + 's'
+    if ([string]$ws.Range("U$c").Value2 -ne 'PORTE') { throw "layout inesperado: U$c" }
+    if ([string]$ws.Range("W$c").Value2 -ne 'P') {
+        # W: letra do porte (da coluna U)
+        $u = $ws.Range("U${p1}:U$n").Value2
+        $w = New-Object 'object[,]' ($n - $c), 1
+        for ($i = 1; $i -le $n - $c; $i++) { $t = [string]$u[$i, 1]; $w[($i - 1), 0] = $(if ($t.Length -gt 0) { $t.Substring(0, 1) } else { $null }) }
+        $ws.Range("W${p1}:W$n").Value2 = $w
+        $ws.Range("W${p1}:W$n").HorizontalAlignment = -4108
+        $ws.Range("W$c").Value2 = 'P'
+    }
+    if ($ws.Range("X$c").Value2 -ne $null -and [string]$ws.Range("X$c").Value2 -ne $tot) { throw "a coluna X tem outro conteudo: $($ws.Range("X$c").Value2)" }
+    # X: formula no racional da coluna AI de supermercados
+    $ws.Range("V$c").Copy($ws.Range("X$c")) | Out-Null
+    $ws.Range("X$c").Value2 = $tot
+    $ws.Range("X${p1}:X$n").Formula = '=' + ($se -f $p1) + '*H' + $p1
     foreach ($p in $S.excecoes.PSObject.Properties) {
         $r = [int]$p.Name
         $ws.Range("X$r").Formula = '=' + ($se -f $r) + '*' + [int]$p.Value
     }
-    $ws.Range("X2:X$n").NumberFormat = '#,##0'
+    $ws.Range("X${p1}:X$n").NumberFormat = '#,##0'
     $ws.Columns.Item("W").ColumnWidth = 5
     $ws.Columns.Item("X").ColumnWidth = 14
     if ($ws.AutoFilterMode) { $ws.AutoFilterMode = $false }
-    $ws.Range("A1:X$n").AutoFilter() | Out-Null
+    $ws.Range("A${c}:X$n").AutoFilter() | Out-Null
     $xl.Calculate()
-    Write-Output ("soma X = {0}" -f $xl.WorksheetFunction.Sum($ws.Range("X2:X$n")))
+    Write-Output ("soma X = {0}" -f $xl.WorksheetFunction.Sum($ws.Range("X${p1}:X$n")))
     $wb.Save(); $wb.Close($false)
 }
 catch {
