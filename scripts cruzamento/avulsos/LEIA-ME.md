@@ -17,6 +17,7 @@ planilhas que mudam a cada pedido. Para reaproveitar, ajuste os caminhos ou use 
 | `abras_cru.py` | Cruza o ranking ABRAS (razão social + UF) com o faturamento, incluindo domínio de e-mail. |
 | `resumos/` | Abas de resumo do MAPA MERCADO: `gerar_spec.py` calcula textos e números a partir dos dados; `td_resumos.ps1` grava pelo Excel (COM), com textos, tabelas e **tabelas dinâmicas**; `conta_sup.py` conta lojas de supermercado por raiz na Receita; `confere_td.py` e `confere_tudo.py` fazem as conferências. Nº de lojas e duplicidades da aba da reunião: `receita/` (3 rodadas na Receita), `consolida_reuniao.py` (decide lojas, fonte e linhas que saem), `ajusta_reuniao.ps1` (grava e exclui pelo Excel) e `confere_reuniao.py`. `web_lojas.json`/`raiz_manual.json` ficam locais. |
 | `conta_filiais.py` | Conta estabelecimentos ativos por raiz de CNPJ nos dados abertos da Receita (`Estabelecimentos*.zip`). |
+| `compras/` | Planilha de compras "Relatorio Revenda atualizado". `revisa_relatorio_revenda.ps1` grava pelo Excel (COM) a programação do trimestre corrigida na Table1, o tracking da aba dinamicas e as abas LEIA-ME COMPRAS e PROGRAMACAO TRIMESTRE. Rodar numa cópia; recusa se a Table1 já tiver as colunas novas. `confere_revenda.py ORIGINAL REVISADO` confere célula a célula e refaz a conta em Python. |
 
 A extração do PDF do Ranking ABRAS (2025 e 2026) usa `pypdf`: texto por linha, depois uma regex de
 `posição  razão social  UF  faturamento`. O passo a passo está registrado em `docs/sessoes/`.

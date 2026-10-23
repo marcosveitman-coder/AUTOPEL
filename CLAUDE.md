@@ -209,6 +209,32 @@ Armadilhas reais já vistas:
 
 ---
 
+## 🛒 Planilha de compras ("Relatorio Revenda atualizado.xlsx", 23/10/2026)
+
+- Fica em `Planejamento comercial_AUTOPEL\2026\COMPRAS\`. Na mesma pasta há um `Relatorio Revenda atualizado....xlsx`
+  (com reticências), que o usuário deixa aberto: não confundir os dois.
+- Aba "Geral (arq. …)" = tabela `Table1`:
+  - **A–X vêm do TOTVS e não se alteram.** As outras colunas são fórmulas;
+  - quase todas as ~65 dinâmicas do arquivo (abas "(vf)", PLANO de AÇAO, dinamicas…) usam a cache da Table1.
+- Conta do TOTVS: `Comprar (F) = PontoPedido (E) − (Disponível O − VendProt P + Comprado R)`:
+  - positivo = falta, negativo = sobra;
+  - PontoPedido = 2 meses de MedContr (I); PontoPedido 0 = não ter estoque;
+  - a coluna O pode vir com a vírgula perdida (quantidade fracionada): o saldo confiável é E − F.
+- Programação do trimestre nas colunas **GPT** (AT/AV/AX qtd, AU/AW/AY R$):
+  - cada mês volta o saldo ao PontoPedido e desconta 1 MedContr entre um mês e o seguinte;
+  - com PontoPedido 0 só compra no mês vigente, e só o que já foi vendido sem estoque;
+  - GROK e deepSEAK são cópias antigas;
+  - os cabeçalhos dizem OUTUBRO/NOVEMBRO/DEZEMBRO, mas a conta é mês vigente/próximo/subsequente. **Renomear o
+    cabeçalho tira o campo das dinâmicas.**
+- Tracking da aba dinamicas (AC:AJ):
+  - R$ por mês = `SOMASES` na Table1 (todos os SKUs);
+  - Marcas e SKUs = dinâmicas filtradas em Comprar > 0;
+  - os dias anteriores são digitados pelo usuário.
+- Script: `avulsos/compras/revisa_relatorio_revenda.ps1` (+ `confere_revenda.py`). Sessão: `docs/sessoes/2026-10-23 -
+  revisao do relatorio revenda (compras).md`.
+
+---
+
 ## 📝 Gravar em planilha do usuário
 
 - **Sempre** fazer backup no scratchpad antes. Confirmar que o arquivo **não está aberto no Excel** (abrir `r+b`).
@@ -230,6 +256,9 @@ Armadilhas reais já vistas:
     campo da coluna.
   - A fonte não pode ter cabeçalho vazio (ex.: coluna D da CONSOLIDADO): começar a faixa depois dela.
   - O Python daqui não tem `pywin32`: usar PowerShell.
+  - **Formato de número pelo COM:** o Excel daqui lê `NumberFormat` em português, e `'#,##0'` aparece como `1416,0`.
+    Montar com `$xl.International(4)` (milhar) e `International(3)` (decimal) e gravar em `NumberFormatLocal`.
+  - Para ver como ficou (não há leitor de PDF aqui): `Range.CopyPicture` → colar num gráfico → `Chart.Export` PNG.
   - Refazer um resumo: `td_resumos.ps1 -Limpar` (apaga as tabelas e o conteúdo da aba antes).
 - **Excluir linhas** de aba usada por tabela dinâmica: pelo Excel (`avulsos/resumos/ajusta_reuniao.ps1`), de baixo para
   cima. Depois conferir linha velha → linha nova (`confere_reuniao.py`). Para copiar formato, usar `Range.Copy(destino)`:
