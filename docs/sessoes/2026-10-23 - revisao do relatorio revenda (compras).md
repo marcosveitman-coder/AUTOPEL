@@ -150,3 +150,40 @@ própria daquelas colunas: as dinâmicas das abas (vf) e do PLANO têm de 600 a 
   automáticas. Devolver só as larguras.
 - **`Select-Object -First` num comando que chama o script do Excel interrompe o script antes de salvar** e deixa um
   Excel invisível aberto. Conferir `Get-Process EXCEL` e fechar só o processo sem janela que o script abriu.
+
+---
+
+## 3ª parte (15h): por que 5 linhas dão FALSO na conferência do usuário
+
+### Situação do arquivo
+- O usuário apagou o `Relatorio Revenda atualizado....xlsx` (com reticências). O arquivo que ficou (salvo às 15h21) é a
+  **versão de antes da revisão** mais 2 colunas novas do usuário na Table1:
+  - CG "PB" = `−O + P − R + E`;
+  - CH "Coluna1" = `PB = Comprar.`.
+- Não estão mais no arquivo:
+  - as abas LEIA-ME COMPRAS e PROGRAMACAO TRIMESTRE;
+  - as colunas novas (Saldo hoje, Compra trimestre, Situação);
+  - as fórmulas corrigidas e os nomes "Compra mês vigente…": voltou "GPT previsao OUTUBRO…";
+  - a dinâmica da programação (agora são 64).
+- Ficou para o usuário decidir se reaplica a revisão. O `revisa_relatorio_revenda.ps1` recusa a Table1 com 86 colunas
+  e precisa aceitar as colunas novas do usuário.
+
+### Diagnóstico (`compras/diagnostico_disponivel.py`)
+- Os 5 FALSO (linhas 529, 658, 1665, 1780, 2808) são **exatamente os 5 SKUs, entre 4.223, com Disponível
+  fracionado**. Na cópia de ontem (aba oculta O.N.T.E.M), são os mesmos 5 SKUs.
+- A coluna O vem do TOTVS **sem o separador decimal, com os dígitos colados**: 163,66 → 16366 (×100),
+  622,6 → 6226 (×10), 67,4001 → 674001 (×10000).
+- O TOTVS tem o valor certo:
+  - o Comprar (F) sai com decimal e bate com o Disponível verdadeiro (E − F + P − R);
+  - o Vlr Estoque usa o estoque fracionado (ex.: 67,4001 × preço);
+  - Físico e Reserva vêm arredondados (164 × 163,66).
+- O EstDias (W) também vem errado pelo mesmo fator (ex.: 54.180 dias em vez de 5.418). O erro já está na saída do
+  relatório, antes do EstDias ser calculado; não é da colagem no Excel nem da fórmula do usuário.
+- Na cópia de ontem, 13 SKUs tinham decimal no PontoPedido (E) e bateram. O problema é só na coluna Disponível.
+
+### Recomendação dada
+- Pedir ao TI/TOTVS para revisar o formato do campo Disponível (e do EstDias) no relatório. Algo tira o separador
+  decimal, por exemplo uma troca de "." para tirar o ponto de milhar.
+- Na planilha, o saldo confiável é E − F. Para a CH acusar só divergência de verdade, comparar com o Disponível
+  verdadeiro ou com tolerância.
+- Conferir no cadastro por que caneta, lápis e envelope têm estoque fracionado (fator de conversão de unidade).
