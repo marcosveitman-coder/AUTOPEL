@@ -33,7 +33,26 @@ try {
                    50 = 'GPT  previsao DEZEMVRO QNTDD'; 51 = 'GPT previsao DEZEMVRO R$'; 63 = 'FAMILIA'
                    65 = 'Oceano_Preco'; 67 = 'Kalunga_Preco'; 75 = 'AUTOPEL vs. Oceano B2B'; 76 = 'AUTOPEL vs. Kalunga' }
     foreach ($k in $esperado.Keys) { if ($nm[$k] -ne $esperado[$k]) { throw "coluna $k da Table1 mudou: '$($nm[$k])'" } }
-    if ($lo.ListColumns.Count -ne 84) { throw "Table1 tem $($lo.ListColumns.Count) colunas (esperado 84): ja foi revisada?" }
+    # as 84 primeiras colunas sao as do TOTVS + formulas do arquivo; o usuario pode ter acrescentado colunas depois da CF
+    #   (ex.: PB e Coluna1 em 23/10). As colunas novas desta revisao entram depois delas.
+    if ($lo.ListColumns.Count -lt 84) { throw "Table1 tem $($lo.ListColumns.Count) colunas (esperado 84 ou mais)" }
+    foreach ($n in @('Saldo hoje (Disp-VendProt+Comprado)', 'Compra trimestre QTD', 'Compra trimestre R$', 'Situacao compra')) {
+        if ($nm.Values -contains $n) { throw "Table1 ja tem a coluna '$n': ja foi revisada?" }
+    }
+
+    # filtro ligado na tabela: gravar a coluna inteira pula as linhas ocultas (a coluna nova fica sem formula nelas).
+    #   Guarda o filtro, mostra tudo, grava e no fim devolve o mesmo filtro.
+    $filtros = @(); $visiveis = $null
+    if ($lo.ShowAutoFilter -and $lo.AutoFilter.FilterMode) {
+        $visiveis = $lo.DataBodyRange.Columns.Item(1).SpecialCells(12).Count
+        $fs = $lo.AutoFilter.Filters
+        for ($i = 1; $i -le $fs.Count; $i++) {
+            $fl = $fs.Item($i)
+            if ($fl.On) { $filtros += , @($i, $fl.Criteria1, $fl.Operator) }
+        }
+        $lo.AutoFilter.ShowAllData()
+        "filtro do usuario guardado: $(($filtros | ForEach-Object { "coluna $($_[0]) $($_[1])" }) -join '; ') ($visiveis linhas visiveis)"
+    }
 
     function L([int]$i) { '[@[' + $nm[$i] + ']]' }          # celula da linha, dentro da tabela
     function T([string]$n) { 'Table1[[' + $n + ']]' }        # coluna inteira, fora da tabela
@@ -289,6 +308,21 @@ try {
     foreach ($j in 12..15) { $wp.Columns.Item($j).ColumnWidth = 16 }
 
     $xl.CalculateFull()
+    # todas as linhas da tabela tem que ter as formulas novas
+    foreach ($n in @($SALDO_N, 'Compra trimestre QTD', 'Compra trimestre R$', 'Situacao compra', $nm[46], $nm[48], $nm[50])) {
+        $rg = $lo.ListColumns.Item($n).DataBodyRange
+        $sem = $rg.Count - @($rg.SpecialCells(-4123)).Count      # xlCellTypeFormulas
+        if ($sem) { throw "coluna '$n' com $sem linhas sem formula" }
+    }
+    # devolve o filtro do usuario
+    foreach ($fl in $filtros) {
+        if ($fl[2] -eq 7) { $lo.Range.AutoFilter($fl[0], $fl[1], 7) | Out-Null } else { $lo.Range.AutoFilter($fl[0], $fl[1]) | Out-Null }
+    }
+    if ($filtros.Count) {
+        $agora = $lo.DataBodyRange.Columns.Item(1).SpecialCells(12).Count
+        if ($agora -ne $visiveis) { throw "filtro devolvido mostra $agora linhas (antes $visiveis)" }
+        "filtro devolvido: $agora linhas visiveis"
+    }
     $wb.Worksheets.Item('LEIA-ME COMPRAS').Activate()
     $wb.Save()
     'ok'

@@ -187,3 +187,54 @@ própria daquelas colunas: as dinâmicas das abas (vf) e do PLANO têm de 600 a 
 - Na planilha, o saldo confiável é E − F. Para a CH acusar só divergência de verdade, comparar com o Disponível
   verdadeiro ou com tolerância.
 - Conferir no cadastro por que caneta, lápis e envelope têm estoque fracionado (fator de conversão de unidade).
+
+---
+
+## 4ª parte (16h): revisão reaplicada no arquivo atual
+
+### Pedido
+"Reaplique a revisão (fórmulas do trimestre, tracking, abas LEIA-ME e PROGRAMACAO, nomes mês vigente/próximo/
+subsequente) neste arquivo, mantendo as minhas colunas PB e Coluna1."
+
+### Ponto de partida
+- O arquivo das 15h21 é **idêntico ao original da manhã**, fora as colunas do usuário CG "PB" e CH "Coluna1". Isso foi
+  conferido célula a célula em todas as abas.
+- A Table1 estava **filtrada em Coluna1 = VERDADEIRO**, com as 5 linhas FALSO ocultas.
+- Na linha 529 a PB tem uma fórmula diferente da coluna (com "+ Fisico"), um teste do usuário. Foi mantida.
+
+### O que deu errado na 1ª tentativa e foi corrigido
+Com o filtro ligado, gravar a fórmula de uma **coluna nova** pelo Excel (`DataBodyRange.Formula`) **pula as linhas
+ocultas**:
+- as 4 colunas novas ficaram sem fórmula nas 5 linhas;
+- a tabela deixou de tratá-las como coluna calculada;
+- as colunas que já existiam foram gravadas por inteiro.
+
+O `revisa_relatorio_revenda.ps1` agora:
+- guarda o filtro, mostra tudo, grava e devolve o mesmo filtro (4.218 linhas visíveis antes e depois);
+- confere que toda linha tem a fórmula nas colunas que grava;
+- aceita colunas do usuário depois da CF.
+
+### Passos
+1. `revisa_relatorio_revenda.ps1`. As colunas novas ficaram depois das do usuário: CI Saldo hoje, CJ Compra trimestre
+   QTD, CK Compra trimestre R$, CL Situacao compra.
+2. `renomeia_previsao.py` + `renomeia_previsao.ps1`: as mesmas contagens da 1ª vez (19 referências nas fórmulas da
+   tabela, 80.237 nas células, 12 dinâmicas).
+3. **`devolve_layout.py` (novo)**: copia do arquivo do usuário as larguras de coluna e as alturas de linha. A
+   atualização das dinâmicas tinha mexido em 4 larguras (Planilha2, dinamicas) e em 7 alturas automáticas (abas (vf)).
+
+### Conferência
+- Contra o arquivo do usuário:
+  - A–X, PB e Coluna1 iguais;
+  - a programação refeita em Python bate em todas as linhas;
+  - layout igual em todas as abas: estilo de cada célula, larguras, alturas e formatação das 65 dinâmicas. Só as
+    colunas novas da Geral têm formato novo.
+- Contra a entrega validada das 13h56: todas as abas iguais. Na Geral, só diferem:
+  - a letra dos totais da linha 1 das colunas de trimestre;
+  - 8 totais da linha 1, que usam SUBTOTAL e agora somam só as linhas visíveis do filtro.
+- O Excel abre sem reparo: 40 abas, 65 dinâmicas, Table1 com 90 colunas, filtro ligado.
+
+### Lições
+- **Antes de gravar coluna de tabela pelo Excel, ver se a tabela tem filtro**: no XML, `<filterColumn>` e linhas
+  `hidden="1"`. Com filtro, a coluna nova fica sem fórmula nas linhas ocultas e deixa de ser coluna calculada.
+- **Atualizar dinâmicas pelo Excel mexe em larguras e alturas automáticas**: no fim, devolver as do arquivo do usuário
+  pelo XML (`devolve_layout.py`). Copiar só os atributos, porque o `style` da coluna é índice e muda de número.

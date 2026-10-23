@@ -232,6 +232,15 @@ Armadilhas reais já vistas:
   - R$ por mês = `SOMASES` na Table1 (todos os SKUs);
   - Marcas e SKUs = dinâmicas filtradas em Comprar > 0;
   - os dias anteriores são digitados pelo usuário.
+- Colunas do usuário depois da CF (23/10): CG "PB" (refaz o Comprar) e CH "Coluna1" (PB = Comprar). As colunas da revisão
+  vêm depois: CI Saldo hoje, CJ/CK Compra trimestre QTD/R$, CL Situacao compra. A tabela costuma estar **filtrada**
+  (ex.: Coluna1 = VERDADEIRO).
+- Reaplicar a revisão num arquivo do TOTVS:
+  1. `revisa_relatorio_revenda.ps1` (tira e devolve o filtro);
+  2. `renomeia_previsao.py` + `.ps1`;
+  3. `devolve_layout.py` com o arquivo de partida como referência;
+  4. conferir com `confere_revenda.py` e `confere_renomeia.py`.
+- 5 SKUs com estoque fracionado vêm com o Disponível sem vírgula (`diagnostico_disponivel.py`).
 - Script: `avulsos/compras/revisa_relatorio_revenda.ps1` (+ `confere_revenda.py`). Sessão: `docs/sessoes/2026-10-23 -
   revisao do relatorio revenda (compras).md`.
 
@@ -262,7 +271,10 @@ Armadilhas reais já vistas:
     Montar com `$xl.International(4)` (milhar) e `International(3)` (decimal) e gravar em `NumberFormatLocal`.
   - Para ver como ficou (não há leitor de PDF aqui): `Range.CopyPicture` → colar num gráfico → `Chart.Export` PNG.
   - Atualizar dinâmica pelo COM reajusta as larguras: anotar antes e devolver só as **larguras**. Gravar `RowHeight`
-    fixa a altura de linhas automáticas.
+    fixa a altura de linhas automáticas. Para devolver larguras e alturas exatamente como estavam, usar o XML
+    (`avulsos/compras/devolve_layout.py REFERENCIA ENTRADA SAIDA`).
+  - **Tabela com filtro ligado:** gravar `DataBodyRange.Formula` numa coluna nova pula as linhas ocultas. Guardar o
+    filtro, `AutoFilter.ShowAllData()`, gravar e devolver o filtro no fim.
   - O Excel renumera estilos ao salvar: comparar formatação pelo conteúdo do estilo, não pelo índice
     (`compras/confere_renomeia.py`).
   - Refazer um resumo: `td_resumos.ps1 -Limpar` (apaga as tabelas e o conteúdo da aba antes).
