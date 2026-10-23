@@ -238,3 +238,21 @@ O `revisa_relatorio_revenda.ps1` agora:
   `hidden="1"`. Com filtro, a coluna nova fica sem fórmula nas linhas ocultas e deixa de ser coluna calculada.
 - **Atualizar dinâmicas pelo Excel mexe em larguras e alturas automáticas**: no fim, devolver as do arquivo do usuário
   pelo XML (`devolve_layout.py`). Copiar só os atributos, porque o `style` da coluna é índice e muda de número.
+
+---
+
+## 5ª parte: conferência depois do desligamento forçado do computador
+
+- O arquivo na pasta foi salvo pelo usuário às 17h17, depois da gravação das 16h01. O zip está íntegro e o Excel abre
+  sem reparo: 40 abas, 65 dinâmicas, Table1 com 90 colunas.
+- Comparado célula a célula com a versão conferida das 16h01:
+  - A–X iguais;
+  - fórmulas e valores iguais em todas as abas;
+  - a programação refeita em Python bate em todas as linhas;
+  - formatação e campos das dinâmicas iguais.
+- Diferenças, todas do usuário:
+  - o filtro Coluna1 = VERDADEIRO foi tirado e todas as linhas estão visíveis, então os 8 totais SUBTOTAL da linha 1
+    voltaram ao total cheio;
+  - as larguras das colunas T:CG da Geral foram reajustadas;
+  - uma altura automática de linha mudou na GERAL (vf).
+- Conclusão: tudo o que foi pedido está salvo no arquivo.
