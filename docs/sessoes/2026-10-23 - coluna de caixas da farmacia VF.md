@@ -116,10 +116,20 @@ trocado pelo nº de lojas sem duplicidade (`resumos/vf_excecoes.ps1`). O total v
 - `ajusta_reuniao.ps1`: vários cabeçalhos.
 
 ### Pendências
-- A coluna H "Dias sem comprar" da IRTT é valor fixo antigo. Não foi pedida e não foi recalculada; ela não acompanha a G
-  nova.
+- Nenhuma. A coluna H foi resolvida na 3ª parte, abaixo.
 
 ### Lições
 - O grupo do cadastro mistura empresas (central de compras, grupo antigo que ainda inclui empresa vendida, franqueados).
   Usar só com o cliente confirmado.
 - Quando o usuário reescreve uma fórmula, perguntar antes de reaplicar uma regra (aqui, as exceções da contagem dupla).
+
+## 3ª parte: coluna H "Dias sem comprar" da IRTT
+- **Pedido:** recalcular a H a partir da G nova.
+- **O que estava errado:** a H era um valor fixo calculado em 13/10. Nenhuma das bandeiras com compra estava certa para
+  hoje, e as bandeiras com data nova estavam com a H vazia.
+- **Entrega:** a H virou fórmula, `=SE(G5="";"";HOJE()-G5)`, nas linhas 5 a 574 (`irtt_bandeiras/irtt_dias.ps1`), no
+  mesmo padrão da F. Ela acompanha a data sozinha.
+- **Conferência:**
+  - 334 bandeiras com dias = hoje − G, e vazia onde a G é vazia;
+  - a H bate com o status da F em 334 de 334;
+  - nada mais mudou no arquivo.
