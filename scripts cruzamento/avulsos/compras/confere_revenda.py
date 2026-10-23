@@ -75,6 +75,14 @@ def main(orig, rev):
     # 2) programacao refeita em Python
     V = gn['v']
     cab = {str(c): j for j, c in enumerate(V[1]) if c is not None}
+    # colunas de previsao: nome novo (desde 23/10/2026) ou o antigo
+    antigos = {'Compra mês vigente QTD': 'GPT previsao OUTUBRO QNTDD', 'Compra próximo mês QTD': 'GPT previsao NOVEMBRO QNTDD',
+               'Compra mês subsequente QTD': 'GPT  previsao DEZEMVRO QNTDD', 'Compra mês vigente R$': 'GPT  previsao OUTUBRO R$',
+               'Compra próximo mês R$': 'GPT  previsao NOVEMBRO R$', 'Compra mês subsequente R$': 'GPT previsao DEZEMVRO R$'}
+    for novo, velho in antigos.items():
+        if novo not in cab and velho in cab:
+            cab[novo] = cab[velho]
+
     def c(i, nome):
         return V[i][cab[nome]]
     erros = collections.Counter()
@@ -88,8 +96,8 @@ def main(orig, rev):
         m2 = 0 if E == 0 else max(0, E - (s0 + m0 + m1 - 2 * I))
         esperado = {
             'Saldo hoje (Disp-VendProt+Comprado)': s0,
-            'GPT previsao OUTUBRO QNTDD': m0, 'GPT previsao NOVEMBRO QNTDD': m1, 'GPT  previsao DEZEMVRO QNTDD': m2,
-            'GPT  previsao OUTUBRO R$': m0 * G, 'GPT  previsao NOVEMBRO R$': m1 * G, 'GPT previsao DEZEMVRO R$': m2 * G,
+            'Compra mês vigente QTD': m0, 'Compra próximo mês QTD': m1, 'Compra mês subsequente QTD': m2,
+            'Compra mês vigente R$': m0 * G, 'Compra próximo mês R$': m1 * G, 'Compra mês subsequente R$': m2 * G,
             'Compra trimestre QTD': m0 + m1 + m2, 'Compra trimestre R$': (m0 + m1 + m2) * G,
         }
         for n, e in esperado.items():

@@ -97,3 +97,56 @@ Script: `scripts cruzamento/avulsos/compras/revisa_relatorio_revenda.ps1`.
 - openpyxl lê fórmula matricial como objeto `ArrayFormula`, sem `==`. Comparar `.text` para não acusar diferença falsa.
 - Somar uma tabela dinâmica filtrada para fazer total de outro critério esconde linhas: preferir `SOMASES` direto na
   tabela de origem.
+
+---
+
+## 2ª parte: cabeçalhos sem nome de mês
+
+### Pedido
+"Renomeie os cabeçalhos das colunas de previsão para mês vigente / próximo / subsequente e recoloque os campos em todas
+as dinâmicas, mantendo o layout das abas impressas."
+
+### Por que não pelo Excel
+Renomear a coluna da tabela e atualizar tira o campo das dinâmicas. Recolocar o campo pelo Excel apagaria a formatação
+própria daquelas colunas: as dinâmicas das abas (vf) e do PLANO têm de 600 a 42 mil formatações gravadas cada uma.
+
+### Como foi feito
+1. `compras/renomeia_previsao.py` edita o XML, tudo junto:
+   - nome das 18 colunas na Table1 e cabeçalho da linha 2 (texto em linha, para não mexer em texto compartilhado com
+     as tabelas antigas das abas ocultas "Ruptura … 14", que têm colunas de mesmo nome);
+   - **nome do campo na cache da dinâmica da Table1**. As dinâmicas guardam o campo pela posição na cache, então
+     continuam com ele no mesmo lugar e com a mesma formatação;
+   - referências `Table1[...]` nas fórmulas: 19 por linha da tabela, mais dinamicas, LEIA-ME e PROGRAMACAO. Só as
+     referências à Table1; as outras tabelas ficaram como estavam;
+   - títulos dos campos de valor nas 11 dinâmicas do usuário.
+2. `compras/renomeia_previsao.ps1` (Excel):
+   - confere que as 12 dinâmicas (11 + a da PROGRAMACAO) reconhecem os campos, na mesma posição;
+   - atualiza a cache e devolve as larguras de coluna que a atualização ajusta (70);
+   - troca os textos da LEIA-ME e põe o nome do mês por `HOJE()` nos cabeçalhos do tracking (AF4:AH4 e AG21:AI21).
+
+### Nomes novos
+| Antes | Agora |
+|---|---|
+| GPT previsao OUTUBRO / NOVEMBRO / DEZEMVRO QNTDD | Compra mês vigente / próximo mês / mês subsequente QTD |
+| GPT previsao … R$ | Compra mês vigente / próximo mês / mês subsequente R$ |
+| GROK / deepSEAK previsao … | GROK / deepSEAK mês vigente / próximo mês / mês subsequente QTD ou R$ |
+| Títulos nas dinâmicas: "Soma de GPT previsao …" e ".previsao …" | .Mês vigente QTD, .Mês vigente R$, .Próximo mês QTD, .Próximo mês R$, .Mês subsequente QTD, .Mês subsequente R$ |
+
+### Conferência (`compras/confere_renomeia.py`)
+- Valores: só mudaram os 18 cabeçalhos, os 6 títulos de cada dinâmica e 4 textos da LEIA-ME. Todos os números ficaram
+  iguais.
+- Abas do usuário:
+  - estilo de cada célula igual, comparado pelo conteúdo do estilo, porque o Excel renumera os estilos ao salvar e só
+    juntou fontes que diferiam na dica `<family>`;
+  - larguras de coluna e alturas de linha iguais;
+  - formatação e campos das 65 dinâmicas iguais.
+- Nenhuma fórmula ficou com o nome antigo. Imagens antes × depois da (vf), do PLANO e do tracking conferidas.
+
+### Lições
+- **Trocar o nome de uma coluna que alimenta dinâmicas sem perder campo nem formatação:** renomear junto, no XML, a
+  coluna da tabela e o `cacheField` da cache. As dinâmicas apontam para o índice do campo.
+- **No PowerShell, `$pt.DataFields` não enumera:** usar `$pt.DataFields()` e `.Item(i)`.
+- **Não gravar `RowHeight` para "devolver" altura:** isso fixa a altura (`customHeight`) de linhas que eram
+  automáticas. Devolver só as larguras.
+- **`Select-Object -First` num comando que chama o script do Excel interrompe o script antes de salvar** e deixa um
+  Excel invisível aberto. Conferir `Get-Process EXCEL` e fechar só o processo sem janela que o script abriu.

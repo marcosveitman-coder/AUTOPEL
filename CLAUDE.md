@@ -220,12 +220,14 @@ Armadilhas reais já vistas:
   - positivo = falta, negativo = sobra;
   - PontoPedido = 2 meses de MedContr (I); PontoPedido 0 = não ter estoque;
   - a coluna O pode vir com a vírgula perdida (quantidade fracionada): o saldo confiável é E − F.
-- Programação do trimestre nas colunas **GPT** (AT/AV/AX qtd, AU/AW/AY R$):
+- Programação do trimestre nas colunas **"Compra mês vigente / próximo mês / mês subsequente"** (AT/AV/AX qtd,
+  AU/AW/AY R$; até 23/10 se chamavam "GPT previsao OUTUBRO/NOVEMBRO/DEZEMVRO"):
   - cada mês volta o saldo ao PontoPedido e desconta 1 MedContr entre um mês e o seguinte;
   - com PontoPedido 0 só compra no mês vigente, e só o que já foi vendido sem estoque;
   - GROK e deepSEAK são cópias antigas;
-  - os cabeçalhos dizem OUTUBRO/NOVEMBRO/DEZEMBRO, mas a conta é mês vigente/próximo/subsequente. **Renomear o
-    cabeçalho tira o campo das dinâmicas.**
+  - **renomear coluna da Table1 tira o campo das dinâmicas.** Para trocar nome sem perder campo nem formatação:
+    `avulsos/compras/renomeia_previsao.py` (coluna da tabela + `cacheField` da cache, juntos, no XML) e depois
+    `renomeia_previsao.ps1` (atualiza e devolve as larguras); conferir com `confere_renomeia.py`.
 - Tracking da aba dinamicas (AC:AJ):
   - R$ por mês = `SOMASES` na Table1 (todos os SKUs);
   - Marcas e SKUs = dinâmicas filtradas em Comprar > 0;
@@ -259,6 +261,10 @@ Armadilhas reais já vistas:
   - **Formato de número pelo COM:** o Excel daqui lê `NumberFormat` em português, e `'#,##0'` aparece como `1416,0`.
     Montar com `$xl.International(4)` (milhar) e `International(3)` (decimal) e gravar em `NumberFormatLocal`.
   - Para ver como ficou (não há leitor de PDF aqui): `Range.CopyPicture` → colar num gráfico → `Chart.Export` PNG.
+  - Atualizar dinâmica pelo COM reajusta as larguras: anotar antes e devolver só as **larguras**. Gravar `RowHeight`
+    fixa a altura de linhas automáticas.
+  - O Excel renumera estilos ao salvar: comparar formatação pelo conteúdo do estilo, não pelo índice
+    (`compras/confere_renomeia.py`).
   - Refazer um resumo: `td_resumos.ps1 -Limpar` (apaga as tabelas e o conteúdo da aba antes).
 - **Excluir linhas** de aba usada por tabela dinâmica: pelo Excel (`avulsos/resumos/ajusta_reuniao.ps1`), de baixo para
   cima. Depois conferir linha velha → linha nova (`confere_reuniao.py`). Para copiar formato, usar `Range.Copy(destino)`:
