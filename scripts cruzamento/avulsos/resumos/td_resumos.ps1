@@ -53,15 +53,26 @@ try {
             $pt.RowAxisLayout(1)                        # tabular: o cabecalho mostra o nome do campo
             $pt.TableStyle2 = 'PivotStyleMedium2'
             $rf = $pt.PivotFields($t.campo); $rf.Orientation = 1
-            $sf = $pt.PivotFields($a.campo_status); $sf.Orientation = 2
-            $d1 = $pt.AddDataField($pt.PivotFields($a.campo_conta), 'Clientes', -4112)   # campo sempre preenchido, fora da tabela; $d1.NumberFormat = '#,##0'
-            $d2 = $pt.AddDataField($pt.PivotFields($a.campo_caixas), ([string][char]0x43 + 'aixas/m' + [char]0xEA + 's'), -4157); $d2.NumberFormat = '#,##0'
+            $sf = $pt.PivotFields($a.campo_status)
+            if ($t.campo -ne $a.campo_status) { $sf.Orientation = 2 }   # tabela so de status: o status fica nas linhas
+            # contagem por um campo sempre preenchido, fora da tabela
+            $d1 = $pt.AddDataField($pt.PivotFields($a.campo_conta), 'Clientes', -4112); $d1.NumberFormat = '#,##0'
+            $ord = $d1.Name
+            if ($a.campo_caixas) {
+                $d2 = $pt.AddDataField($pt.PivotFields($a.campo_caixas), ([string][char]0x43 + 'aixas/m' + [char]0xEA + 's'), -4157); $d2.NumberFormat = '#,##0'
+                $ord = $d2.Name
+            }
             foreach ($it in $sf.PivotItems()) {
                 foreach ($p in $a.renomeia.PSObject.Properties) { if ($it.Name -eq $p.Name) { $it.Caption = $p.Value } }
             }
             $sf.AutoSort(2, $sf.Name)                   # decrescente: "ativo" antes de "a trabalhar"
             foreach ($it in $rf.PivotItems()) { if ($it.Name -eq '(blank)' -or $it.Name -eq '(vazio)') { $it.Caption = $a.vazio } }
-            if ($t.ordena) { $rf.AutoSort(2, $d2.Name) }
+            if ($a.filtro) {                            # so alguns itens de um campo (ex.: porte A e B)
+                $ff = $pt.PivotFields($a.filtro.campo)
+                if ($a.filtro.campo -ne $t.campo) { $ff.Orientation = 3; $ff.EnableMultiplePageItems = $true }
+                foreach ($it in $ff.PivotItems()) { $it.Visible = ($a.filtro.manter -contains $it.Name) }
+            }
+            if ($t.ordena) { $rf.AutoSort(2, $ord) }
             $ws.Columns.Item($t.col).ColumnWidth = $t.larg
             Write-Output ("{0} {1}: {2} linhas" -f $a.aba, $t.nome, $pt.TableRange1.Rows.Count)
         }

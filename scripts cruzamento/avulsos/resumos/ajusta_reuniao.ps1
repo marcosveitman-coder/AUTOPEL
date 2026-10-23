@@ -20,11 +20,12 @@ try {
             'vazio' { $r.ClearContents() | Out-Null }
         }
     }
-    if ($S.cabecalho) {
-        $h = $ws.Range($S.cabecalho.cel)
-        $ws.Range($S.cabecalho.modelo).Copy($h) | Out-Null     # traz o formato do cabecalho vizinho (sem area de transferencia)
-        $h.Value2 = [string]$S.cabecalho.valor
-        $ws.Columns.Item($S.cabecalho.col).ColumnWidth = 60
+    $cabs = @(); if ($S.cabecalho) { $cabs += $S.cabecalho }; if ($S.cabecalhos) { $cabs += $S.cabecalhos }
+    foreach ($cb in $cabs) {
+        $h = $ws.Range($cb.cel)
+        $ws.Range($cb.modelo).Copy($h) | Out-Null     # traz o formato do cabecalho vizinho (sem area de transferencia)
+        $h.Value2 = [string]$cb.valor
+        $ws.Columns.Item($cb.col).ColumnWidth = $(if ($cb.larg) { [double]$cb.larg } else { 60 })
     }
     $linhas = @($S.excluir | ForEach-Object { [int]$_ } | Sort-Object -Descending)
     foreach ($n in $linhas) { $ws.Rows.Item($n).Delete() | Out-Null }

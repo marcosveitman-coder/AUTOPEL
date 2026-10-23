@@ -157,6 +157,15 @@ personalizado e domínio de e-mail**.
      **mapa curado**: os CNPJs dos clientes do grupo caem nas linhas da rede **e** o nome bate; na dúvida, a cidade/UF
      decide. Grupos têm sufixo de vendedor/região ("GRUPO X - FULANO"). Mapa de farmácias:
      `avulsos/farmacias/final/grupos_redes.json`, local e fora do git.
+9. **Cliente achado por código ou por grupo do cadastro** (IRTT, 23/10/2026):
+   - **código**: cai se não tem relação de nome (bandeira, grupo, razão indicada) **e** é de outro segmento. Sem relação de
+     nome, só vale comprador do **segmento principal** da bandeira (supermercado → SUPERMERCADISTA). REDE DE LOJAS sozinho
+     deixava passar loja de roupas para supermercado;
+   - **grupo do cadastro**: vale só com o CNPJ da bandeira, o nome da bandeira no cliente, ou um grupo com o nome da
+     bandeira + segmento compatível + cliente que não seja distribuidor (franqueado). O grupo pode ser uma central de
+     compras ("REDE BRASIL") ou incluir uma empresa vendida (Sendas em "PAO DE ACUCAR");
+   - CNPJ validado de **outro** grupo nunca vale;
+   - **marca colada** só com nome de mais de uma palavra: "DROGAL" colado batia em "DROGA LIDER".
 
 Armadilhas reais já vistas:
 - drogaria e supermercado com o mesmo nome;
@@ -189,6 +198,14 @@ Armadilhas reais já vistas:
 - empresa do ranking sem CNPJ localizado: mínimo de 1 loja, com a nota. Associação (ex.: rede de associados) e
   minimercado autônomo ficam com 0, com a nota;
 - a aba "TAB DIN. SUPERMERCADOS final" (do usuário) usa esta aba: atualizar as tabelas dela depois de mexer.
+
+**Aba "FARMACIA VF"** (23/10/2026):
+- o cabeçalho está na linha 6, e as linhas 1–4 têm os parâmetros de caixas por porte (W1:X4 = a 17, b 12, c 7, d 4);
+- a X é `=SE(W="A";$X$1;…)*H`, mas nas 112 linhas de rede/associação o `*H` é trocado pelo nº de lojas sem contagem
+  dupla (decisão do usuário; `resumos/vf_excecoes.ps1`). Total 667.594. Se o usuário arrastar a fórmula de novo, as
+  exceções somem e o total vai para 1.092.584: perguntar antes de reaplicar;
+- a aba "I.R.T.T.__Por bandeira (FINAL)" tem a F como fórmula de status, a AG com o vendedor do CLIENTES e a AH com a
+  UF sede; os resumos dela estão em "I.R.T. T. resumo".
 
 ---
 
