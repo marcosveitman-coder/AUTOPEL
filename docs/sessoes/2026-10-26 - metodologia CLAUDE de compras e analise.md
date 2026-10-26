@@ -315,13 +315,17 @@ foto de 26/10/2026.
   - 65 dinâmicas, 12 tabelas e 1 gráfico mantidos;
   - layout das outras abas devolvido com `devolve_layout.py --exceto` (só 1 altura de linha voltou).
 
-### Pendente
-- **Gravar no arquivo original:** o usuário estava com o arquivo aberto no Excel. Antes de gravar, conferir que o
-  arquivo ainda é o das 14h55. Se mudou, refazer a partir do atual:
-  1. `saude_ecommerce.py`;
+### Gravação no arquivo original (17h54)
+- O usuário fechou o Excel, mas o arquivo tinha sido salvo de novo às 17h51. Os valores eram iguais aos das 14h55
+  (a mudança devia ser de filtro ou visualização).
+- Mesmo assim, tudo foi refeito a partir do arquivo das 17h51:
+  1. `saude_ecommerce.py` (json idêntico);
   2. `grava_saude.ps1`;
   3. `devolve_layout.py --exceto "analise compras CLAUDE" "param CLAUDE"`;
-  4. `confere_saude.py`.
+  4. `confere_saude.py` (nenhum erro).
+- Antes de copiar: o arquivo não tinha mudado desde a cópia. Depois: idêntico byte a byte à versão conferida.
+- Abre no Excel com 42 abas, 65 dinâmicas e a ParamClaude com 36 colunas × 4.224 linhas.
+- Backup do arquivo das 17h51 no scratchpad (`saida4/backup_original_1751.xlsx`).
 
 ### Lições
 - **.ps1 com acento** precisa ser salvo com BOM (UTF-8): sem ele o PowerShell 5.1 lê "SUGESTÕES" errado e a busca
