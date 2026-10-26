@@ -80,6 +80,9 @@ Fontes de dados fora desta pasta (só leitura):
 - Quando o pedido for "2019 até 2026", pular o pkl de 2018.
 - **IRTT (Ranking-Top300-IRTT.xlsx):** venda e lojas vêm com o ponto de milhar lido como decimal (120,6 = R$ 120.600 mi;
   1,007 = 1.007 lojas). Valores abaixo de R$ 50 mi são dado não divulgado. Os números são de 2024 por grupo, não por bandeira.
+- **`fat 2025.2.xlsx`: a aba Planilha1 é cópia exata de dezembro/2025 da Listagem.** Somar as duas dobra dezembro.
+- **As bases de faturamento não têm toda a venda do TOTVS** (faltam canais; informática quase some): 565 SKUs batem
+  com a MedContr e 919 quase não aparecem. Para demanda por SKU, usar MES_01..03 do relatório do Protheus.
 - O `SEGMENTO` do faturamento é pouco confiável: há rede de lojas classificada como DROGARIAS e distribuidor como
   REVENDA. Não usar como única trava.
 
@@ -241,6 +244,26 @@ Armadilhas reais já vistas:
   3. `devolve_layout.py` com o arquivo de partida como referência;
   4. conferir com `confere_revenda.py` e `confere_renomeia.py`.
 - 5 SKUs com estoque fracionado vêm com o Disponível sem vírgula (`diagnostico_disponivel.py`).
+- **Metodologia CLAUDE (26/10):**
+  - colunas CM–CR (6 pedidas) e CS–DE (13 auxiliares) da Table1;
+  - parâmetros na aba "param CLAUDE" (tabela `ParamClaude` e nomes `CLAUDE_*`);
+  - análise na aba "analise compras CLAUDE".
+  - Refazer 1 vez por mês com `avulsos/compras/claude/` (README no topo de cada script):
+    1. `carrega_fotos`, `analisa_fotos`, `carrega_protheus`, `analisa_compras`, `extrai_demanda`;
+    2. `gera_parametros`;
+    3. `exporta_claude`;
+    4. `grava_claude.ps1`;
+    5. `devolve_layout`.
+  - Conferir as colunas com `calcula_claude.py`.
+- Fontes de compras em `COMPRAS\IA (compras)`:
+  - subpastas de `eu\`, uma por pessoa da equipe:
+    - fotos diárias do Relatório de Revenda;
+    - relatório do Protheus com MES_01..03, fornecedor e PEDIDO;
+    - boletins de ruptura;
+  - `TOTvS`: HistoricodeCompras (entradas desde 2018, sem número do PC) e OrdemCompra (PCs em aberto);
+  - `PowerBI`: exportações e telas.
+- MES_01 = mês anterior. O prazo real se mede pelas fotos: 1º dia em que o PEDIDO aparece → ULT_COMPRA quando ele
+  some.
 - Script: `avulsos/compras/revisa_relatorio_revenda.ps1` (+ `confere_revenda.py`). Sessão: `docs/sessoes/2026-10-23 -
   revisao do relatorio revenda (compras).md`.
 
@@ -273,6 +296,10 @@ Armadilhas reais já vistas:
   - Atualizar dinâmica pelo COM reajusta as larguras: anotar antes e devolver só as **larguras**. Gravar `RowHeight`
     fixa a altura de linhas automáticas. Para devolver larguras e alturas exatamente como estavam, usar o XML
     (`avulsos/compras/devolve_layout.py REFERENCIA ENTRADA SAIDA`).
+  - **Coluna nova em tabela com formatação até o fim da planilha:** `ListColumns.Add` falha. Escrever os cabeçalhos
+    ao lado e usar `ListObject.Resize`.
+  - **Matriz grande:** se `Range.Value2 = object[,]` der erro de conversão, usar `Range.Value`.
+  - **PowerShell não diferencia maiúsculas:** `$J`/`$j`, `$V`/`$v`, `$T`/`$t` colidem. Usar nomes longos.
   - **Tabela com filtro ligado:** gravar `DataBodyRange.Formula` numa coluna nova pula as linhas ocultas. Guardar o
     filtro, `AutoFilter.ShowAllData()`, gravar e devolver o filtro no fim.
   - O Excel renumera estilos ao salvar: comparar formatação pelo conteúdo do estilo, não pelo índice
