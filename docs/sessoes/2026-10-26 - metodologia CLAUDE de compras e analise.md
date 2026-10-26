@@ -147,3 +147,105 @@ foto de 26/10/2026.
   - colunas CLAUDE × Python: 0 diferença;
   - só mudaram 3 células da param e 63 da análise;
   - layout devolvido; gravado às 12h05, idêntico à cópia conferida.
+
+---
+
+## 3ª parte: exploração completa do MRP em HTML
+
+- **Pedido:** abrir `Downloads\Autopel_MRP_23102026_atualizado (1).html` no navegador, clicar em todos os botões e
+  analisar 100% do conteúdo. O arquivo é idêntico ao `..._atualizado.html` (mesmo MD5).
+- **Como foi aberto:** o navegador embutido não abre `file://`. Uma cópia foi servida em `http://localhost:8765` com
+  `python -m http.server` (configuração `mrp-html` em `.claude/launch.json`, fora do git).
+- **O que foi testado:**
+  - os 2 modos (Política/MRP e Saúde/IQR), as 32 abas e os 7 atalhos da "Rotina do comprador" (que só levam a abas
+    que já existem);
+  - os 6 cartões do painel e os 14 focos do diagnóstico;
+  - os 5 recortes de saúde, a busca, a paginação (84 páginas de 50) e as 8 ordenações;
+  - o detalhe do SKU (janela com memória de cálculo, ordens de compra e campos editáveis por SKU);
+  - o simulador e o desconto de ordens de compra;
+  - as 30 exportações, salvar, carregar e restaurar cenário, e imprimir.
+  - Os downloads foram interceptados na página (nome, tamanho e cabeçalho), sem gravar arquivos.
+
+### Números do MRP (posição de 23/10; faturamento até 14/10)
+- **Recorte e estoque:** 4.174 SKUs RV ativos, filial 05 / armazém 40; estoque de R$ 25,6 mi.
+- **Política:** calculável em 1.750 SKUs (R$ 21,3 mi de estoque); 2.424 ficam sem política (R$ 4,4 mi):
+  - 1.392 sem vínculo no faturamento;
+  - 1.027 sem saída recente;
+  - 5 sem custo.
+- **Compras:**
+  - compra técnica R$ 7,6 mi; compra proposta (após o filtro de concentração de clientes) R$ 1,8 mi, em 239 SKUs;
+  - estoque-alvo dos calculáveis R$ 20,5 mi;
+  - excesso físico R$ 8,4 mi; 231 SKUs abaixo do ponto.
+- **Saúde do inventário:**
+  - IQR estrito 48,9%, ampliado (+2 meses) 59,2%;
+  - excesso R$ 4,7 mi; slow (6 meses sem venda) R$ 1,4 mi; phase out (12 meses) R$ 1,2 mi; não classificado R$ 3,2 mi.
+- **Outras visões:**
+  - excedente livre R$ 8,4 mi, dos quais R$ 1,9 mi são genéricos candidatos a e-commerce (359 SKUs);
+  - ordens de compra: 1.306 linhas, 520 PCs, R$ 27,9 mi a receber, 68 SKUs com PC vencido;
+  - carteira de vendas: R$ 6,4 mi, dos quais R$ 6,2 mi com data prevista vencida (base antiga).
+
+### Como o MRP calcula
+- **Demanda:** saída positiva diária das bases de faturamento nos últimos 3 meses completos (jul–set). Sem vínculo,
+  usa a MédiaVenda ou a QTD Fat do relatório de estoque (570 SKUs).
+- **Segurança e ponto de pedido:**
+  - segurança = z × desvio × √(LT/30), com serviço A 99%, B 97,5% e C 95%;
+  - ROP = demanda diária × LT + segurança.
+- **Alvo:** máximo(ROP + segurança; demanda do horizonte de 22 dias + segurança).
+- **Compra:** alvo − disponível protegido (descontada a carteira), elevada a um MOQ de 10% da compra média mensal.
+- **Prazo:** LT único de 15 dias para todos os SKUs. O simulador aceita no máximo 30.
+- **Classes:** ABC × XYZ × PQR × concentração de clientes (1–4). A classe 4 vira MTO/contrato.
+
+### Problemas achados (testados no simulador e no código da página)
+1. **O campo "Revisão • dias" não faz nada.** Com 7, 15 ou 30 o resultado é idêntico. No código, `review` só aparece
+   nos padrões e na validação; a função da política não o usa.
+2. **A segurança entra duas vezes no alvo.** O ROP já contém a segurança, e o alvo soma de novo. A própria página
+   chama isso de "simulação conservadora solicitada".
+3. **As ordens de compra não são descontadas por padrão.**
+   - O CSV vem sem filial. Atribuindo à 05, a compra técnica cai de R$ 7,6 mi para R$ 3,2 mi; usando o PED_EMITID do
+     estoque, para R$ 2,1 mi.
+   - Exemplo: um SKU com 5.425 un já pedidas recebe sugestão de mais 3.790.
+4. **O prazo de 15 dias é o dobro do real** (mediana de 7 dias nas fotos diárias).
+   - LT 8 → compra técnica R$ 4,5 mi, alvo R$ 15,7 mi.
+   - LT 8 com serviço 95/90/80 → R$ 3,4 mi e R$ 13,8 mi.
+   - LT 30 → R$ 16,4 mi e R$ 31,9 mi.
+5. **A demanda vem das bases de faturamento.** Elas não cobrem toda a venda: 1.392 SKUs ficam sem política. O piso
+   pela MedContr (opção do simulador, desligada) leva os calculáveis a 1.924 e a compra técnica a R$ 8,2 mi.
+6. **Datas misturadas:**
+   - estoque de 23/10; faturamento até 14/10; pedidos em aberto de 19/10;
+   - boletim de 21/10; carteira SQL antiga, com 98% do valor vencido.
+7. **Curva ABC definida de dois jeitos:**
+   - a nota da classificação fala em valor de estoque;
+   - a aba Grupos MRP fala em consumo × custo;
+   - 2.888 SKUs receberam classificação "conservadora".
+8. A comparação anual mostra +56% (2026 × 2025, jan–set), mas as linhas por mês dobraram. Pode ser mudança de
+   cobertura das bases, não crescimento. A aba Planilha1 de `fat 2025.2` não foi duplicada (repetições exatas: 0).
+
+### O que o MRP tem de bom
+- Saúde do inventário com IQR e cortes de slow e phase out;
+- triagem de excedente para e-commerce;
+- concentração de clientes por raiz de CNPJ;
+- detalhe por SKU com memória de cálculo;
+- exportações completas e documentação de cada coluna (dicionário com 126 campos).
+- Vale aproveitar essas visões ao lado da metodologia CLAUDE.
+
+### Comparação com a metodologia CLAUDE
+
+| Ponto | MRP HTML | CLAUDE (planilha) |
+|---|---|---|
+| Demanda | faturamento diário jul–set (bases parciais) | MedContr do TOTVS × sazonalidade |
+| SKUs com política | 1.750 de 4.174 | 4.224 |
+| Prazo | 15 dias para todos | mediana do fornecedor (padrão 8, teto 45) |
+| Revisão | campo existe, sem efeito | A 7, B 15, C 30 |
+| Serviço | 99 / 97,5 / 95 | 95 / 90 / 80 |
+| Segurança | conta duas vezes | uma vez, com desvio do prazo |
+| Compras abertas | não descontadas por padrão | descontadas (saldo E − F inclui o Comprado) |
+
+### Lições
+- **Navegador embutido e `file://`:** ele não abre arquivo local. Copiar o HTML para o scratchpad e servir com
+  `python -m http.server` (configuração em `.claude/launch.json` + `preview_start`).
+- **Página que redesenha a cada mudança:**
+  - buscar o elemento de novo depois de cada render; o `select` antigo fica solto e a troca não tem efeito;
+  - quebrar os testes em chamadas curtas, porque o script morre em 45 s;
+  - guardar os resultados em `window` para ler depois.
+- **Botões de download:** substituir `URL.createObjectURL` e `HTMLAnchorElement.prototype.click` dá nome, tamanho e
+  conteúdo do arquivo sem baixar nada.

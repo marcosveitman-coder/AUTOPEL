@@ -265,6 +265,11 @@ Armadilhas reais já vistas:
   - `PowerBI`: exportações e telas.
 - MES_01 = mês anterior. O prazo real se mede pelas fotos: 1º dia em que o PEDIDO aparece → ULT_COMPRA quando ele
   some.
+- **MRP em HTML** (`Downloads\Autopel_MRP_*.html`, feito fora daqui), explorado em 26/10:
+  - o campo "Revisão" não muda a conta, a segurança entra duas vezes no alvo e as OCs não são descontadas por padrão;
+  - o prazo é de 15 dias para todos, e a demanda vem das bases de faturamento parciais;
+  - para abrir no navegador embutido, servir por `http.server` (`.claude/launch.json`, `mrp-html`);
+  - detalhes na sessão `2026-10-26 - metodologia CLAUDE…`, 3ª parte.
 - Script: `avulsos/compras/revisa_relatorio_revenda.ps1` (+ `confere_revenda.py`). Sessão: `docs/sessoes/2026-10-23 -
   revisao do relatorio revenda (compras).md`.
 
