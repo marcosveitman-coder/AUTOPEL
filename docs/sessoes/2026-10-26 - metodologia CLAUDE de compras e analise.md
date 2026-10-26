@@ -80,7 +80,7 @@ foto de 26/10/2026.
 
   A compra de outubro mais alta é a recomposição da curva A.
 
-## Entregas (cópia conferida; a gravação no arquivo ficou pendente)
+## Entregas (gravadas no arquivo às 11h47)
 - **Aba "param CLAUDE":**
   - parâmetros editáveis (revisão, nível de serviço → z, cobertura máxima, LT/desvio/CV padrão), com nomes
     `CLAUDE_R_A`… `CLAUDE_CV_PADRAO`;
@@ -108,9 +108,11 @@ foto de 26/10/2026.
 - Imagens da análise, da param e das colunas novas conferidas.
 
 ## Pendente
-- **Gravar no arquivo:** às ~11h45 ele estava em uso por outro processo (o Excel tinha aberto "Relatorio Revenda
-  atualizadoXXX.xlsx"). A versão conferida está no scratchpad desta sessão (`saida\final.xlsx`). Gravar só depois de
-  confirmar que o arquivo não mudou; se mudou, rodar de novo os passos sobre o arquivo atual.
+- ~~Gravar no arquivo~~: feito às 11h47, depois que o usuário fechou o Excel.
+  - O arquivo ainda ficou travado alguns segundos pelo antivírus (Kaspersky, achado com o Restart Manager do
+    Windows).
+  - Antes de gravar: o arquivo estava inalterado desde as 10h05.
+  - Depois: idêntico à cópia conferida; abre sem reparo (42 abas, 65 dinâmicas, Table1 com 109 colunas).
 - O usuário decide o cenário (padrão × revisão semanal da A) e se o PLANO de AÇAO passa a mostrar a coluna CLAUDE.
 - Pedir ao TI a venda mensal por SKU de 24 a 36 meses em todos os canais. Hoje a sazonalidade é estimada pelos SKUs
   que o faturamento cobre.
@@ -125,3 +127,5 @@ foto de 26/10/2026.
 - **Nomes no LET:** não podem parecer célula (`s1`, `r`, `c`). Usar `saldo1`, `revis` etc.
 - **O fator z arredondado (1,645)** muda o arredondamento no lote em alguns SKUs. A referência em Python usa o mesmo
   NORM.S.INV da planilha.
+- **Arquivo travado sem Excel aberto:** listar quem segura o arquivo com o Restart Manager (`rstrtmgr.dll`,
+  RmGetList). Aqui era o antivírus examinando o arquivo; bastou tentar de novo em alguns segundos.
