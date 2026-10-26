@@ -249,3 +249,82 @@ foto de 26/10/2026.
   - guardar os resultados em `window` para ler depois.
 - **Botões de download:** substituir `URL.createObjectURL` e `HTMLAnchorElement.prototype.click` dá nome, tamanho e
   conteúdo do arquivo sem baixar nada.
+
+---
+
+## 4ª parte: saúde do estoque, e-commerce e concentração de clientes na aba de análise
+
+- **Pedido:** levar para a aba "analise compras CLAUDE" a saúde do inventário (IQR, slow, phase out), a triagem de
+  excedente para e-commerce e a concentração de clientes, calculadas com os dados da planilha.
+- **Partida:** o arquivo salvo pelo usuário às 14h55 (diferente do das 12h05: o usuário mexeu depois).
+- **Scripts novos em `avulsos/compras/claude/`:**
+  - `saude_ecommerce.py`: calcula por SKU e gera `saude.json` e `param_saude.csv`;
+  - `grava_saude.ps1`: grava pelo Excel; recusa se a seção 7 ou as colunas já existirem;
+  - `confere_saude.py`: confere partida × gravado.
+
+### Regras
+- **Venda recente:** venda no TOTVS (todos os canais, abril a setembro, das fotos diárias) ou nas bases de faturamento
+  nos últimos 6 meses.
+- **Saúde do estoque:**
+  - o comprometido (Reserva + VendProt, até o físico) conta como saudável;
+  - saudável estrito = comprometido + alvo CLAUDE do mês vigente; ampliado = + 2 meses da previsão CLAUDE;
+  - acima disso é excesso;
+  - sem venda em 6 meses: slow moving se as bases mostram venda nos 12 meses, senão phase out potencial;
+  - sem físico ou sem valor: não classificado.
+- **Excedente livre** = excesso + slow + phase out. Triagem:
+  - personalizado: nome de cliente da venda na descrição, PERSONALIZ/LOGO ou grupo 0015;
+  - concentrado: 1 cliente com 80% ou mais em 12 meses;
+  - revisar requisitos: alimento, EPI/saúde, elétrico ou volumoso;
+  - genérico: o resto.
+- **Preço de mercado:** colunas Oceano/Kalunga/Mercado Livre da Geral, só entre 0,3 e 5 vezes o custo (fora disso a
+  pesquisa achou outro produto).
+- **Concentração de clientes:**
+  - quantidade por raiz de CNPJ, de outubro/2025 a setembro/2026, nas bases de faturamento, sem a cópia de dezembro
+    da Planilha1;
+  - coluna de cobertura = venda nas bases ÷ venda do TOTVS (abril a setembro).
+- **Nomes dos grupos** (dados por esta análise, olhando as descrições):
+  - 0001 informática; 0002 papelaria; 0003 bobinas; 0004 limpeza; 0005 papéis; 0006 etiquetas e ribbons;
+  - 0013 mobiliário e eletro; 0015 personalizados; 0016 EPI; 0017 copa e cozinha.
+
+### Números (26/10)
+- **Saúde do estoque** (R$ 30,0 mi): IQR estrito 65,8% e ampliado 78,8%.
+  - Fora da política: R$ 6,3 mi = excesso R$ 3,9 mi + slow R$ 0,5 mi + phase out R$ 1,9 mi.
+  - Curva C: R$ 5,4 mi do que está fora (IQR ampliado 35%); A 98% e B 91%.
+  - O MRP em HTML dá 49% / 59% porque só calcula 1.750 SKUs.
+- **E-commerce:**
+  - genérico R$ 2,6 mi (1.447 SKUs; os 40 maiores somam R$ 1,3 mi);
+  - revisar requisitos R$ 0,8 mi; concentrado R$ 1,7 mi; personalizado R$ 1,3 mi.
+- **Concentração de clientes:**
+  - 1.638 SKUs têm cliente nas bases;
+  - 661 vendem para 1 cliente só (R$ 5,4 mi de estoque, R$ 3,4 mi da compra CLAUDE de outubro a dezembro);
+  - 1.143 SKUs têm 1 cliente com 80% ou mais (R$ 17,8 mi de estoque);
+  - uma única rede de varejo concentra 426 SKUs, R$ 11,8 mi de estoque (39%) e R$ 7,5 mi da compra CLAUDE.
+
+### Entregas (no arquivo `final.xlsx` do scratchpad, conferido)
+- **Aba de análise:** seções 7, 8 e 9 nas linhas 234 a 445, depois da seção 6.
+  - 7: resumo, 7.1 curva, 7.2 comprador, 7.3 grupo, 7.4 30 SKUs fora da política;
+  - 8: triagem, 8.1 40 genéricos;
+  - 9: classes de clientes, 9.1 clientes que concentram, 9.2 30 SKUs concentrados.
+- **ParamClaude:** 9 colunas novas no fim:
+  - Última venda (mês), Saúde do estoque, Fora da política QTD/R$, Triagem e-commerce;
+  - Clientes 12m, % maior cliente, Maior cliente, Classe clientes.
+- **Conferência:**
+  - todas as outras abas iguais, em valores e fórmulas;
+  - linhas antigas da análise e colunas antigas da param iguais;
+  - 10 tabelas e 4.224 SKUs conferidos;
+  - 65 dinâmicas, 12 tabelas e 1 gráfico mantidos;
+  - layout das outras abas devolvido com `devolve_layout.py --exceto` (só 1 altura de linha voltou).
+
+### Pendente
+- **Gravar no arquivo original:** o usuário estava com o arquivo aberto no Excel. Antes de gravar, conferir que o
+  arquivo ainda é o das 14h55. Se mudou, refazer a partir do atual:
+  1. `saude_ecommerce.py`;
+  2. `grava_saude.ps1`;
+  3. `devolve_layout.py --exceto "analise compras CLAUDE" "param CLAUDE"`;
+  4. `confere_saude.py`.
+
+### Lições
+- **.ps1 com acento** precisa ser salvo com BOM (UTF-8): sem ele o PowerShell 5.1 lê "SUGESTÕES" errado e a busca
+  pelo texto falha.
+- **openpyxl e fórmula matricial:** compara objetos `ArrayFormula`; comparar `ref` e `text`.
+- **Texto `AAAA-MM` gravado pelo COM:** vira data. Formatar a coluna como texto (`@`) ou prefixar com apóstrofo.

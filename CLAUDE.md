@@ -256,6 +256,9 @@ Armadilhas reais já vistas:
     4. `grava_claude.ps1`;
     5. `devolve_layout`.
   - Conferir as colunas com `calcula_claude.py`.
+  - Saúde do estoque (IQR, slow, phase out), triagem para e-commerce e concentração de clientes (26/10): seções 7–9 da
+    análise e 9 colunas no fim da ParamClaude. Refazer com `saude_ecommerce.py` → `grava_saude.ps1` → `devolve_layout`
+    (`--exceto` as 2 abas) → `confere_saude.py`. O comprometido (Reserva + VendProt) conta como saudável.
 - Fontes de compras em `COMPRAS\IA (compras)`:
   - subpastas de `eu\`, uma por pessoa da equipe:
     - fotos diárias do Relatório de Revenda;
