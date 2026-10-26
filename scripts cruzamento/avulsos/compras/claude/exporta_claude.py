@@ -192,9 +192,9 @@ def main(pasta, rel, saida, hoje):
     # cenarios de parametros
     cen = []
     z0, r0 = dict(cc.Z), dict(cc.R_DIAS)
-    for nome, z, R in [('Padrão: serviço A 95% / B 90% / C 80%; revisão A 15 / B 30 / C 30 dias', z0, r0),
-                       ('Mais serviço: A 98% / B 95% / C 90%; revisão 15 / 30 / 30', {'A': 2.0537489, 'B': 1.6448536, 'C': 1.2815516}, r0),
-                       ('Menos capital: A 95% / B 90% / C 80%; revisão A 7 / B 15 / C 30', z0, {'A': 7, 'B': 15, 'C': 30}),
+    for nome, z, R in [('Padrão desde 26/10: serviço A 95% / B 90% / C 80%; revisão A 7 / B 15 / C 30 dias', z0, r0),
+                       ('Revisão quinzenal (A 15 / B 30 / C 30), serviço padrão', z0, {'A': 15, 'B': 30, 'C': 30}),
+                       ('Mais serviço: A 98% / B 95% / C 90%; revisão 15 / 30 / 30', {'A': 2.0537489, 'B': 1.6448536, 'C': 1.2815516}, {'A': 15, 'B': 30, 'C': 30}),
                        ('Revisão mensal para todos (30 dias), serviço padrão', z0, {'A': 30, 'B': 30, 'C': 30})]:
         cc.Z, cc.R_DIAS = z, R
         a = q0 = q1 = q2 = 0.0

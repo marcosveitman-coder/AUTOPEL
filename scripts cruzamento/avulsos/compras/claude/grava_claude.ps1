@@ -50,7 +50,7 @@ try {
     $wp.Range('A2').Value2 = 'Células amarelas podem ser alteradas: as colunas CLAUDE da aba Geral recalculam sozinhas. A tabela por SKU (abaixo) é gerada pelos scripts e deve ser refeita 1 vez por mês.'
     $g = @(
         @('Parâmetro', 'Curva A', 'Curva B', 'Curva C', 'O que é'),
-        @('Revisão da compra (dias)', 15, 30, 30, 'De quanto em quanto tempo o comprador revisa e compra o item. Curva A: quinzenal.'),
+        @('Revisão da compra (dias)', 7, 15, 30, 'De quanto em quanto tempo o comprador revisa e compra o item. Curva A: semanal; B: quinzenal; C: mensal.'),
         @('Nível de serviço', 0.95, 0.90, 0.80, 'Chance de não faltar entre uma compra e a chegada da seguinte.'),
         @('Fator z (calculado)', '=NORM.S.INV(B6)', '=NORM.S.INV(C6)', '=NORM.S.INV(D6)', 'Quantos desvios de venda o estoque de segurança cobre.'),
         @('', '', '', '', ''),
@@ -262,7 +262,7 @@ try {
     Tit '3. METODOLOGIA CLAUDE (aba Geral, colunas CM em diante; parâmetros na aba param CLAUDE)'
     Txt @(
         '1) Previsão do mês = MedContr × fator sazonal do mês ÷ fator médio dos 3 meses que formam a MedContr. A sazonalidade vem da mediana de 2023 a 2025, do grupo e do próprio SKU quando o faturamento cobre a venda, e entra amortecida (metade do efeito). Hoje: outubro +18%, novembro +25%, dezembro +9% sobre a MedContr.',
-        '2) Proteção = prazo real do fornecedor (mediana dos pedidos observados; sem histórico, o prometido nas ordens de compra ou 8 dias) + período de revisão (15 dias para a curva A, 30 para B e C).',
+        '2) Proteção = prazo real do fornecedor (mediana dos pedidos observados; sem histórico, o prometido nas ordens de compra ou 8 dias) + período de revisão (7 dias para a curva A, 15 para a B, 30 para a C).',
         '3) Estoque de segurança = z × raiz( proteção/30 × (CV × previsão)² + (previsão/30 × desvio do prazo)² ): cobre a variação da venda e o atraso do fornecedor. z sai do nível de serviço: A 95%, B 90%, C 80%.',
         '4) Estoque alvo = previsão × proteção/30 + segurança, no máximo 4 meses da previsão.',
         '5) Compra do mês vigente = alvo − saldo de hoje (Disponível − VendProt + Comprado). Próximo mês: saldo projetado = saldo + compra − venda prevista nos dias que faltam do mês; compra = alvo do próximo mês − saldo projetado. Mês subsequente: igual, com 1 mês inteiro de venda prevista.',
@@ -306,9 +306,9 @@ try {
     $wa.Range($wa.Cells.Item($rt, 2), $wa.Cells.Item($rt, 13)).Font.Bold = $true
     $script:r = $rt + 2
     Txt @(
-        '• No mês vigente a compra CLAUDE é maior porque recompõe a curva A, que está com 1,1 mês de estoque contra alvo de cerca de 2,2. Sugestão: dividir entre o fim de outubro e novembro, começando pelos itens em ruptura e de pedido grande.',
-        '• O estoque alvo CLAUDE é maior que o da regra atual porque a curva A sobe de 1,6 para 2,2 meses. A curva C cai de 9,8 meses (hoje) para 2,7 de alvo: o excesso vai sendo vendido sem compra nova.',
-        '• Para gastar menos capital com a mesma proteção, a curva A pode ter revisão semanal (cenário "menos capital": alvo de R$ 33 mi, perto do estoque de hoje). Os parâmetros ficam na aba param CLAUDE.'
+        '• No mês vigente a compra CLAUDE é maior porque recompõe a curva A, que está com 1,1 mês de estoque contra alvo de cerca de 1,8. Sugestão: dividir entre o fim de outubro e novembro, começando pelos itens em ruptura e de pedido grande.',
+        '• Com revisão semanal da curva A (padrão desde 26/10), o estoque alvo CLAUDE fica perto do estoque de hoje: a curva A sobe de 1,1 mês (hoje) para 1,8 de alvo e a C cai de 9,8 meses para 2,7; o excesso da C vai sendo vendido sem compra nova.',
+        '• Comprar a curva A toda semana exige mais pedidos, mas são só 132 SKUs. Para menos pedidos, voltar a revisão da A para 15 dias na aba param CLAUDE (alvo maior: cenário de revisão quinzenal na tabela abaixo).'
     )
     Tit '4.1 Cenários de parâmetros (26/10)'
     Tab $JS.cenarios @($null, $FR, $FR, $FR, $FR)
@@ -320,7 +320,7 @@ try {
     Txt @(
         '1. Separar no indicador de ruptura os itens com PontoPedido 0 (sob encomenda): 30% dos episódios e R$ 2,4 mi faltantes no início. Acompanhar à parte, pelo prazo de compra do pedido de venda.',
         '2. Rever os 266 PontoPedido zerados à mão que têm venda (o NOVO_PONTO do TOTVS sugere estoque): quem vende todo mês deveria ter ponto.',
-        '3. Curva A com revisão quinzenal (ou semanal) e prioridade no PLANO de AÇAO: 132 SKUs, 80% da venda, 8,8% dos dias em ruptura e 1,1 mês de estoque.',
+        '3. Curva A com revisão semanal (padrão da metodologia desde 26/10) e prioridade no PLANO de AÇAO: 132 SKUs, 80% da venda, 8,8% dos dias em ruptura e 1,1 mês de estoque.',
         '4. Não comprar curva C com cobertura acima de 4 meses e tratar o excesso: R$ 11 mi com mais de 4 meses ou sem venda (marketplace, transferência, devolução ao fornecedor, ação comercial).',
         '5. Combinar com o comercial um aviso de pedido grande (carteira e contratos: CEF, RD, FDE, PGMN...): 19% das rupturas começam com um pedido de mais de 1 mês de venda.',
         '6. Follow-up por fornecedor com o prazo real medido (tabela 2.6): os 3 maiores em R$ chegam no prazo em 0% a 20% dos pedidos e 80% a 100% são remarcados. Renegociar prazo, pedir antes ou dividir entre fornecedores.',

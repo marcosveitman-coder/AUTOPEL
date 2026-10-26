@@ -247,7 +247,8 @@ Armadilhas reais já vistas:
 - **Metodologia CLAUDE (26/10):**
   - colunas CM–CR (6 pedidas) e CS–DE (13 auxiliares) da Table1;
   - parâmetros na aba "param CLAUDE" (tabela `ParamClaude` e nomes `CLAUDE_*`);
-  - análise na aba "analise compras CLAUDE".
+  - análise na aba "analise compras CLAUDE";
+  - revisão padrão: A 7 dias, B 15, C 30 (decisão do usuário em 26/10). Nível de serviço: A 95%, B 90%, C 80%.
   - Refazer 1 vez por mês com `avulsos/compras/claude/` (README no topo de cada script):
     1. `carrega_fotos`, `analisa_fotos`, `carrega_protheus`, `analisa_compras`, `extrai_demanda`;
     2. `gera_parametros`;

@@ -4,7 +4,7 @@
 
 Para cada SKU da aba Geral (Table1):
 - previsao do mes m = MedContr x S(m) / media de S nos 3 meses que formam a MedContr (os 3 ultimos meses completos);
-- protecao T = LT do fornecedor + R (revisao: 15 dias para a curva A, 30 para B e C);
+- protecao T = LT do fornecedor + R (revisao: 7 dias para a curva A, 15 para a B, 30 para a C);
 - estoque de seguranca SS(m) = z(ABC) x raiz( T/30 x (CV x previsao)^2 + (previsao/30 x desvio do LT)^2 );
 - estoque alvo(m) = previsao x T/30 + SS(m), no maximo 4 meses da previsao;
 - saldo hoje = PontoPedido - Comprar do TOTVS (= Disponivel - VendProt + Comprado);
@@ -22,7 +22,7 @@ import sys
 
 import openpyxl
 
-R_DIAS = {'A': 15, 'B': 30, 'C': 30}         # revisao: quinzenal para a curva A, mensal para B e C
+R_DIAS = {'A': 7, 'B': 15, 'C': 30}          # revisao: semanal (A), quinzenal (B), mensal (C) - padrao desde 26/10
 Z = {'A': 1.6448536269514722, 'B': 1.2815515655446004, 'C': 0.8416212335729143}   # NORM.S.INV de 95% / 90% / 80%
 COB_MAX = 4                                   # estoque alvo no maximo 4 meses da previsao
 SLT_PADRAO = 5.9                              # mesmos padroes da aba param CLAUDE

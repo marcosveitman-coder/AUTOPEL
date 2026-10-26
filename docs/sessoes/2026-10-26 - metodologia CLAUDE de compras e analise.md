@@ -129,3 +129,21 @@ foto de 26/10/2026.
   NORM.S.INV da planilha.
 - **Arquivo travado sem Excel aberto:** listar quem segura o arquivo com o Restart Manager (`rstrtmgr.dll`,
   RmGetList). Aqui era o antivírus examinando o arquivo; bastou tentar de novo em alguns segundos.
+
+---
+
+## 2ª parte (12h05): novo padrão de revisão
+
+- **Decisão do usuário:** revisão semanal para a curva A (7 dias), 15 para a B e 30 para a C.
+- **Aplicado com `ajusta_revisao_claude.ps1`:**
+  - param CLAUDE: B5:D5 = 7 / 15 / 30 e a descrição;
+  - análise: 5 textos e as tabelas 2.3 (curva ABC) e 4.1 (cenários), refeitas pelo `exporta_claude.py`.
+- `calcula_claude.py`, `grava_claude.ps1` e `exporta_claude.py` passam a usar 7 / 15 / 30 como padrão.
+- **Números em 26/10:**
+  - estoque alvo R$ 32,9 mi (regra atual R$ 29,0 mi; estoque hoje R$ 30,0 mi);
+  - compras outubro / novembro / dezembro: R$ 4,8 / 2,1 / 9,6 mi;
+  - alvo em meses de venda: A 1,8 · B 2,1 · C 2,7.
+- **Conferência:**
+  - colunas CLAUDE × Python: 0 diferença;
+  - só mudaram 3 células da param e 63 da análise;
+  - layout devolvido; gravado às 12h05, idêntico à cópia conferida.
