@@ -180,13 +180,12 @@ de refeições em 2024), e o relatório diz que não haverá metas novas com pra
   | Por ano | 52 mil refeições | 156 mil refeições |
   | Comida por ano | ~R$ 104 mil | ~R$ 364 mil |
 
-  - Premissa: o Rio também é semanal (registrado na conversa, para o usuário confirmar).
+  - O Rio também é semanal (confirmado pelo usuário).
   - Estimativas: R$ 2 por hot dog, R$ 3 por misto quente, 30 g de molho por hot dog, 2 guardanapos e 1 copo por
     refeição.
 - O quadro "quem entra com o quê" passou a mostrar "Time de campo e suprimentos" na coluna da Autopel.
 - Perguntas novas na aba Apoio: misto quente e bebida, e o time de campo no Rio.
 
 ## Pendente
-- Confirmar se, no cenário 2, o Rio também é semanal.
 - Validar o custo por lanche e por misto quente, e quem compra o pão, a salsicha e o recheio.
 - Plano comercial por unidade (rótulos, caixas, etiquetas e suprimentos) e a capacidade da Autopel em rótulos e caixas.
