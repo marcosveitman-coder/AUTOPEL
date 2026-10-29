@@ -288,6 +288,13 @@ Armadilhas reais já vistas:
     abrir no navegador embutido e desenhar quadros a cada 5–6 s num `<canvas>`. Vídeo do LinkedIn: abrir a URL do mp4
     numa aba (o post tem tela de login por cima). O áudio não dá para ouvir: perguntar ao usuário o que é falado.
   - **PPTX:** texto direto do XML do zip e imagens dos slides pelo PowerPoint (COM `Slide.Export`), numa cópia.
+- **Regravar vídeo no navegador** (ex.: tirar marca d'água translúcida, desfocar um logo):
+  - WebGL + MediaRecorder em MP4 H.264, enviado por PUT ao `serve_range.py` (3º argumento = pasta de saída);
+  - página modelo em `avulsos/midia/remove_marca.html`, local e fora do git;
+  - com o painel do navegador oculto, `requestVideoFrameCallback` e `captureStream(30)` ficam lentos: usar laço por
+    `MessageChannel` + `captureStream(0)` + `requestFrame()`;
+  - detectar na GPU (`readPixels` de áreas pequenas), e não por canvas 2D (~55 ms num quadro 4K);
+  - conferir o arquivo com `avulsos/midia/mp4info.py`.
 - **`python -I` ignora os pacotes do usuário** (openpyxl, pandas). Usar só em script de biblioteca padrão que lê
   arquivo baixado.
 - **No Git Bash, `python -c` não converte `/c/...`:** passar o caminho por `cygpath -m`.

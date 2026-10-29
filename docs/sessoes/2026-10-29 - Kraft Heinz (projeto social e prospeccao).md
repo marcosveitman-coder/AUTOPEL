@@ -135,13 +135,37 @@ de refeições em 2024), e o relatório diz que não haverá metas novas com pra
 - **Resultado no teste:**
   - faixa e texto somem;
   - no logo fica uma leve mancha azul-esverdeada.
-- **Não terminado:**
-  - a gravação (MediaRecorder + envio por PUT ao `serve_range.py`, que agora aceita PASTA_SAIDA);
-  - o tratamento do logo "K nas ruas", que aparece por cerca de 15 s no vídeo e entra na regra acima.
-- **Armadilha:** o estado da página do navegador some quando a sessão reinicia. Para a gravação, o painel precisa ficar
-  visível.
+- **Armadilha:** o estado da página do navegador some quando a sessão reinicia. Por isso o processo inteiro ficou numa
+  página só (`avulsos/midia/remove_marca.html`).
+
+### Vídeo entregue (3ª parte)
+- **Decisão do usuário:** desfocar o logo "K nas ruas", que aparece de 30 s a 43 s.
+  - Ele é detectado pelo roxo e o amarelo do K: cerca de 11.900 pixels por quadro no trecho e 0 no resto do vídeo.
+  - O desfoque usa mipmap nível 5,5 com 25 amostras e borda suave de 24 px. Fica uma névoa de cor, sem o K e sem o
+    texto.
+- **Refinos da marca d'água, depois do modelo da 2ª parte:**
+  1. calibração do logo por canal (anel em volta × miolo corrigido, regressão de eixo principal), que tira o tom
+     azul-esverdeado;
+  2. viés médio por pixel (pouco efeito);
+  3. **regressão pixel a pixel** O = k·S_vizinhança + W nas letras (raio 8) e na borda do logo (raio 10), que apagou o
+     "fantasma" das letras.
+- **Entrega:** `Acao Centro SP - video sem marca.mp4` na pasta Kraft Heinz.
+  - 1080×1920 e 174 MB;
+  - vídeo de 143,25 s com 3.417 quadros (23,9 por segundo; o original tem 30);
+  - áudio original (AAC) de 143,85 s.
+- **Resíduo:** em alguns trechos, olhando de perto, ainda se nota uma leve mancha clara do tamanho do logo azul.
+
+### Lições do vídeo
+- **Painel do navegador oculto:** `requestVideoFrameCallback` cai para ~1 quadro/s e `captureStream(30)` grava ~13
+  quadros/s.
+  - O laço deve rodar por `MessageChannel` e capturar cada quadro com `captureStream(0)` + `track.requestFrame()`.
+  - A decodificação e os timers continuam normais.
+- **Ler o quadro 4K por canvas 2D custa ~55 ms.** A detecção deve rodar na GPU: copiar as áreas pequenas para um FBO e
+  usar `readPixels`. O quadro inteiro cai para ~25–38 ms.
+- **Conferir o MP4 gravado** com `avulsos/midia/mp4info.py`, que conta amostras e duração por trilha, inclusive em MP4
+  fragmentado.
+- A página `remove_marca.html` fica só no disco: o `.gitignore` só versiona py/bat/txt/md/sql.
 
 ## Pendente
-- Vídeo: decisão do usuário sobre o logo "K nas ruas" e a gravação final.
 - Validar o custo por lanche e quem compra o pão e a salsicha.
 - Plano comercial por unidade (rótulos, caixas, etiquetas e suprimentos) e a capacidade da Autopel em rótulos e caixas.
