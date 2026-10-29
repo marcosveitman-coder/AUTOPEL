@@ -78,6 +78,70 @@ Antes da abordagem, ele pediu para "robustecer o conteúdo". Passos:
   `fat *.xlsx` indicadas.
 - `scripts cruzamento/avulsos/midia/folha_contato.ps1` e `serve_range.py`.
 
+## 2ª parte — proposta "Noite do Hot Dog" para os CEOs
+
+### Pedido
+- O usuário está em contato com o CEO da Heinz Brasil. Quer vender para a Heinz rótulos (ketchup, mostarda e maionese),
+  caixas de papelão, etiquetas de logística/e-commerce e suprimentos de escritório e fábrica (limpeza, EPI, higiene).
+- O diferencial é uma parceria social: a **Noite do Hot Dog**, semanal, no centro de SP.
+  - A Heinz entra com a comida e os molhos.
+  - A Autopel e a Black Shark entram com o time de campo: fila, distribuição, segurança e recreação.
+  - Também participam uma assistente social (crianças e mulheres em situação de violência) e uma recrutadora.
+- Entregas pedidas:
+  - texto da proposta;
+  - comunicação em nível C-level;
+  - o vídeo sem a marca d'água do Movavi.
+
+### Entrega
+Documento no Claude Docs "Noite do Hot Dog — Autopel + Heinz" (artefato do usuário, fora do git), com duas abas:
+- **Principal (briefing curto):**
+  - abertura;
+  - postos de atendimento para a população;
+  - "Para a Heinz: conteúdo que cresce sozinho";
+  - "Para a Autopel: tsedacá na prática";
+  - quadro de quem entra com o quê;
+  - números;
+  - negócio em paralelo;
+  - próximos passos.
+- **"Apoio (uso interno)":**
+  - mensagem para pedir a reunião e roteiro de 20 minutos;
+  - cuidados, perguntas em aberto e fontes.
+
+### Decisões do usuário
+- **O Espaço K e o "K nas ruas" não aparecem em nenhuma hipótese na proposta.**
+- Mote para o CEO da Autopel: **tsedacá** (justiça, não esmola; para Maimônides, o grau mais alto é dar os meios de se
+  sustentar, daí o posto de emprego).
+- Mote para a Heinz: **geração de conteúdo** e crescimento orgânico (Instagram, LinkedIn, jornais e revistas, TV).
+- Texto curto e direto, porque é para CEOs.
+- Escala: **1.000 hot dogs por noite, uma vez por semana**. São 4.000 no piloto de 4 semanas e 52 mil por ano.
+- Estimativas a validar com a Heinz: 50 kg de salsicha e 30 kg de molho por noite; R$ 2 por lanche em pão, salsicha
+  e embalagem, ou seja, R$ 2 mil por noite e R$ 104 mil por ano.
+
+### O que a pesquisa mudou
+A meta da Kraft Heinz de 1,5 bilhão de refeições até 2025 **já foi batida em 2024** (Relatório ESG 2025: 203 milhões
+de refeições em 2024), e o relatório diz que não haverá metas novas com prazo. Por isso a proposta trata a noite como o
+"próximo capítulo no Brasil", e não como ajuda para bater a meta.
+
+### Vídeo sem a marca d'água (em andamento)
+- Fonte: `k nas ruas grande.mp4` (4K). O conteúdo é vertical e fica na faixa x 1320–2519 de 3840; a saída é
+  1080×1920.
+- A marca d'água aparece em cerca de 58 dos 143 segundos. Ela tem 3 camadas, medidas pelo mínimo e pelo máximo de
+  cada pixel em 146 quadros:
+  - **faixa preta translúcida:** linhas 918–1241 do recorte 1200×2160, deixando passar 49% da imagem;
+  - **texto branco:** cerca de 50% de opacidade, de x 276 a 1156 e y 1049 a 1113;
+  - **logo azul:** cerca de 61% de opacidade, em x 39–230 e y 984–1175.
+- **Correção:** cena = (pixel − cor da marca) / transmissão, num shader WebGL, com leve desfoque onde a transmissão é
+  baixa. A detecção é por quadro: contraste entre os pixels das letras e os vizinhos > 40.
+- **Resultado no teste:**
+  - faixa e texto somem;
+  - no logo fica uma leve mancha azul-esverdeada.
+- **Não terminado:**
+  - a gravação (MediaRecorder + envio por PUT ao `serve_range.py`, que agora aceita PASTA_SAIDA);
+  - o tratamento do logo "K nas ruas", que aparece por cerca de 15 s no vídeo e entra na regra acima.
+- **Armadilha:** o estado da página do navegador some quando a sessão reinicia. Para a gravação, o painel precisa ficar
+  visível.
+
 ## Pendente
-- Respostas do usuário sobre as lacunas do projeto.
-- Montar a abordagem nas duas frentes (material do projeto e plano comercial por unidade).
+- Vídeo: decisão do usuário sobre o logo "K nas ruas" e a gravação final.
+- Validar o custo por lanche e quem compra o pão e a salsicha.
+- Plano comercial por unidade (rótulos, caixas, etiquetas e suprimentos) e a capacidade da Autopel em rótulos e caixas.

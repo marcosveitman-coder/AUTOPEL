@@ -1,5 +1,7 @@
 """Servidor HTTP local com suporte a Range (para o navegador poder pular no video).
-Uso: python -I serve_range.py PORTA PASTA
+Uso: python -I serve_range.py PORTA PASTA [PASTA_SAIDA]
+Com PASTA_SAIDA, aceita PUT /<nome> e grava o corpo em PASTA_SAIDA/<nome> (so o nome do arquivo, sem pastas):
+e assim que o video regravado no navegador volta para o disco.
 """
 import http.server
 import os
@@ -44,8 +46,29 @@ class RangeHandler(http.server.SimpleHTTPRequestHandler):
                 break
             restante -= len(bloco)
 
+    def do_PUT(self):
+        saida = getattr(self.server, "pasta_saida", None)
+        nome = os.path.basename(self.path.split("?")[0])
+        if not saida or not nome or nome.startswith("."):
+            self.send_error(403)
+            return
+        restante = int(self.headers.get("Content-Length", 0))
+        with open(os.path.join(saida, nome), "wb") as arquivo:
+            while restante > 0:
+                bloco = self.rfile.read(min(1 << 20, restante))
+                if not bloco:
+                    break
+                arquivo.write(bloco)
+                restante -= len(bloco)
+        self.send_response(201)
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+
 
 if __name__ == "__main__":
     porta, pasta = int(sys.argv[1]), sys.argv[2]
     servidor = http.server.ThreadingHTTPServer(("127.0.0.1", porta), partial(RangeHandler, directory=pasta))
+    if len(sys.argv) > 3:
+        os.makedirs(sys.argv[3], exist_ok=True)
+        servidor.pasta_saida = sys.argv[3]
     servidor.serve_forever()
