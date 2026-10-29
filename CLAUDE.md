@@ -53,7 +53,9 @@ Bases Claude/                       (fora do git: fat *.xlsx, supermercados*.xls
     ├── extract.py / match.py / build.py / common.py / conferir.py
     ├── LEIA-ME.txt                 como rodar e regras, para o usuário
     └── avulsos/                    scripts das entregas pontuais (IRTT, ABRAS, vendedor, XML…) + LEIA-ME.md
-        └── farmacias/              base consolidada de farmácias (Receita + redes + faturamento) + LEIA-ME.md
+        ├── farmacias/              base consolidada de farmácias (Receita + redes + faturamento) + LEIA-ME.md
+        ├── kraft_heinz/            prospecção de um grupo: Receita por razão social + linhas de uma raiz nas bases
+        └── midia/                  ver fotos e vídeos sem ffmpeg/Pillow (folha de contato, servidor com Range)
 ```
 
 Fontes de dados fora desta pasta (só leitura):
@@ -275,6 +277,20 @@ Armadilhas reais já vistas:
   - detalhes na sessão `2026-10-26 - metodologia CLAUDE…`, 3ª parte.
 - Script: `avulsos/compras/revisa_relatorio_revenda.ps1` (+ `confere_revenda.py`). Sessão: `docs/sessoes/2026-10-23 -
   revisao do relatorio revenda (compras).md`.
+
+---
+
+## 🎞️ Fotos, vídeos e apresentações (29/10/2026)
+
+- Aqui não há ffmpeg, Pillow, OpenCV nem python-pptx.
+  - **Fotos:** folha de contato numerada só com as fotos únicas (`avulsos/midia/folha_contato.ps1`, System.Drawing).
+  - **Vídeo:** servir a pasta com `avulsos/midia/serve_range.py` (entrada `videos-kh` em `.claude/launch.json`),
+    abrir no navegador embutido e desenhar quadros a cada 5–6 s num `<canvas>`. Vídeo do LinkedIn: abrir a URL do mp4
+    numa aba (o post tem tela de login por cima). O áudio não dá para ouvir: perguntar ao usuário o que é falado.
+  - **PPTX:** texto direto do XML do zip e imagens dos slides pelo PowerPoint (COM `Slide.Export`), numa cópia.
+- **`python -I` ignora os pacotes do usuário** (openpyxl, pandas). Usar só em script de biblioteca padrão que lê
+  arquivo baixado.
+- **No Git Bash, `python -c` não converte `/c/...`:** passar o caminho por `cygpath -m`.
 
 ---
 
