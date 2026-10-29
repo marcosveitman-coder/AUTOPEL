@@ -166,6 +166,27 @@ de refeições em 2024), e o relatório diz que não haverá metas novas com pra
   fragmentado.
 - A página `remove_marca.html` fica só no disco: o `.gitignore` só versiona py/bat/txt/md/sql.
 
+### Fechamento do briefing (4ª parte)
+- **Suprimentos que a Autopel leva a cada ação:** guardanapos, papel toalha, copos descartáveis, giz escolar e lápis
+  de cor, papel sulfite. Isso se soma ao time de campo com a Black Shark, que já incluía assistente social e
+  recrutadora.
+- **Dois cenários na tabela "Dois cenários":**
+
+  | | Cenário 1 | Cenário 2 |
+  |---|---|---|
+  | Ações | 1 noite por semana no centro de SP | Além de SP: 1 noite no centro do RJ e 1 manhã em Copacabana, por semana |
+  | Por semana | 1.000 hot dogs | 2.000 hot dogs e 1.000 mistos quentes |
+  | Piloto de 4 semanas | 4.000 refeições | 12.000 refeições |
+  | Por ano | 52 mil refeições | 156 mil refeições |
+  | Comida por ano | ~R$ 104 mil | ~R$ 364 mil |
+
+  - Premissa: o Rio também é semanal (registrado na conversa, para o usuário confirmar).
+  - Estimativas: R$ 2 por hot dog, R$ 3 por misto quente, 30 g de molho por hot dog, 2 guardanapos e 1 copo por
+    refeição.
+- O quadro "quem entra com o quê" passou a mostrar "Time de campo e suprimentos" na coluna da Autopel.
+- Perguntas novas na aba Apoio: misto quente e bebida, e o time de campo no Rio.
+
 ## Pendente
-- Validar o custo por lanche e quem compra o pão e a salsicha.
+- Confirmar se, no cenário 2, o Rio também é semanal.
+- Validar o custo por lanche e por misto quente, e quem compra o pão, a salsicha e o recheio.
 - Plano comercial por unidade (rótulos, caixas, etiquetas e suprimentos) e a capacidade da Autopel em rótulos e caixas.
