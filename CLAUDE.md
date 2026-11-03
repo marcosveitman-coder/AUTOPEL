@@ -227,6 +227,16 @@ Armadilhas reais já vistas:
 - na Receita, "ativa" não quer dizer loja aberta (Ricardo Eletro, Saraiva, Mappin). A matriz pode não ser a 0001;
 - o CNPJ da Rede Graal que estava na aba IRTT não é da rede;
 - Pizza Hut = IMC (master franqueada). KFC = Horizonte Restaurantes (jun/2026). Domino's = Vinci.
+- **Níveis do CNPJ** (2ª rodada):
+  - confirmado;
+  - provável (conferir);
+  - "franqueadora não achada": o CNPJ de **uma unidade** vai na coluna de referência, nunca como CNPJ da rede;
+  - não confirmado;
+  - rede não encontrada.
+- **Contagem de lojas pelo nome**: nome completo + CNAE do segmento. "LOJAS X" → "X" só com 2+ palavras: "REZENDE"
+  pegava 2 mil empresas. Nome genérico espalhado por todas as UFs (Constrular) não é rede.
+- **Região** = UF da sede (Receita > pesquisa > aba de origem > UF com mais lojas), nunca a UF da unidade de referência.
+  A aba "MAIORES POR REGIÃO" (top 30 Brasil, top 20 por região) é gerada pelo `grava_abas.py`.
 
 ---
 
@@ -326,6 +336,10 @@ Armadilhas reais já vistas:
   direto no XML da aba com `scripts cruzamento/avulsos/gravar_coluna_xml.py` e conferir que só a parte daquela aba mudou.
   - **Aba inteira nova** (dezenas de milhares de linhas): trocar o `<sheetData/>` da aba vazia (modelo em
     `avulsos/farmacias/grava_consolidado.py`, com cabeçalho congelado e filtro).
+  - **Criar aba que não existe** (modelo em `avulsos/mapa_final/grava_abas.py`):
+    - pôr no **fim** de `<sheets>`, porque `definedNames` usam `localSheetId` (a posição da aba);
+    - nova parte `sheetN.xml`, a relação em `workbook.xml.rels` e o `Override` em `[Content_Types].xml`;
+    - somar 1 nos dois contadores do `docProps/app.xml`.
   - O nome da aba pode ter aspas: no `workbook.xml` vem como `&quot;`.
 - Ler com openpyxl `read_only` e gravar no mesmo processo: fechar o workbook (`wb.close()`) antes de trocar o arquivo.
   Senão o Windows nega o `os.replace`.

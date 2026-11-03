@@ -111,3 +111,109 @@ SEGMENTO, ORIGEM (aba e linha, ou complemento), OBSERVAÇÃO.
 ## Scripts
 `scripts cruzamento/avulsos/mapa_final/`, com a ordem de execução no `LEIA-ME.md`. Os dados e as decisões ficam em
 `mapa_final/dados/`, fora do git.
+
+---
+
+# 2ª parte (mesmo dia): fechar os CNPJs e mostrar as maiores por região
+
+## Pedido
+- O cruzamento com o faturamento e o cadastro fica **para depois**.
+- "Acabar o que não foi acabado": trazer **todos os CNPJs**. Em rede de franquias, pode ser o CNPJ da matriz.
+- Procurar no Google listas e associações que ainda não tinham sido usadas.
+- Mostrar as **maiores do Brasil** e as **maiores de cada região** (Norte, Nordeste, Centro-Oeste, Sudeste, Sul) em
+  alimentação, rede de lojas e construção.
+
+## Entregas (MAPA MERCADO)
+- **As 3 abas FINAL foram regravadas** com 20 colunas (A–T). Colunas novas:
+  - **CNPJ DE REFERÊNCIA (UNIDADE DA REDE)** e **EMPRESA DE REFERÊNCIA**;
+  - **REGIÃO DA SEDE**;
+  - **RANKING BRASIL (Nº DE LOJAS)** e **RANKING NA REGIÃO**.
+- **Aba nova "MAIORES POR REGIÃO"**, no fim da pasta. Para cada segmento:
+  - as 30 maiores do Brasil;
+  - as 20 maiores de cada região.
+
+  A região é a UF da sede da empresa, e a ordem é o nº de lojas.
+
+**Conferência do CNPJ**, por aba:
+
+| Aba | Linhas | Confirmado | Provável (conferir) | Só CNPJ de referência | Não confirmado | Rede não encontrada |
+|---|---|---|---|---|---|---|
+| ALIMENTACAO FINAL | 368 | 234 | 30 | 34 | 22 | 48 |
+| REDE DE LOJAS FINAL | 324 | 293 | 13 | 8 | 10 | — |
+| CONSTRUÇÃO FINAL | 250 | 232 | 1 | 1 | 16 | — |
+
+Antes desta parte eram 208 / 288 / 228 confirmados. Agora são **803 CNPJs de rede** (confirmados + prováveis) e
+**43 de referência**.
+
+- **Gravação:** só pelo XML (`mapa_final/grava_abas.py`). Mudaram só:
+  - as 3 abas e a aba nova;
+  - `workbook.xml`, `workbook.xml.rels`, `[Content_Types].xml` e `docProps/app.xml`.
+
+  A cópia abriu no Excel (36 abas, com as 21 tabelas dinâmicas inteiras) antes de substituir o original.
+- **`confere_final.py`:** todo CNPJ e todo CNPJ de referência têm dígito verificador válido e estão ATIVOS (Receita
+  local ou BrasilAPI). Nenhum nome se repete dentro de uma aba.
+
+## Níveis de conferência do CNPJ (coluna G)
+- **CNPJ CONFIRMADO NA RECEITA:** é a operadora das lojas próprias, a franqueadora ou dona da marca, ou o CNPJ da
+  origem conferido.
+- **CNPJ PROVÁVEL (CONFERIR):** franqueadora achada por indício forte, mas sem prova completa. Exemplos de indício:
+  - CNAE de franquia ou de administração, com o nome da rede, na cidade de origem da marca;
+  - empresa mais antiga com o nome.
+- **FRANQUEADORA NÃO ACHADA: VER CNPJ DE REFERÊNCIA:**
+  - a franqueadora não leva o nome da rede na Receita;
+  - a coluna H traz o CNPJ de **uma unidade** da rede, para achar a rede no cadastro e no faturamento, e **não** como
+    CNPJ da rede;
+  - a unidade é escolhida nesta ordem: na UF de origem, matriz, maior capital, mais antiga, CNAE do segmento e nome
+    completo.
+- **CNPJ NÃO CONFIRMADO:** nenhum candidato seguro. Exemplos: Rede Graal, Puket, Crosby, Milon, Rabelo e algumas lojas
+  de construção pequenas.
+- **REDE NÃO ENCONTRADA NA RECEITA:**
+  - as 48 linhas regionais da aba "ALIMENTAÇÃO (...)", da linha 97 em diante;
+  - nenhum estabelecimento com o nome em todo o Brasil;
+  - **recomendação: tirar da lista ou confirmar com a fonte.**
+
+## Correções feitas nesta parte
+- **Contagem de lojas pelo nome:** o nome "LOJAS X" também era contado como só "X". Em "Lojas Rezende", isso pegava
+  2.125 empresas com o sobrenome Rezende (drogarias, transportadoras, construtoras).
+  - Agora a contagem usa o nome completo e só CNAE do segmento.
+  - Lojas Rezende = 20 lojas, todas em TO/PA.
+  - Mudaram mais 5 números de lojas: KFC 110 → 72, Popeyes 19 → 17, Milon 116 → 109, Cia. Paulista de Pizza 9 → 8 e
+    Grupo Tropy 2 → sem número.
+  - A coluna "lojas ativas com o nome" fica em branco quando passa de 3× o nº de lojas, porque aí são homônimos.
+- **Constrular saiu da construção:**
+  - o nome aparece em 1.112 estabelecimentos de 1.036 empresas, espalhadas por todas as UFs;
+  - não se achou rede nem associação com esse nome, só uma holding em GO;
+  - é nome genérico ("constru" + "lar").
+- **UF da sede das redes sem CNPJ:** a UF da unidade de referência punha a rede na região errada (Mr. Fit no Nordeste).
+  Agora a UF vem, nesta ordem, de:
+  1. Receita;
+  2. pesquisa (Mr. Fit = Paulínia/SP; Frutos de Goiás = Senador Canedo/GO);
+  3. aba de origem;
+  4. a UF com mais lojas da rede, marcada "sede não confirmada" na observação.
+
+## Listas e associações procuradas no Google
+- **Usadas:**
+  - matérias regionais sobre o ranking IRTT (Nordeste e Ceará). As redes de lojas e de construção do Nordeste que
+    aparecem nelas já estavam na lista;
+  - ranking de franquias por unidades do Portal do Franchising.
+- **Sem lista pública de associados:** ABVTEX, FEBRAMAT, ANR e Abrasel. O ranking da SBVC mais recente é de 2024.
+- **Faltam 3 redes de varejo da lista de franquias:** Piticas, Multicoisas e Livraria Nobel. Não foram incluídas
+  ainda.
+
+## Pendências
+- Piticas, Multicoisas e Livraria Nobel: procurar o CNPJ na Receita e incluir na REDE DE LOJAS FINAL.
+- Fechar os 30 + 13 + 1 "prováveis" e os 43 de referência com a COF (circular de franquia) ou com contato direto.
+- As 48 redes "não encontradas": decidir com o usuário se saem da aba.
+- Cruzamento com o faturamento e o cadastro: quando o usuário pedir. A coluna H (referência) ajuda a achar a rede.
+
+## Lições
+- **Contagem pelo nome:** tirar "LOJAS/REDE/GRUPO" do começo só vale se sobrarem 2+ palavras. Filtrar pelo CNAE do
+  segmento. Se a contagem passar muito do nº de lojas, são homônimos.
+- **Nome genérico de loja** (Constrular, "Elétrica", "São Jorge", "Avenida"): centenas de empresas sem ligação têm
+  o mesmo nome. Com muitas raízes espalhadas por todas as UFs e sem rede na web, não é rede.
+- **Região:** usar a UF da sede, nunca a da unidade usada como referência.
+- **Aba nova pelo XML numa pasta com dinâmicas:**
+  - pôr a aba no **fim** de `<sheets>`, porque os nomes definidos usam `localSheetId` (a posição da aba);
+  - criar a parte da aba, a relação em `workbook.xml.rels` e o `Override` em `[Content_Types].xml`;
+  - somar 1 nos dois contadores do `docProps/app.xml`;
+  - o gravador troca só o conteúdo quando a aba já existe.
