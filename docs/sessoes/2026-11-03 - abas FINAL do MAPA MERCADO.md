@@ -324,3 +324,33 @@ Na MAIORES POR REGIÃO entraram os blocos de postos e conveniência (30 do Brasi
 - O nº das distribuidoras é de postos com a bandeira (revendedores independentes), não de postos próprios.
 - No ranking por região, as distribuidoras entram pela UF da sede. A tabela da ANP mostra quantos postos de cada bandeira há em cada região.
 - Redes da mesma família com CNPJs diferentes (ex.: "Postos Cacique" e "Posto Cacique", em Teresina) ficam em linhas separadas.
+
+## 6ª parte: revisão da aba POSTOS com as tabelas da Alessandra Dayan
+**Pedido.** Juntar na aba POSTOS duas tabelas da aba Alessandra Dayan, sem duplicidade e mantendo o layout:
+- POSTOS DE GASOLINA (colunas O–R): 50 redes;
+- CONVENIÊNCIA / AUTOSSERVIÇO (colunas AV–AY): 50 redes.
+
+**Como foi feito**
+- `mk_alessandra_postos.py` lê as duas tabelas para `alessandra_postos.json`.
+- O de-para, linha a linha, está em `dados/dec_postos.json`, chave `alessandra`. Cada linha da origem:
+  - **soma** a uma rede que já estava na aba (mesma raiz de CNPJ ou mesma bandeira); ou
+  - **vira rede nova**, com CNPJ escolhido na Receita (busca `q10`) ou copiado das outras abas FINAL; ou
+  - fica **sem CNPJ seguro**.
+- **Nomes diferentes da mesma rede** viraram uma linha só. Exemplos: "Posto Laís" = Parelhas Gás; "Posto Delta" = Stang & Stang; "Posto Parque Dez" = Amazon Combustíveis; "Rede Noveiro" = Rede Nevoeiro; "Auto Posto Cinco Estrelas" = Rede Aqui; "Rede Stop" = Stopetróleo.
+- **"OXXO + Lojas Select" (1.911):** fica na linha Oxxo com 611 lojas, porque as Select já estão na linha Shell Select.
+- **Nº de lojas:** vale o mais recente.
+  - Distribuidoras e redes de conveniência ficam com o número da Alessandra (dez/25, out/26).
+  - Redes de postos ficam com a Receita (out/2026), porque a Alessandra é "até 2024"; o outro número vai na observação.
+
+**Resultado.** 210 redes:
+- 204 com CNPJ (confirmado ou provável) e 6 com o CNPJ de uma unidade;
+- 6 sem CNPJ seguro: Boxter, Zoom, Boi Brabo, Mais Natural, Deutschips e Tropical Conveniência;
+- as 100 linhas da Alessandra estão na coluna ORIGEM.
+
+A aba tem as mesmas 20 colunas. `confere_final.py`: 0 erros e nenhum nome repetido. As outras abas FINAL ficaram iguais. A pasta abriu no Excel (38 abas, 21 dinâmicas).
+
+**Mesmo CNPJ em mais de uma linha (marcas diferentes da mesma empresa, de propósito)**
+- Vibra: postos Petrobras, BR Mania, Lubrax+ e Jet Oil;
+- Rede Integrada: Shell Select e Oxxo;
+- Carrefour: postos e Carrefour Express;
+- GPA: postos Extra e Minuto Pão de Açúcar.

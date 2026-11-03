@@ -14,7 +14,7 @@ DEC = json.load(open('dec_postos.json', encoding='utf8'))
 BAPI = json.load(open('brasilapi.json', encoding='utf8'))
 porraiz = collections.defaultdict(list)
 for x in D9['est']: porraiz[x[0]].append(x)
-for pk in ['r1.pkl', 'r3.pkl', 'r4.pkl', 'r6.pkl']:  # linhas ja vistas (BR Mania, AmPm, Oxxo, Raizen...)
+for pk in ['r1.pkl', 'r3.pkl', 'r4.pkl', 'r6.pkl', 'r10.pkl']:  # linhas ja vistas (BR Mania, AmPm, Oxxo, Raizen...)
     D = pickle.load(open(pk, 'rb'))
     for k, v in D['emp'].items(): emp.setdefault(k, v)
     for x in D['est']:
@@ -140,6 +140,57 @@ for (r, s), v in sorted(RA.items(), key=lambda x: -x[1][3]):
     out.append(linha(r, nome, GRUPOS.get(r, nome), v[3], 'Receita: lojas de conveniência ativas da empresa (CNAE 4729-6/02, out/2026)',
                      'Rede de lojas de conveniência', 'Complemento: Receita Federal (rede de conveniência achada por CNAE)',
                      '; '.join(x for x in [f'lojas por UF: {ufs}', NOTAS.get(r, '')] if x), 'C', v[3]))
+# 4) origem: tabelas da Alessandra Dayan (postos O-R e conveniencia/autosservico AV-AY), sem duplicidade
+ALE = {x['lin']: x for x in json.load(open('alessandra_postos.json', encoding='utf8'))}
+OUTRAS = {}
+for sg, rs in pickle.load(open('final_rows.pkl', 'rb')).items():
+    for x in rs: OUTRAS.setdefault(x['fant'], x)
+MES = {'jan': 1, 'fev': 2, 'mar': 3, 'abr': 4, 'mai': 5, 'jun': 6, 'jul': 7, 'ago': 8, 'set': 9, 'out': 10, 'nov': 11, 'dez': 12}
+def drank(t):
+    t = (t or '').lower()
+    if t.startswith('anp'): return (2025, 0)
+    m = re.search(r'([a-z]{3})/(\d{2,4})', t)
+    if m: y = int(m.group(2)); return (y + 2000 if y < 100 else y, MES.get(m.group(1), 0))
+    m = re.search(r'(20\d\d)', t)
+    return (int(m.group(1)), -1 if 'até' in t else 0) if m else (0, 0)
+def op_row(r, nome, obs=''):
+    v = RA[(r, 'POSTO')]
+    ufs = ', '.join(f'{u} {k}' for u, k in sorted(v[1].items(), key=lambda x: -x[1])[:5])
+    return linha(r, nome, nome, v[3], 'Receita: postos ativos da empresa (CNAE 4731-8/00, out/2026)', 'Rede de postos (operadora)',
+                 'Complemento: Receita Federal (rede de postos achada por CNAE)', '; '.join(x for x in [f'postos por UF: {ufs}', obs] if x), 'C', v[3])
+for lin, ac, alvo, ex in DEC.get('alessandra', []):
+    o = ALE[lin]; orig = f'Alessandra Dayan: {lin}'
+    if ac == 'l':
+        cand = [x for x in out if x['key'] == alvo] if '|' in alvo else [x for x in out if x['cnpj'][:8] == alvo and x['segm'] != 'Rede de lojas de conveniência']
+        assert len(cand) == 1, (lin, alvo, len(cand)); d = cand[0]
+    elif ac == 'r':
+        assert not any(x['cnpj'][:8] == alvo for x in out), (lin, alvo); d = op_row(alvo, ex['nome']); out.append(d)
+    elif ac == 'c':
+        d = linha(alvo[:8], ex['fant'], ex['grupo'], None, '', ex['segm'], '', ex.get('obs', ''), ex.get('nivel', 'C'))
+        if d['cnpj'] != alvo:  # CNPJ escolhido nao e a matriz achada: usa o escolhido
+            m = [x for x in porraiz.get(alvo[:8], []) if x[0] + x[1] + x[2] == alvo]
+            if m: d['cnpj'] = alvo
+        if ex.get('nivel') == 'U': d['ref'] = d['cnpj']; d['ref_desc'] = f"{d['raz']} ({d['mun']}/{d['uf']})"; d['conf'] = 'CNPJ DE UMA UNIDADE DA REDE (FRANQUEADORA NÃO ACHADA)'
+        out.append(d)
+    elif ac == 'a':
+        x = OUTRAS[alvo]; d = dict(x); d.update(seg='POST', key='POST|' + norm(x['fant']), segm=ex.get('segm', x['segm']), origem='', rede=None)
+        d['obs'] = x['obs']; d['fonte'] = x['fonte']; d['grupo'] = ex.get('grupo', x['grupo'])
+        d.setdefault('uf_sede', x.get('uf_sede', x['uf'])); d.setdefault('uf_sede_fonte', x.get('uf_sede_fonte', ''))
+        if ex.get('lojas'): d['lojas'], d['fonte'] = ex['lojas'], ex['fonte']
+        out.append(d)
+    else:
+        d = linha('', ex['fant'], ex['fant'], None, '', ex['segm'], '', ex.get('obs', ''), 'C'); d['uf_sede'] = o['uf'] if len(o['uf']) == 2 else ''
+        d['uf_sede_fonte'] = 'UF da sede pela aba de origem' if d['uf_sede'] else ''; out.append(d)
+    if ex.get('nome'): d['fant'] = ex['nome']; d['key'] = 'POST|' + norm(ex['nome'])
+    if ac in ('l', 'r') and ex.get('obs'): d['obs'] = '; '.join(x for x in [d['obs'], ex['obs']] if x)
+    d['origem'] = '; '.join(x for x in [orig, d['origem']] if x)
+    if o['lojas'] and not ex.get('semlojas'):
+        if d['lojas'] is None or drank(o['base']) >= drank(d['fonte']):
+            if d['lojas'] and d['lojas'] != o['lojas']: d['obs'] = '; '.join(x for x in [d['obs'], f"{d['fonte']}: {d['lojas']:,}".replace(',', '.')] if x)
+            d['lojas'], d['fonte'] = int(o['lojas']), f"Alessandra Dayan ({o['base']})"
+        elif d['lojas'] != o['lojas']:
+            d['obs'] = '; '.join(x for x in [d['obs'], f"a aba Alessandra traz {int(o['lojas'])} ({o['base']})"] if x)
+    if not d.get('uf_sede'): d['uf_sede'] = d['uf'] or (o['uf'] if len(o['uf']) == 2 else ''); d['uf_sede_fonte'] = '' if d['uf'] else ('UF da sede pela aba de origem' if d['uf_sede'] else '')
 # nome repetido com CNPJ diferente: e outra empresa; o municipio da sede entra no nome
 cont = collections.Counter(norm(d['fant']) for d in out)
 for d in out:
