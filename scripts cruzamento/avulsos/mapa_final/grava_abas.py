@@ -23,7 +23,7 @@ COLS = [("Nº", 6), ("NOME FANTASIA", 34), ("RAZÃO SOCIAL", 46), ("GRUPO ADMINI
         ("MUNICÍPIO SEDE", 22), ("REGIÃO DA SEDE", 14), ("RANKING BRASIL (Nº DE LOJAS)", 11), ("RANKING NA REGIÃO", 11),
         ("SITUAÇÃO NA RECEITA", 12), ("FONTE DO Nº DE LOJAS", 36), ("LOJAS ATIVAS COM O NOME NA RECEITA (TODOS OS CNPJs)", 15),
         ("SEGMENTO", 26), ("ORIGEM", 42), ("OBSERVAÇÃO", 80)]
-ABAS = {'ALIM': 'ALIMENTACAO FINAL', 'LOJ': 'REDE DE LOJAS FINAL', 'CONS': 'CONSTRUÇÃO FINAL'}
+ABAS = {'ALIM': 'ALIMENTACAO FINAL', 'LOJ': 'REDE DE LOJAS FINAL', 'CONS': 'CONSTRUÇÃO FINAL', 'POST': 'POSTOS GAS & CONVENIENCIA FINAL'}
 NOVA = 'MAIORES POR REGIÃO'
 RESUMO = 'R_E_S_U_M_O'
 DATA = '03/11/2026'
@@ -47,6 +47,8 @@ def rede_de(r):
     v = r.get('rede')
     return None if not v or (r['lojas'] and v > 3 * r['lojas']) else v
 rows = pickle.load(open('final_rows.pkl', 'rb'))
+import os as _o
+if _o.path.exists('postos_rows.pkl'): rows['POST'] = pickle.load(open('postos_rows.pkl', 'rb'))  # aba de postos e conveniencia (build_postos.py)
 for seg, rs in rows.items():
     validos = [r for r in rs if r['lojas'] and not r['conf'].startswith('REDE NÃO')]
     for i, r in enumerate(sorted(validos, key=lambda r: -r['lojas']), start=1): r['rk'] = i
@@ -71,14 +73,14 @@ def aba_xml(rs):
     cols = "<cols>" + "".join(f'<col min="{j+1}" max="{j+1}" width="{w}" customWidth="1"/>' for j, (h, w) in enumerate(COLS)) + "</cols>"
     dim = f"A1:{last}{len(rs)+1}"
     return cols + "<sheetData>" + "".join(out) + "</sheetData>" + f'<autoFilter ref="{dim}"/>', dim
-SEGN = {'ALIM': 'ALIMENTAÇÃO', 'LOJ': 'REDE DE LOJAS', 'CONS': 'CONSTRUÇÃO'}
+SEGN = {'ALIM': 'ALIMENTAÇÃO', 'LOJ': 'REDE DE LOJAS', 'CONS': 'CONSTRUÇÃO', 'POST': 'POSTOS E CONVENIÊNCIA'}
 def regiao_xml():
     C = [("POSIÇÃO", 9), ("NOME FANTASIA", 34), ("GRUPO ADMINISTRADOR", 30), ("Nº DE LOJAS", 11), ("UF SEDE", 7), ("CNPJ", 20),
          ("CONFERÊNCIA DO CNPJ", 30), ("FONTE DO Nº DE LOJAS", 36)]
     out = []; k = 1
     out.append(row_xml(k, [("MAIORES REDES DO BRASIL E POR REGIÃO (região = UF da sede da empresa; ordem = nº de lojas). "
                              "Fonte: abas ALIMENTACAO FINAL, REDE DE LOJAS FINAL e CONSTRUÇÃO FINAL (03/11/2026).", S_TXT)])); k += 2
-    for seg in ['ALIM', 'LOJ', 'CONS']:
+    for seg in [s for s in ['ALIM', 'LOJ', 'CONS', 'POST'] if s in rows]:
         validos = [r for r in rows[seg] if r['lojas'] and not r['conf'].startswith('REDE NÃO')]
         blocos = [('BRASIL', sorted(validos, key=lambda r: -r['lojas'])[:30])]
         for g in ['NORTE', 'NORDESTE', 'CENTRO-OESTE', 'SUDESTE', 'SUL']:
@@ -92,6 +94,16 @@ def regiao_xml():
                                        (fmt(r['cnpj'] or r.get('ref', '')), S_TXT), (r['conf'], S_TXT), (r['fonte'], S_TXT)])); k += 1
             k += 1
     cols = "<cols>" + "".join(f'<col min="{j+1}" max="{j+1}" width="{w}" customWidth="1"/>' for j, (h, w) in enumerate(C)) + "</cols>"
+    if _o.path.exists('anp_bandeiras.pkl'):  # postos por bandeira e regiao (ANP)
+        A = pickle.load(open('anp_bandeiras.pkl', 'rb'))
+        RG = ['NORTE', 'NORDESTE', 'CENTRO-OESTE', 'SUDESTE', 'SUL']
+        out.append(row_xml(k, [("POSTOS E CONVENIÊNCIA — POSTOS POR BANDEIRA E REGIÃO (ANP, Anuário 2026, tabela 3.17, dados de 2025)", S_HEAD)] + [("", S_HEAD)] * (len(C) - 1), ht=20)); k += 1
+        out.append(row_xml(k, [(h, S_HEAD) for h in ['BANDEIRA', 'NORTE', 'NORDESTE', 'CENTRO-OESTE', 'SUDESTE', 'SUL', 'BRASIL']])); k += 1
+        NB = {'VIBRA': 'Vibra (Petrobras)', 'IPIRANGA': 'Ipiranga', 'RAIZEN': 'Raízen (Shell)', 'ALESAT': 'Alesat (Ale)', 'OUTRAS': 'Outras bandeiras', 'BANDEIRA BRANCA': 'Bandeira branca (sem bandeira)'}
+        for b in ['VIBRA', 'IPIRANGA', 'RAIZEN', 'ALESAT', 'OUTRAS', 'BANDEIRA BRANCA']:
+            v = A.get(b, {})
+            out.append(row_xml(k, [(NB[b], S_TXT)] + [(v.get(x, 0), S_NUM) for x in RG] + [(sum(v.values()), S_NUM)])); k += 1
+        out.append(row_xml(k, [('TOTAL', S_TXT)] + [(sum(A[b].get(x, 0) for b in A), S_NUM) for x in RG] + [(sum(sum(v.values()) for v in A.values()), S_NUM)])); k += 1
     return cols + "<sheetData>" + "".join(out) + "</sheetData>", f"A1:H{k}"
 def caminho(z, nome):
     wb = z.read('xl/workbook.xml').decode('utf8'); rels = z.read('xl/_rels/workbook.xml.rels').decode('utf8')

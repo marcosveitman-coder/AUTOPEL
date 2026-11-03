@@ -283,3 +283,44 @@ As decisões, rede a rede, ficaram em `dados/dec_6.json`.
 - **O Excel do usuário salva com strings compartilhadas:** depois disso o XML da aba já não tem o texto do cabeçalho. Conferir a aba pela célula B1, não pelo texto.
 - **O usuário pode salvar a pasta entre um pedido e outro:** comparar o arquivo atual com o backup antes de trocar, e refazer a cópia sobre a versão nova.
 - **Na exportação de imagem pelo COM com o Excel oculto,** o gráfico colado pode sair em branco. Para conferir o conteúdo, ler o texto da aba.
+
+## 5ª parte: aba POSTOS GAS & CONVENIENCIA FINAL
+**Pedido.** Montar a aba nova, criada pelo usuário, com o mesmo racional e as mesmas colunas das outras abas FINAL.
+- Completar com Fecombustíveis, ABIEPS e Google.
+- Mostrar as maiores por região, para postos e lojas de conveniência.
+
+**Como foi feito** (não há aba de origem):
+1. **Receita, por CNAE** (`redes_postos.py`): empresas com postos ativos (4731-8/00), lojas de conveniência (4729-6/02) e distribuidoras (4681-8). Achou 850 empresas com 4+ postos.
+2. **Razão social e matriz** das empresas candidatas (`q9`, busca na Receita).
+3. **ANP, Anuário 2026, tabela 3.17:** postos por bandeira, região e UF (2025). É a fonte oficial do nº de postos das bandeiras Vibra (6.656), Ipiranga (5.677), Raízen (4.674) e Alesat (1.094). Arquivo baixado da ANP (dados abertos), guardado em `dados/anp_dl/`.
+4. **Imprensa:**
+   - Vibra: 7.456 postos no 4T25 (vai na observação);
+   - Shell Select: 1.256 lojas, depois do fim da joint venture Grupo Nós (set/2025);
+   - SIM Rede: 191 unidades;
+   - Charrua (grupo Argenta, antiga Sim): 500+ postos;
+   - Rodoil (50% Vitol): 600 postos;
+   - Petrobahia: 113 postos;
+   - Alesat: 78% da Glencore desde 2018.
+5. **Fecombustíveis e ABIEPS:** consultadas. Nenhuma das duas publica lista de redes (a ABIEPS reúne fabricantes de equipamentos e organiza a ExpoPostos).
+6. **Montagem** (`build_postos.py`, decisões em `dados/dec_postos.json`):
+   - **distribuidoras e redes de conveniência:** à mão;
+   - **redes de postos:** todas as empresas com 15+ postos e as 25 maiores de cada região com 8+ postos;
+   - **redes de conveniência com CNPJ próprio:** 8+ lojas;
+   - **fora da lista:** franqueados de BR Mania/Select, padaria e pessoa física;
+   - **nome da rede:** "REDE ..." da razão social, ou a parte comum dos nomes das unidades.
+
+**Resultado:** 152 linhas, todas com CNPJ confirmado e ativo.
+- 18 distribuidoras com bandeira;
+- 13 redes de conveniência (AmPm, BR Mania, Shell Select, Monte Carlo, Uffa…);
+- 121 redes de postos, entre elas SIM, Buffon, Carrefour, Rede Duque, Dom Pedro, Agricopel, Cascol, Iccar e Cacique.
+
+Na MAIORES POR REGIÃO entraram os blocos de postos e conveniência (30 do Brasil e 20 por região) e a tabela de postos por bandeira e região da ANP. A R_E_S_U_M_O ganhou a coluna de postos, o passo 8 da metodologia e as fontes de postos.
+
+**Gravação.** Mudaram só as abas FINAL, a R_E_S_U_M_O e a MAIORES POR REGIÃO.
+- As outras 3 abas FINAL ficaram com os mesmos valores (conferido célula a célula). O XML delas mudou porque o usuário tinha salvado a pasta no Excel.
+- A pasta abriu no Excel: 38 abas, 21 dinâmicas.
+
+**Cuidados**
+- O nº das distribuidoras é de postos com a bandeira (revendedores independentes), não de postos próprios.
+- No ranking por região, as distribuidoras entram pela UF da sede. A tabela da ANP mostra quantos postos de cada bandeira há em cada região.
+- Redes da mesma família com CNPJs diferentes (ex.: "Postos Cacique" e "Posto Cacique", em Teresina) ficam em linhas separadas.

@@ -100,3 +100,12 @@ Ficam fora:
 - lojas online, free shops e massa falida;
 - franqueados de redes que já estão na lista;
 - redes que fecharam as lojas, embora a Receita ainda mostre estabelecimentos ativos: Ricardo Eletro, Saraiva, Mappin.
+
+## Aba POSTOS GAS & CONVENIENCIA FINAL
+1. `python redes_postos.py r8.pkl`: empresas com postos (4731-8/00), conveniência (4729-6/02) e distribuidoras (4681-8) ativas, por raiz e por nome fantasia.
+2. `python busca_receita.py q9.json r9.pkl`: razão social e matriz das candidatas.
+3. Tabela 3.17 do Anuário da ANP em `dados/anp_dl/tabela3-17.csv` (postos por bandeira, região e UF).
+4. `python build_postos.py`:
+   - gera `postos_rows.pkl`, usando as decisões de `dec_postos.json` (distribuidoras, conveniência, nomes, grupos, exclusões e cortes);
+   - cortes: 15+ postos no Brasil, ou entre as 25 maiores da região com 8+ postos; conveniência com 8+ lojas.
+5. `grava_abas.py` grava a aba, os blocos de postos na MAIORES POR REGIÃO, a tabela ANP e a R_E_S_U_M_O.

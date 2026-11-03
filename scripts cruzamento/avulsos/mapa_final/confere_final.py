@@ -8,7 +8,7 @@ _os.chdir(_os.environ.get('AUTOPEL_MAPA_FINAL_DADOS') or _os.path.join(_AQUI, 'd
 import openpyxl, sys, re, pickle, json, collections, unicodedata
 p = sys.argv[1]
 rows_by = {}
-for pk in ['r1.pkl', 'r3.pkl', 'r4.pkl', 'r5.pkl', 'r6.pkl', 'r7.pkl']:
+for pk in ['r1.pkl', 'r3.pkl', 'r4.pkl', 'r5.pkl', 'r6.pkl', 'r7.pkl', 'r9.pkl']:
     for r in pickle.load(open(pk, 'rb'))['est']: rows_by[r[0] + r[1] + r[2]] = r[5]
 for c, v in json.load(open('brasilapi.json', encoding='utf8')).items(): rows_by.setdefault(c, '02' if 'ATIVA' in str(v[3]).upper() else v[3])
 def dv(c):
@@ -19,7 +19,7 @@ def dv(c):
 def n(s): return ' '.join(unicodedata.normalize('NFKD', s or '').encode('ascii', 'ignore').decode().upper().split())
 wb = openpyxl.load_workbook(p, read_only=True)
 lojas = {}
-for aba in ['ALIMENTACAO FINAL', 'REDE DE LOJAS FINAL', 'CONSTRUÇÃO FINAL']:
+for aba in ['ALIMENTACAO FINAL', 'REDE DE LOJAS FINAL', 'CONSTRUÇÃO FINAL', 'POSTOS GAS & CONVENIENCIA FINAL']:
     vals = list(wb[aba].iter_rows(values_only=True)); head, data = vals[0], vals[1:]
     H = {h: i for i, h in enumerate(head)}
     erros = []; nomes = collections.Counter(); st = collections.Counter(); ncnpj = nref = 0

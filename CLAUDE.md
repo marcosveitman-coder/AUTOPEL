@@ -239,6 +239,10 @@ Armadilhas reais já vistas:
   A aba "MAIORES POR REGIÃO" (top 30 Brasil, top 20 por região) é gerada pelo `grava_abas.py`.
 - **CNPJ de uma unidade** (franqueadora não achada) vai também na coluna F, como o usuário fez à mão em 03/11; a G avisa
   "CNPJ DE UMA UNIDADE DA REDE". A aba **R_E_S_U_M_O** (racional e fontes) é regravada pelo `grava_abas.py` (`resumo.py`).
+- **Aba POSTOS GAS & CONVENIENCIA FINAL** (`redes_postos.py` → `build_postos.py`, decisões em `dados/dec_postos.json`):
+  - redes de postos e de conveniência vêm da Receita por CNAE (4731-8/00 e 4729-6/02);
+  - nº de postos das bandeiras vem da ANP (Anuário, tabela 3.17, dados abertos em `dados/anp_dl/`).
+  - O nº de uma distribuidora é de postos **com a bandeira**, não de postos próprios. Fecombustíveis e ABIEPS não listam redes.
 
 ---
 
