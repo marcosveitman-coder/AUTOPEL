@@ -20,7 +20,7 @@ Tudo o que é dado fica em `dados/`, local e fora do git (o `.gitignore` só dei
 - da 2ª rodada: as decisões com nível C/P (`dec_5.json`), os CNPJs conferidos na BrasilAPI (`brasilapi.json`) e a
   4ª consulta (`q4.json`).
 
-Os resultados das varreduras da Receita (`r1.pkl` a `r4.pkl`) não foram guardados: são grandes e se refazem em cerca de
+Os resultados das varreduras da Receita (`r1.pkl` a `r5.pkl`) não foram guardados: são grandes e se refazem em cerca de
 7 min cada. Para rodar com os dados em outra pasta, usar a variável `AUTOPEL_MAPA_FINAL_DADOS`.
 
 ## Ordem para refazer
@@ -39,6 +39,10 @@ Os resultados das varreduras da Receita (`r1.pkl` a `r4.pkl`) não foram guardad
    - `python view4.py`, `python view5.py` (visão compacta, `v5.txt`) e `python sede.py`: candidatos a franqueadora;
    - decisões em `dec_5.json`, no formato `[cnpj, grupo, nota, nível]`. O nível é C (confirmado) ou P (provável,
      conferir).
+   - redes novas de listas de fora (ex.: Piticas, Multicoisas, Livraria Nobel, da lista ABF):
+     - entram em `complementos_manuais.json`, chave `ABF`;
+     - a busca na Receita é `busca_receita.py q5.json r5.pkl`;
+     - o `build_final.py` usa `q4` e `q5` para a unidade de referência.
 9. `python build_final.py`:
    - gera as linhas finais (`final_rows.pkl`) e mostra nome repetido e CNPJ usado em mais de uma rede;
    - monta também o CNPJ de referência e a UF da sede.

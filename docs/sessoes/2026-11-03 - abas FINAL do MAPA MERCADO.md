@@ -217,3 +217,21 @@ Antes desta parte eram 208 / 288 / 228 confirmados. Agora são **803 CNPJs de re
   - criar a parte da aba, a relação em `workbook.xml.rels` e o `Override` em `[Content_Types].xml`;
   - somar 1 nos dois contadores do `docProps/app.xml`;
   - o gravador troca só o conteúdo quando a aba já existe.
+
+## 3ª parte: as 3 redes da lista de franquias
+O usuário mandou incluir as 3 redes de varejo que faltavam. Elas vieram de uma busca nova na Receita (`q5.json`) e da
+pesquisa na web:
+
+| Rede | Nº de lojas (fonte) | CNPJ | Região |
+|---|---|---|---|
+| Multicoisas | 212 (ranking ABF 2019) | **confirmado**: a franqueadora "Multicoisas Franquias", ativa desde 1985 | Centro-Oeste (matriz em MS; filial em SP) |
+| Piticas | 220 (Portal do Franchising, set/2025) | **referência**: a franqueadora original está baixada e a holding com o nome não tem os fundadores como sócios | Sudeste (sede em Guarulhos/SP) |
+| Livraria Nobel | 121 (ranking ABF 2019) | **referência**: a Livraria Nobel S.A. está baixada e a holding dona da marca não aparece na Receita | Sudeste |
+
+- **REDE DE LOJAS FINAL:** 327 linhas (294 confirmados, 13 prováveis, 10 de referência, 10 não confirmados).
+- **Unidade de referência:** agora é escolhida na UF da sede quando a pesquisa a conhece. Mr. Fit passou a ter
+  referência em SP, e Frutos de Goiás em GO.
+- **Gravação:** mudaram só ALIMENTACAO FINAL, REDE DE LOJAS FINAL e MAIORES POR REGIÃO. A CONSTRUÇÃO ficou igual.
+  `confere_final.py` não achou erros, e a pasta abriu no Excel (36 abas, 21 dinâmicas) antes de substituir o original.
+- **Pendência:** os números da Multicoisas e da Nobel são de 2019, os mais recentes com data que foram achados. A
+  Receita mostra 33 lojas ativas com o nome Nobel. Confirmar com a ABF ou com as redes.

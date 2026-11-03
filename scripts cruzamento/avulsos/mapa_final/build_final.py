@@ -22,7 +22,7 @@ MUN = pickle.load(open('mun.pkl', 'rb'))
 NOMES = json.load(open('nomes.json', encoding='utf8'))
 BAPI = json.load(open('brasilapi.json', encoding='utf8'))
 emp, rows_by = {}, collections.defaultdict(dict)
-for pk in ['r1.pkl', 'r3.pkl', 'r4.pkl']:
+for pk in ['r1.pkl', 'r3.pkl', 'r4.pkl', 'r5.pkl']:
     D = pickle.load(open(pk, 'rb'))
     for k, v in D['emp'].items(): emp.setdefault(k, v)
     for r in D['est']: rows_by[r[0]][r[0] + r[1] + r[2]] = r
@@ -188,10 +188,17 @@ for c in COMP:
     if r['lojas'] is None and r['at']:
         r['lojas'], r['fonte'] = r['at'], 'Receita: estabelecimentos ativos da empresa (out/2026)'
     out[c['seg']].append(r)
-D4 = pickle.load(open('r4.pkl', 'rb')); E4 = D4['est']
-F4 = collections.defaultdict(set)
-for i, t in D4['hits_fant']: F4[t].add(i)
-Q4 = {q['id']: q for q in json.load(open('q4.json', encoding='utf8'))}
+# consultas usadas para o CNPJ de referencia: q4 (redes sem CNPJ) e q5 (3 redes da lista ABF)
+QREF = {}
+for pk, qf in [('r4.pkl', 'q4.json'), ('r5.pkl', 'q5.json')]:
+    D = pickle.load(open(pk, 'rb')); F = collections.defaultdict(set)
+    for i, t in D['hits_fant']: F[t].add(i)
+    for q in json.load(open(qf, encoding='utf8')): QREF[q['id']] = (q, D['est'], F)
+# UF da sede (para a regiao): Receita > pesquisa > aba de origem > UF com mais lojas da rede
+SEDE_WEB = {'ALIM|MR FIT': ('SP', 'rede criada em Paulínia/SP em 2013 (pesquisa)'),
+            'ALIM|+FRUTOS DE GOIAS': ('GO', 'sede e fábrica em Senador Canedo/GO (pesquisa); a fábrica não leva o nome da marca na Receita'),
+            'LOJ|+PITICAS': ('SP', 'sede em Guarulhos/SP (pesquisa)'),
+            'LOJ|+LIVRARIA NOBEL': ('SP', 'a antiga Livraria Nobel S.A. era de Embu das Artes/SP (Receita, baixada)')}
 # nome comum: a unidade achada pode ser de outra empresa; sem referencia
 REF_NAO = {'ALIM|SPERANZA', 'CONS|CAETANO', 'CONS|DESTRO', 'CONS|SAO JORGE', 'CONS|+CASA VERDE', 'CONS|+PADOVANI', 'LOJ|RABELO', 'LOJ|SELLER',
            'LOJ|FLORENZA', 'ALIM|GENERAL PRIME BURGER', 'LOJ|CROSBY', 'CONS|C C', 'ALIM|PONTO', 'ALIM|SAKURA SUSHI', 'ALIM|PASTELARIA GAUCHO',
@@ -205,8 +212,9 @@ for seg, rs in out.items():
     for r in rs:
         r.setdefault('ref', ''); r.setdefault('ref_desc', '')
         if r['cnpj'] or r['conf'].startswith('REDE NÃO') or r.get('key') in REF_NAO: continue
-        q = Q4.get(r.get('key'))
-        if not q: continue
+        qq = QREF.get(r.get('key'))
+        if not qq: continue
+        q, E4, F4 = qq
         nomes = {norm(re.sub(r'\(.*?\)', '', x['fant'])) for x in G.get(r['key'], []) if not x['lump']} | {norm(re.sub(r'\(.*?\)', '', r['fant']))}
         nomes = {n for n in nomes if n and (len(n.split()) >= 2 or len(n) >= 6)}
         nomes |= {n.replace(' ', '') for n in nomes if ' ' in n}
@@ -215,15 +223,12 @@ for seg, rs in out.items():
         at = [E4[i] for t in full for i in F4.get(t, ()) if E4[i][5] == '02' and E4[i][8].startswith(PREF)]
         if not at: continue
         r['uf_moda'] = collections.Counter(x[10] for x in at).most_common(1)[0][0]
-        uf = r.get('uf_origem', '')
+        uf = r.get('uf_origem', '') or SEDE_WEB.get(r.get('key'), ('',))[0]
         at.sort(key=lambda x: (x[10] != uf if uf else False, x[3] != '1', -cap(x[0]), x[7] or '9'))
         x = at[0]
         r['ref'] = x[0] + x[1] + x[2]
         r['ref_desc'] = f"{emp.get(x[0], ('',))[0].strip()} ({MUN.get(x[11], x[11])}/{x[10]}, nome fantasia {x[4].strip()})"
         r['conf'] = 'FRANQUEADORA NÃO ACHADA: VER CNPJ DE REFERÊNCIA'
-# UF da sede (para a regiao): Receita > pesquisa > aba de origem > UF com mais lojas da rede
-SEDE_WEB = {'ALIM|MR FIT': ('SP', 'rede criada em Paulínia/SP em 2013 (pesquisa)'),
-            'ALIM|+FRUTOS DE GOIAS': ('GO', 'sede e fábrica em Senador Canedo/GO (pesquisa); a fábrica não leva o nome da marca na Receita')}
 for seg, rs in out.items():
     for r in rs:
         if r['uf']: r['uf_sede'], r['uf_sede_fonte'] = r['uf'], ''
