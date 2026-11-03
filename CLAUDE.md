@@ -55,6 +55,7 @@ Bases Claude/                       (fora do git: fat *.xlsx, supermercados*.xls
     └── avulsos/                    scripts das entregas pontuais (IRTT, ABRAS, vendedor, XML…) + LEIA-ME.md
         ├── farmacias/              base consolidada de farmácias (Receita + redes + faturamento) + LEIA-ME.md
         ├── kraft_heinz/            prospecção de um grupo: Receita por razão social + linhas de uma raiz nas bases
+        ├── mapa_final/             abas ALIMENTACAO/REDE DE LOJAS/CONSTRUÇÃO FINAL (CNPJ por rede + complementos) + LEIA-ME.md
         └── midia/                  ver fotos e vídeos sem ffmpeg/Pillow (folha de contato, servidor com Range)
 ```
 
@@ -211,6 +212,21 @@ Armadilhas reais já vistas:
   exceções somem e o total vai para 1.092.584: perguntar antes de reaplicar;
 - a aba "I.R.T.T.__Por bandeira (FINAL)" tem a F como fórmula de status, a AG com o vendedor do CLIENTES e a AH com a
   UF sede; os resumos dela estão em "I.R.T. T. resumo".
+
+**Abas "ALIMENTACAO FINAL", "REDE DE LOJAS FINAL" e "CONSTRUÇÃO FINAL"** (03/11/2026; `avulsos/mapa_final/`):
+- uma linha por rede (bandeira), com o grupo administrador numa coluna. Linha de grupo da origem (ex.: "GRUPO TRIGO
+  (Spoleto / …)") vira nota nas marcas, para não contar as lojas duas vezes;
+- **CNPJ da rede** = operadora das lojas próprias, franqueadora ou dona da marca (CNAE 7740-3/00, holding, indústria),
+  ou o CNPJ da origem quando confere (existe, ativo e com o nome). **Nunca franqueado.** Sem certeza, fica em branco
+  ("CNPJ NÃO CONFIRMADO"). Conferir o dígito verificador **e** a existência: a aba "ALIMENTAÇÃO (...)", da linha 97
+  em diante, tem CNPJs e até redes inventados;
+- regra automática para escolher o CNPJ erra muito: o script mostra os candidatos e a decisão é feita à mão, em
+  `dados/dec_*.json`;
+- complementos: ranking ANAMACO, aba IRTT e redes regionais achadas na Receita por CNAE. Os cortes estão no LEIA-ME
+  da pasta;
+- na Receita, "ativa" não quer dizer loja aberta (Ricardo Eletro, Saraiva, Mappin). A matriz pode não ser a 0001;
+- o CNPJ da Rede Graal que estava na aba IRTT não é da rede;
+- Pizza Hut = IMC (master franqueada). KFC = Horizonte Restaurantes (jun/2026). Domino's = Vinci.
 
 ---
 

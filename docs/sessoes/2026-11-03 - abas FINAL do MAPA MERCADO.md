@@ -1,0 +1,113 @@
+# Sessão 03/11/2026 — abas FINAL do MAPA MERCADO (alimentação, rede de lojas, construção)
+
+Registro sem CNPJs, códigos de cliente, datas de compra nem nomes de vendedores (repositório público). Os nomes de
+redes abaixo são listas de mercado, não dados de clientes.
+
+## Pedido
+O usuário criou três abas vazias no `MAPA MERCADO.xlsx` e pediu para preenchê-las com nome fantasia, razão social,
+grupo administrador, nº de lojas e CNPJ (o mais importante), sem duplicidade:
+
+| Aba | Origem |
+|---|---|
+| **ALIMENTACAO FINAL** | aba "ALIMENTAÇÃO (...)" + Alessandra Dayan, colunas AC–AF |
+| **REDE DE LOJAS FINAL** | "VAREJO (MAIORES)_RADES" + Alessandra Dayan, colunas AJ–AM + "VAREJO VESTUARIO (IA)" |
+| **CONSTRUÇÃO FINAL** | Alessandra Dayan, colunas V–Y |
+
+Depois disso, completar as listas com as referências do setor (ANAMACO, ABRAMAT, ABCEM, Exame, ANR, Abrasel e Google),
+inclusive por região.
+
+## Entregas (MAPA MERCADO, só as 3 abas)
+
+| Aba | Linhas | CNPJ confirmado | Não confirmado | Rede não encontrada |
+|---|---|---|---|---|
+| ALIMENTACAO FINAL | 368 | 208 | 112 | 48 |
+| REDE DE LOJAS FINAL | 324 | 288 | 36 | — |
+| CONSTRUÇÃO FINAL | 251 | 228 | 23 | — |
+
+Colunas (A–O): Nº, NOME FANTASIA, RAZÃO SOCIAL, GRUPO ADMINISTRADOR, Nº DE LOJAS, CNPJ, CONFERÊNCIA DO CNPJ, UF SEDE,
+MUNICÍPIO SEDE, SITUAÇÃO NA RECEITA, FONTE DO Nº DE LOJAS, LOJAS ATIVAS COM O NOME NA RECEITA (TODOS OS CNPJs),
+SEGMENTO, ORIGEM (aba e linha, ou complemento), OBSERVAÇÃO.
+
+- **Formato:** cabeçalho congelado, filtro, estilos que já existiam (cabeçalho 194, número 127). Nenhum estilo novo.
+- **Ordem:** confirmados primeiro, por nº de lojas; depois os não confirmados; por fim os não encontrados.
+- **Gravação:** só o XML das 3 abas (`grava_abas.py`). Conferido que, das 136 partes do arquivo, só elas mudaram. A cópia
+  abriu no Excel sem reparo, antes de substituir o original.
+- **Backup:** está no scratchpad da sessão, que é apagado. O OneDrive tem o histórico de versões.
+- **Conferência final no arquivo gravado** (`confere_final.py`): os 724 CNPJs têm dígito verificador válido, existem
+  na Receita e estão ATIVOS. Nenhum nome se repete dentro de uma aba.
+
+## Como foi feito
+1. **Origem:** 704 linhas (340 de alimentação, 314 de lojas, 50 de construção), juntadas em 479 redes únicas.
+   - **Duplicatas:** chave do nome mais junções manuais, por exemplo "MC DONALDS" × "McDonald's", "BACCIO DI LATTE" ×
+     "Bacio di Latte", "Vó Alzira (Sudeste)" × "Fábrica de Bolo Vó Alzira" e as dezenas de linhas repetidas de
+     Lojas Avenida, Riachuelo e Renner na aba de vestuário.
+   - **Linhas de grupo da Alessandra** ("GRUPO TRIGO (Spoleto / China in Box / Casa do Pão de Queijo)", "GRUPO CRM",
+     "GRUPO AF", "AZZAS 2154", "Halipar"): viraram nota nas linhas das marcas, para não contar as lojas duas vezes.
+     A Azzas foi desdobrada nas marcas da aba IRTT.
+2. **CNPJ da origem:** dos 276 informados, 104 falhavam no dígito verificador. Muitos da aba "ALIMENTAÇÃO (...)", da
+   linha 97 em diante, eram claramente inventados, com sequências como 22.333.555 e 14.555.777.
+3. **Receita local (2026-10), três varreduras:**
+   - **nome e CNPJ:** razão social e nome fantasia das redes, CNPJs da origem;
+   - **redes por CNAE e região:** raízes com muitas lojas ativas de alimentação, de varejo ou de construção, e nomes
+     fantasia repetidos em muitos CNPJs (franquias);
+   - **matrizes e complementos:** matrizes das raízes escolhidas, nomes refinados e os complementos.
+4. **Escolha do CNPJ, rede a rede e à mão:** as regras automáticas erraram (holding estrangeira para o McDonald's, uma
+   empresa qualquer com "Kopenhagen" no nome). A regra está no `LEIA-ME.md` da pasta: operadora com lojas próprias,
+   franqueadora ou dona da marca, ou CNPJ da origem conferido. **Nunca franqueado.** Sem certeza, fica em branco.
+5. **Nº de lojas:** vale o número mais recente e com data das abas de origem. Quando a origem não tem número:
+   - para as redes da origem, as lojas ativas com o nome na Receita;
+   - para os complementos, o número da IRTT ou as lojas ativas da empresa na Receita.
+
+   A coluna L traz sempre a contagem de lojas ativas com o nome (franqueados incluídos), para conferência.
+
+## Complementos (fonte na coluna ORIGEM)
+- **Ranking ANAMACO, Top 50 Varejo Nacional 2025 e 2026** (Revista Anamaco): 35 lojas de material de construção que não
+  estavam na lista, com a posição no ranking.
+- **Aba "I.R.T.T.__Por bandeira (FINAL)"** (ranking IRTT Top 300): 29 bandeiras de lojas físicas, como as marcas da
+  Azzas, Carter's, Pormenos, iPlace e Brunella.
+- **Receita, redes regionais por CNAE:** 385 redes com sede em todas as regiões.
+  - Exemplos: Lojas Benoit (RS/SC), Salfer (SC/PR), Eletro Mateus (MA/PA), Móveis Estrela (GO), Laser Eletro (PE),
+    Bela Tintas e Leo Madeiras (SP), Glaçaí (PB/PE), refeição coletiva (Refeições Naturas, Exal, Apetit).
+  - Cortes e exclusões: no `LEIA-ME.md` da pasta.
+- **Receita, franquias pelo nome fantasia repetido:** 17 redes, como Cosechas, Frutos de Goiás e Kidstok.
+- **Ranking ABF 2025:** a microfranquia Fast4You.
+- **ABRAMAT e ABCEM** são associações de indústrias (fabricantes e construção metálica) e não listam lojas. Foram
+  consultadas, mas não renderam linhas. O texto da Exame é o ranking IRTT de material de construção de 2024 (13 redes,
+  todas já na lista, com o nº de lojas usado quando faltava).
+
+## Correções que a pesquisa trouxe
+- **Pizza Hut:** a master franqueada continua sendo a IMC. A BFFC (Bob's) é a maior franqueada. A aba de origem dizia
+  "BFFC (antes IMC)".
+- **KFC:** passou para a Horizonte Restaurantes (Kentucky Foods Chile + IMC) em jun/2026.
+- **Domino's:** é da Vinci Partners (master franqueada). O CNPJ da origem era do Grupo Trigo.
+- **Casa do Pão de Queijo:** o Grupo Trigo comprou a operação em 2025, na recuperação judicial.
+- **Grupo de Griletto, Montana Grill, Jin Jin e Croasonho:** é a Halipar. A Alessandra escreveu "Grupo SFB".
+- **Rede Graal:** o CNPJ que a aba IRTT trazia é, na Receita, de um restaurante no RJ. A linha ficou "não confirmado".
+- **Outback:** o grupo é a Vinci Partners (ex-Bloomin' Brands).
+- **Kopenhagen e Brasil Cacau:** o Grupo CRM é da Nestlé desde 2023.
+- **Bob's na REDE DE LOJAS** (Alessandra AJ41): é rede de alimentação. A linha ficou com um alerta.
+
+## Pendências
+- **112 redes de alimentação, 36 de lojas e 23 de construção** ficaram com CNPJ não confirmado. Muitas são franquias
+  cuja franqueadora não leva o nome da rede na razão social, como Chiquinho, Casa do Construtor e Domino's. Dá para
+  fechar com a COF (circular de franquia) ou com contato direto.
+- **48 redes de alimentação "não encontradas"** (nenhum estabelecimento com o nome na Receita). Quase todas vêm da lista
+  regional da aba "ALIMENTAÇÃO (...)", que tinha CNPJs inventados. Conferir se existem antes de usar.
+- Não foi feito o cruzamento com o faturamento e o cadastro (cliente atendido, última compra, vendedor). Fica para
+  quando o usuário pedir.
+
+## Lições
+- **Lista vinda de IA:** CNPJ com dígito certo não basta. É preciso existir na Receita, estar ativo e ter o nome da
+  rede. Nome de rede inventado também aparece. Sinal: nenhum estabelecimento com o nome em todo o Brasil.
+- **Franquia:** a busca pelo nome traz centenas de franqueados. A franqueadora costuma ter CNAE 7740-3/00 e razão com
+  "FRANCHISING" ou "FRANQUIAS". Capital social alto ajuda a separar dona da marca de franqueado.
+- **"Ativa" na Receita não quer dizer loja aberta:** Ricardo Eletro, Saraiva e Mappin ainda aparecem com centenas de
+  estabelecimentos ativos.
+- A matriz de uma raiz pode não ser a 0001 (ex.: Quero-Quero, Todimo). Usar o estabelecimento com identificador de
+  matriz = 1.
+- Na ferramenta Bash daqui, heredoc com muitas aspas às vezes quebra ("unexpected EOF"). Para arquivos grandes, usar
+  a ferramenta Write.
+
+## Scripts
+`scripts cruzamento/avulsos/mapa_final/`, com a ordem de execução no `LEIA-ME.md`. Os dados e as decisões ficam em
+`mapa_final/dados/`, fora do git.
