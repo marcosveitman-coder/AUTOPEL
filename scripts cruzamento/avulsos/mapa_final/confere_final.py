@@ -8,7 +8,7 @@ _os.chdir(_os.environ.get('AUTOPEL_MAPA_FINAL_DADOS') or _os.path.join(_AQUI, 'd
 import openpyxl, sys, re, pickle, json, collections, unicodedata
 p = sys.argv[1]
 rows_by = {}
-for pk in ['r1.pkl', 'r3.pkl', 'r4.pkl', 'r5.pkl']:
+for pk in ['r1.pkl', 'r3.pkl', 'r4.pkl', 'r5.pkl', 'r6.pkl', 'r7.pkl']:
     for r in pickle.load(open(pk, 'rb'))['est']: rows_by[r[0] + r[1] + r[2]] = r[5]
 for c, v in json.load(open('brasilapi.json', encoding='utf8')).items(): rows_by.setdefault(c, '02' if 'ATIVA' in str(v[3]).upper() else v[3])
 def dv(c):
@@ -35,7 +35,7 @@ for aba in ['ALIMENTACAO FINAL', 'REDE DE LOJAS FINAL', 'CONSTRUÇÃO FINAL']:
             if s is None: erros.append(('sem dado Receita', tipo, nome, c))
             elif s != '02': erros.append(('não ativo', tipo, nome, c, s))
         if not cnpj and conf in ('CNPJ CONFIRMADO NA RECEITA', 'CNPJ PROVÁVEL (CONFERIR)'): erros.append(('sem CNPJ', nome, conf))
-        if cnpj and ref: erros.append(('CNPJ e ref juntos', nome))
+        if cnpj and ref and cnpj != ref: erros.append(('CNPJ diferente da referencia', nome))
     dup = [k for k, v in nomes.items() if v > 1]
     print(f"{aba}: {len(data)} linhas | {ncnpj} CNPJ + {nref} ref | {dict(st)} | repetidos: {dup} | erros {len(erros)}: {erros[:6]}")
 vals = list(wb['MAIORES POR REGIÃO'].iter_rows(values_only=True))

@@ -235,3 +235,51 @@ pesquisa na web:
   `confere_final.py` não achou erros, e a pasta abriu no Excel (36 abas, 21 dinâmicas) antes de substituir o original.
 - **Pendência:** os números da Multicoisas e da Nobel são de 2019, os mais recentes com data que foram achados. A
   Receita mostra 33 lojas ativas com o nome Nobel. Confirmar com a ABF ou com as redes.
+
+## 4ª parte: CNPJs que ainda faltavam e aba R_E_S_U_M_O
+**Pedido.** O usuário apontou as redes sem CNPJ e pediu esforço extra:
+- ALIMENTACAO FINAL da linha 300 (Rede Graal) em diante;
+- REDE DE LOJAS FINAL da 309 (Constance) em diante;
+- CONSTRUÇÃO FINAL da 235 (Beira Rio) em diante.
+
+Pediu também o racional do estudo na aba **R_E_S_U_M_O**, que ele mesmo criou: metodologia e lugares pesquisados.
+
+**Antes de gravar.** O usuário tinha copiado à mão, para a coluna F, o CNPJ de referência das linhas 266 a 299.
+- Decisão: seguir o mesmo critério para todas as redes nesse nível. A F traz o CNPJ de uma unidade.
+- A coluna G passou a dizer "CNPJ DE UMA UNIDADE DA REDE (FRANQUEADORA NÃO ACHADA)".
+- Conferido por nome de rede: nenhum CNPJ que já estava na aba mudou (só a linha, porque a ordem foi refeita).
+
+**Busca.** Duas varreduras novas na Receita:
+- `q6`: 107 redes, pelo núcleo do nome e pela razão informada no ranking;
+- `q7`: as donas da Bráz e da Rede Graal.
+
+As decisões, rede a rede, ficaram em `dados/dec_6.json`.
+
+**Resultado**
+
+| Aba | Confirmado | Provável | CNPJ de uma unidade | Não confirmado | Não encontrada |
+|---|---|---|---|---|---|
+| ALIMENTACAO FINAL (368) | 237 | 33 | 42 | 13 | 43 |
+| REDE DE LOJAS FINAL (327) | 296 | 16 | 9 | 6 | — |
+| CONSTRUÇÃO FINAL (250) | 237 | 4 | 0 | 9 | — |
+
+- **Confirmados pela razão ou pelo CNAE de franquia:**
+  - franqueadoras: Parmê, Jorge Bischoff e Peça Rara;
+  - operadoras: Tortelê e Lucca Cafés;
+  - razão igual à do ranking ANAMACO: Cocil, Copafer, Ferragem Lorenzet, Nicom e Padovani. Essas não tinham entrado na busca da 1ª rodada.
+- **Rede Graal:** cada posto/restaurante é uma empresa. Não existe franqueadora nem holding com o nome. Fica com o CNPJ da unidade de origem da rede (o posto "Graal Petropen", de 1974).
+- **Continuam sem CNPJ:** nomes comuns (Matsuri, Bulls, Rabelo, Seller, São Jorge, Caetano) e redes sem nenhuma loja na UF da origem. A observação de cada linha diz o que foi achado.
+- **Aba R_E_S_U_M_O:** gravada com o `resumo.py`, chamado pelo `grava_abas.py`. Usa só estilos que já existiam na pasta. Seções:
+  1. objetivo;
+  2. metodologia em 8 passos;
+  3. níveis da conferência do CNPJ, com as contagens por aba;
+  4. fontes pesquisadas, com os endereços;
+  5. maiores de cada segmento e região;
+  6. cuidados;
+  7. próximos passos.
+- **Gravação:** mudaram só as 3 abas FINAL, a MAIORES POR REGIÃO e a R_E_S_U_M_O. `confere_final.py` não achou erros. A pasta abriu no Excel (37 abas, 21 dinâmicas).
+
+**Lições**
+- **O Excel do usuário salva com strings compartilhadas:** depois disso o XML da aba já não tem o texto do cabeçalho. Conferir a aba pela célula B1, não pelo texto.
+- **O usuário pode salvar a pasta entre um pedido e outro:** comparar o arquivo atual com o backup antes de trocar, e refazer a cópia sobre a versão nova.
+- **Na exportação de imagem pelo COM com o Excel oculto,** o gráfico colado pode sair em branco. Para conferir o conteúdo, ler o texto da aba.

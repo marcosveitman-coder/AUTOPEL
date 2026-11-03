@@ -237,6 +237,8 @@ Armadilhas reais já vistas:
   pegava 2 mil empresas. Nome genérico espalhado por todas as UFs (Constrular) não é rede.
 - **Região** = UF da sede (Receita > pesquisa > aba de origem > UF com mais lojas), nunca a UF da unidade de referência.
   A aba "MAIORES POR REGIÃO" (top 30 Brasil, top 20 por região) é gerada pelo `grava_abas.py`.
+- **CNPJ de uma unidade** (franqueadora não achada) vai também na coluna F, como o usuário fez à mão em 03/11; a G avisa
+  "CNPJ DE UMA UNIDADE DA REDE". A aba **R_E_S_U_M_O** (racional e fontes) é regravada pelo `grava_abas.py` (`resumo.py`).
 
 ---
 

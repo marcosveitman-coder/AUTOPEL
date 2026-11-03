@@ -16,13 +16,22 @@ NIVEL = {}
 for k, v in DEC5.items():
     NIVEL[k] = v[3]
     if '|+' not in k: DEC[k] = v[:3]
+# 3a rodada (03/11): [cnpj, nivel C/P/U/NC/NF/NOTA, nota, UF da sede]; C/P entram como decisao de CNPJ, o resto so como nota
+DEC6 = {k: v for k, v in json.load(open('dec_6.json', encoding='utf8')).items() if not k.startswith('_')}
+for k, v in DEC6.items():
+    if v[1] not in ('C', 'P'): continue
+    velho = DEC.get(k, ['', '', ''])
+    nota = '; '.join(x for x in [velho[2] if 'não existe' in (velho[2] or '') or 'BAIXADO' in (velho[2] or '') else '', v[2]] if x)
+    NIVEL[k] = v[1]
+    if '|+' in k: DEC5[k] = [v[0], '', v[2], v[1]]
+    else: DEC[k] = [v[0], velho[1], nota]
 COMP = json.load(open('complementos.json', encoding='utf8'))
 ANA = json.load(open('anamaco.json', encoding='utf8'))
 MUN = pickle.load(open('mun.pkl', 'rb'))
 NOMES = json.load(open('nomes.json', encoding='utf8'))
 BAPI = json.load(open('brasilapi.json', encoding='utf8'))
 emp, rows_by = {}, collections.defaultdict(dict)
-for pk in ['r1.pkl', 'r3.pkl', 'r4.pkl', 'r5.pkl']:
+for pk in ['r1.pkl', 'r3.pkl', 'r4.pkl', 'r5.pkl', 'r6.pkl', 'r7.pkl']:
     D = pickle.load(open(pk, 'rb'))
     for k, v in D['emp'].items(): emp.setdefault(k, v)
     for r in D['est']: rows_by[r[0]][r[0] + r[1] + r[2]] = r
@@ -228,7 +237,26 @@ for seg, rs in out.items():
         x = at[0]
         r['ref'] = x[0] + x[1] + x[2]
         r['ref_desc'] = f"{emp.get(x[0], ('',))[0].strip()} ({MUN.get(x[11], x[11])}/{x[10]}, nome fantasia {x[4].strip()})"
-        r['conf'] = 'FRANQUEADORA NÃO ACHADA: VER CNPJ DE REFERÊNCIA'
+        r['conf'] = 'CNPJ DE UMA UNIDADE DA REDE (FRANQUEADORA NÃO ACHADA)'
+# 3a rodada: CNPJ de uma unidade escolhido a mao (U) e notas das redes que continuam sem CNPJ
+for seg, rs in out.items():
+    for r in rs:
+        v = DEC6.get(r.get('key'))
+        if not v or v[1] in ('C', 'P'): continue
+        if v[1] == 'U':
+            c = v[0]; x = rows_by.get(c[:8], {}).get(c)
+            assert x and x[5] == '02', ('unidade sem dado ou inativa', r['key'], c)
+            r['ref'] = c
+            r['ref_desc'] = f"{emp.get(x[0], ('',))[0].strip()} ({MUN.get(x[11], x[11])}/{x[10]}, nome fantasia {x[4].strip()})"
+            r['conf'] = 'CNPJ DE UMA UNIDADE DA REDE (FRANQUEADORA NÃO ACHADA)'
+            r['obs'] = '; '.join(x for x in [r['obs'], v[2]] if x)
+        else:
+            r['obs'] = '; '.join(x for x in [r['obs'], v[2]] if x and v[2] not in (r['obs'] or ''))
+        if v[3]: SEDE_WEB[r['key']] = (v[3], 'UF da sede pela pesquisa de 03/11/2026')
+NF_NOTA = 'busca refeita em 03/11/2026 pelo núcleo do nome e pela razão social: nada com o nome na UF da origem'
+for r in out['ALIM']:
+    if r['conf'].startswith('REDE NÃO') and r.get('key') not in DEC6: r['obs'] = '; '.join(x for x in [r['obs'], NF_NOTA] if x)
+# UF da sede (para a regiao): Receita > pesquisa > aba de origem > UF com mais lojas da rede
 for seg, rs in out.items():
     for r in rs:
         if r['uf']: r['uf_sede'], r['uf_sede_fonte'] = r['uf'], ''
@@ -248,7 +276,7 @@ for seg, rs in out.items():
         if r['cnpj']: porc[r['cnpj']].append(r['fant'])
     for k, v in porc.items():
         if len(v) > 1: print('CNPJ EM MAIS DE UMA REDE', seg, fmt(k), v)
-ORD = {'CNPJ CONFIRMADO NA RECEITA': 0, 'CNPJ PROVÁVEL (CONFERIR)': 1, 'FRANQUEADORA NÃO ACHADA: VER CNPJ DE REFERÊNCIA': 2, 'CNPJ NÃO CONFIRMADO': 3, 'REDE NÃO ENCONTRADA NA RECEITA': 4}
+ORD = {'CNPJ CONFIRMADO NA RECEITA': 0, 'CNPJ PROVÁVEL (CONFERIR)': 1, 'CNPJ DE UMA UNIDADE DA REDE (FRANQUEADORA NÃO ACHADA)': 2, 'CNPJ NÃO CONFIRMADO': 3, 'REDE NÃO ENCONTRADA NA RECEITA': 4}
 for seg in out:
     out[seg].sort(key=lambda r: (ORD.get(r['conf'], 1), -(r['lojas'] or 0), norm(r['fant'])))
 pickle.dump(out, open('final_rows.pkl', 'wb'))

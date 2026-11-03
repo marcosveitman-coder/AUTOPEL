@@ -25,6 +25,8 @@ COLS = [("Nº", 6), ("NOME FANTASIA", 34), ("RAZÃO SOCIAL", 46), ("GRUPO ADMINI
         ("SEGMENTO", 26), ("ORIGEM", 42), ("OBSERVAÇÃO", 80)]
 ABAS = {'ALIM': 'ALIMENTACAO FINAL', 'LOJ': 'REDE DE LOJAS FINAL', 'CONS': 'CONSTRUÇÃO FINAL'}
 NOVA = 'MAIORES POR REGIÃO'
+RESUMO = 'R_E_S_U_M_O'
+DATA = '03/11/2026'
 def fmt(c):
     return f"{c[:2]}.{c[2:5]}.{c[5:8]}/{c[8:12]}-{c[12:]}" if len(c) == 14 else c
 def cell(ref, v, s):
@@ -51,6 +53,7 @@ for seg, rs in rows.items():
     por = collections.defaultdict(list)
     for r in validos:
         g = REG.get(uf_de(r))
+        r['regiao'] = g or ''
         if g: por[g].append(r)
     for g, lst in por.items():
         for i, r in enumerate(sorted(lst, key=lambda r: -r['lojas']), start=1): r['rkr'] = i
@@ -59,7 +62,7 @@ def aba_xml(rs):
     out = [row_xml(1, [(h, S_HEAD) for h, w in COLS], ht=45)]
     for i, r in enumerate(rs, start=1):
         u = uf_de(r)
-        vals = [(i, S_NUM), (r['fant'], S_TXT), (r['raz'], S_TXT), (r['grupo'], S_TXT), (r['lojas'] or None, S_NUM), (fmt(r['cnpj']), S_TXT),
+        vals = [(i, S_NUM), (r['fant'], S_TXT), (r['raz'], S_TXT), (r['grupo'], S_TXT), (r['lojas'] or None, S_NUM), (fmt(r['cnpj'] or r.get('ref', '')), S_TXT),
                 (r['conf'], S_TXT), (fmt(r.get('ref', '')), S_TXT), (r.get('ref_desc', ''), S_TXT), (uf_de(r), S_TXT), (r['mun'], S_TXT),
                 (REG.get(u, ''), S_TXT), (r.get('rk'), S_NUM), (r.get('rkr'), S_NUM), (r['sit'], S_TXT), (r['fonte'], S_TXT),
                 (rede_de(r), S_NUM), (r.get('segm') or CN.get(r.get('cnae', ''), ''), S_TXT), (r['origem'], S_TXT), (obs_de(r), S_TXT)]
@@ -101,13 +104,19 @@ def main():
     z = zipfile.ZipFile(MAPA); novos = {}
     for seg, aba in ABAS.items():
         p = caminho(z, aba); x = z.read(p).decode('utf8')
-        assert 'NOME FANTASIA' in x or '<sheetData/>' in x, f'a aba {aba} tem outro conteúdo'
+        assert '<sheetData/>' in x or re.search(r'<c r="B1"', x), f'a aba {aba} tem outro conteúdo'
         corpo, dim = aba_xml(rows[seg])
         x = re.sub(r'(<cols>.*?</cols>)?<sheetData(/>|>.*?</sheetData>)(<autoFilter[^>]*/>)?', lambda m: corpo, x, count=1, flags=re.S)
         x = re.sub(r'<dimension ref="[^"]*"/>', f'<dimension ref="{dim}"/>', x)
         x = re.sub(r'<sheetViews>.*?</sheetViews>', VIEW, x, flags=re.S)
         novos[p] = x.encode('utf8'); print(aba, p, len(rows[seg]))
     wb = z.read('xl/workbook.xml').decode('utf8')
+    if f'<sheet name="{RESUMO}"' in wb:  # aba criada pelo usuario para o racional do estudo
+        import resumo
+        p = caminho(z, RESUMO); x = z.read(p).decode('utf8')
+        corpo, dim = resumo.resumo_xml(rows, row_xml, get_column_letter, DATA)
+        x = re.sub(r'(<cols>.*?</cols>)?<sheetData(/>|>.*?</sheetData>)', lambda m: corpo, x, count=1, flags=re.S)
+        novos[p] = re.sub(r'<dimension ref="[^"]*"/>', f'<dimension ref="{dim}"/>', x).encode('utf8'); print(RESUMO, p)
     corpo, dim = regiao_xml()
     if f'<sheet name="{escape(NOVA)}"' in wb:  # a aba ja existe (atualizacao): troca so o conteudo dela
         p = caminho(z, NOVA); x = z.read(p).decode('utf8')

@@ -43,6 +43,9 @@ Os resultados das varreduras da Receita (`r1.pkl` a `r5.pkl`) não foram guardad
      - entram em `complementos_manuais.json`, chave `ABF`;
      - a busca na Receita é `busca_receita.py q5.json r5.pkl`;
      - o `build_final.py` usa `q4` e `q5` para a unidade de referência.
+   - 3ª rodada (redes ainda sem CNPJ): `python mkq6.py`, `busca_receita.py q6.json r6.pkl`, `python view6.py` (`v6.txt`);
+     decisões em `dec_6.json` (`[cnpj, nível C/P/U/NC/NF, nota, UF da sede]`, U = CNPJ de uma unidade).
+   - O `grava_abas.py` também regrava a aba **R_E_S_U_M_O** (texto em `resumo.py`) quando ela existe.
 9. `python build_final.py`:
    - gera as linhas finais (`final_rows.pkl`) e mostra nome repetido e CNPJ usado em mais de uma rede;
    - monta também o CNPJ de referência e a UF da sede.
