@@ -13,6 +13,11 @@ try {
   $ws = $wb.Worksheets.Item($aba)
   $ws.ResetAllPageBreaks() | Out-Null
   $ws.Cells.Clear() | Out-Null
+  if ($dados.fonte) {
+    # aba de impressao: letra unica na aba toda e alturas/larguras zeradas antes de redesenhar
+    $ws.Cells.Font.Name = $dados.fonte; $ws.Cells.Font.Size = 10
+    $ws.Cells.RowHeight = 13; $ws.Cells.ColumnWidth = $ws.StandardWidth
+  }
   $milhar = $xl.International(4); $decimal = $xl.International(3)
   $fmtNum = "#${milhar}##0"; $fmtPct = "0${decimal}0%"
   $cIni = 1; $cFim = 26; $larg = 9.3; $marg = 2
@@ -49,6 +54,7 @@ try {
     if ($op.halign -eq 'center') { $rg.HorizontalAlignment = -4108 } else { $rg.HorizontalAlignment = -4131 }
     $rg.VerticalAlignment = -4108
     if ($op.wrap) { $rg.WrapText = $true }
+    if ($op.indent) { $rg.IndentLevel = [int]$op.indent }
     if ($op.border) { $rg.Borders.LineStyle = 1; $rg.Borders.Weight = 2; $rg.Borders.Color = (Cor @(191, 191, 191)) }
     if ($op.h) { $k = [int]$op.r; if (-not $alturas.ContainsKey($k) -or $alturas[$k] -lt $op.h) { $alturas[$k] = [double]$op.h } }
   }
@@ -57,10 +63,10 @@ try {
   if ($dados.quebras) {
     # uma folha A4 paisagem por parte: zoom fixo, quebras manuais, margens estreitas, centralizado, numero da folha no rodape
     $ps.PaperSize = 9; $ps.Zoom = [int]$dados.zoom
-    $ps.LeftMargin = $xl.CentimetersToPoints(0.6); $ps.RightMargin = $xl.CentimetersToPoints(0.6)
-    $ps.TopMargin = $xl.CentimetersToPoints(0.8); $ps.BottomMargin = $xl.CentimetersToPoints(0.8)
-    $ps.HeaderMargin = $xl.CentimetersToPoints(0.3); $ps.FooterMargin = $xl.CentimetersToPoints(0.3)
-    $ps.CenterHorizontally = $true; $ps.CenterFooter = '&8Folha &P de &N'
+    $ps.LeftMargin = $xl.CentimetersToPoints(0.5); $ps.RightMargin = $xl.CentimetersToPoints(0.5)
+    $ps.TopMargin = $xl.CentimetersToPoints(0.6); $ps.BottomMargin = $xl.CentimetersToPoints(0.7)
+    $ps.HeaderMargin = $xl.CentimetersToPoints(0.2); $ps.FooterMargin = $xl.CentimetersToPoints(0.2)
+    $ps.CenterHorizontally = $true; $ps.CenterFooter = '&"Verdana"&10Folha &P de &N'
     foreach ($q in $dados.quebras) { $ws.HPageBreaks.Add($ws.Cells.Item([int]$q, 1)) | Out-Null }
   } else { $ps.Zoom = $false; $ps.FitToPagesWide = 1; $ps.FitToPagesTall = $false }
   $colFim = $ws.Cells.Item(1, $cFim).Address($true, $true) -replace '\$1$', ''

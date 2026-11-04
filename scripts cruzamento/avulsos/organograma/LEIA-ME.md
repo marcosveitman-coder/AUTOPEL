@@ -41,26 +41,31 @@ Monta a aba **ORGANOGRAMA**, o "constante organograma":
 
 ## Aba "ORGANOGRAMA impressao" (versão para imprimir)
 
-As mesmas informações, em **4 folhas A4 paisagem** (zoom fixo de 94% e quebras manuais):
+As mesmas informações, em **6 folhas A4 paisagem impressas a 100%**. A letra é Verdana, sempre com tamanho 10 ou
+maior e sem itálico (pedido do usuário):
 1. equipe menor;
-2. equipe maior (vendedores e venda interna, depois representantes);
-3. tabela 1, carteira de cada pessoa (quantidade em cima e % embaixo na mesma célula);
-4. tabela 2, potencial por segmento, e tabela 3, segmentos × responsáveis, em duas metades.
+2. equipe maior, parte 1: vendedores e venda interna;
+3. equipe maior, parte 2: representantes;
+4. carteira de cada pessoa: diretoria e equipe menor;
+5. carteira de cada pessoa: equipe maior;
+6. potencial por segmento e segmentos × responsáveis.
 
 Em cada folha de equipe:
-- o supervisor fica no centro;
-- à esquerda, a diretoria, os status e a legenda;
-- à direita, o resumo da equipe;
-- abaixo, as caixas de 6 colunas, 4 por linha.
+- no topo, uma faixa do supervisor: pessoas, clientes, no segmento, ativos, perdendo, a trabalhar e potencial;
+- abaixo, as caixas: 14 colunas cada, 4 por linha, com rótulo e valor em linhas separadas;
+- no rodapé, a legenda.
 
-As 30 colunas (B..AE) são iguais, com largura de 4,3. Todas as alturas de linha são fixas, para o script calcular a
-altura de cada folha e o zoom.
+Com Verdana 10, a equipe maior (12 pessoas) não cabe em uma folha: por isso ela ocupa 2.
+
+**Grade:** 62 colunas estreitas (B..BK, largura 1,72 = 17 px).
+**Alturas:** texto quebrado em célula mesclada não se ajusta sozinho. O script estima as linhas pela largura das letras
+da Verdana, fixa a altura de cada linha e para com erro se alguma folha passar de 556 pt (altura útil da página).
 
 1. `python org_impressao.py` (depois do `org_dados.py`) → `org_impressao.json`.
-2. `powershell -File org_grava.ps1 -Arquivo "<cópia.xlsx>" -Layout org_impressao.json`. O mesmo gravador lê do json
-   a aba, as colunas, as quebras e o zoom. A saída mostra as quebras gravadas, que devem ser só as do json.
+2. `powershell -File org_grava.ps1 -Arquivo "<cópia.xlsx>" -Layout org_impressao.json`. O gravador lê do json a aba,
+   a letra, as colunas, as quebras e o zoom. A saída mostra as quebras gravadas, que devem ser só as do json.
 3. `powershell -File org_png.ps1 -Arquivo "<cópia.xlsx>" -Layout org_impressao.json -Saida <pasta>`: uma imagem por
-   folha, para conferir.
+   folha. Conferir se há texto cortado.
 4. `python org_confere.py "<partida.xlsx>" "<cópia.xlsx>" "ORGANOGRAMA impressao"`: as outras abas célula a célula,
    as dinâmicas, os caches e os nomes definidos.
 
@@ -71,7 +76,7 @@ altura de cada folha e o zoom.
 - **CLIENTES** = ativos + perdendo + a trabalhar (cartões do CRM). Onde há clientes sem segmento, NO + FORA fica menor
   que CLIENTES.
 - **Carteira dos supervisores:** é a visão do CRM de cada um e não bate com a soma das pessoas da equipe.
-- **Coluna estreita na impressão:** número de 5 dígitos em coluna de 4,3 vira `#####`. Na tabela 1, cada valor
-  ocupa 2 colunas.
+- **Impressão legível:** Verdana 10 é bem mais larga que Calibri. Rótulo e valor em células separadas, número
+  gravado como número (senão aparece o triângulo verde) e nada de zoom abaixo de 100%.
 - **Faixa compartilhada:** caixas e quadros na mesma faixa de linhas dividem a altura. O quadro ao lado das caixas
   fica sem altura fixa, senão estica os cartões.

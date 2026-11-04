@@ -113,3 +113,41 @@ folha.
 - Gravar número como texto deixa o triângulo verde de erro na célula: gravar como número com formato.
 - Comentários dos scripts não podem citar nomes de vendedores. Um comentário do `org_layout.py` foi corrigido nesta
   sessão.
+
+## 3ª parte: impressão mais legível
+
+**Pedido:** a versão de impressão ficou boa, mas pode ficar bem mais legível:
+- sem itálico;
+- letra tipo Verdana;
+- tamanho 10 ou maior.
+
+**Entrega:** a aba "ORGANOGRAMA impressao" foi refeita (B1:BK138), em 6 folhas A4 paisagem a 100%. Quebras nas
+linhas 23, 55, 77, 89 e 109.
+
+| Folha | Conteúdo |
+|---|---|
+| 1 | Equipe menor (3 vendedoras) |
+| 2 | Equipe maior: vendedores e venda interna (8) |
+| 3 | Equipe maior: representantes (4) |
+| 4 | Carteira: diretoria e equipe menor |
+| 5 | Carteira: equipe maior |
+| 6 | Potencial por segmento e segmentos × responsáveis |
+
+- Os 10 segmentos sem responsável ficaram numa linha só.
+- Cada folha de equipe tem:
+  - no topo, a faixa do supervisor, que junta a caixa do supervisor e o resumo da equipe;
+  - as caixas, com rótulo e valor em linhas separadas;
+  - a legenda no rodapé.
+- Na tabela de carteira, cada célula traz a quantidade em cima e o % embaixo.
+
+**Decisão:** com letra 10, a equipe maior não cabe numa folha. Ela foi dividida em 2 folhas, em vez de reduzir o
+zoom.
+
+**Conferência:**
+- todas as fontes da aba são Verdana, de tamanho 10 a 16, sem itálico (conferido no `styles.xml`), e o rodapé também
+  é Verdana 10;
+- as outras abas ficaram iguais célula a célula;
+- dinâmicas 21 = 21, caches 9 = 9;
+- nos nomes definidos, só mudou a área de impressão da aba;
+- foi feita uma imagem de cada folha;
+- o original foi trocado depois de conferir que estava igual ao backup.
