@@ -251,6 +251,11 @@ Armadilhas reais já vistas:
   segmento: não somar entre pessoas;
 - gravada pelo Excel (COM) numa cópia. Conferir as outras abas célula a célula; nos nomes definidos só entra a área de
   impressão.
+- a aba **"ORGANOGRAMA impressao"** tem as mesmas informações em 4 folhas A4 paisagem:
+  - uma equipe por folha, depois a tabela 1 e, na última folha, as tabelas 2 e 3;
+  - zoom fixo, quebras manuais e todas as alturas fixas;
+  - é feita por `org_impressao.py`, com o mesmo `org_grava.ps1`;
+  - conferir com `org_png.ps1` (imagem de cada folha) e `org_confere.py`.
 
 ---
 

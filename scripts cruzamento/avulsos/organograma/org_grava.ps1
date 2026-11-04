@@ -1,5 +1,6 @@
 # Grava a aba ORGANOGRAMA pelo Excel (COM) numa copia do MAPA MERCADO, a partir do org_layout.json.
-# Uso: powershell -File org_grava.ps1 -Arquivo <copia.xlsx> -Layout <org_layout.json>
+# Uso: powershell -File org_grava.ps1 -Arquivo <copia.xlsx> -Layout <org_layout.json | org_impressao.json>
+# O org_impressao.json traz aba, colunas, quebras de pagina e zoom (aba "ORGANOGRAMA impressao", uma folha A4 por parte).
 param([string]$Arquivo, [string]$Layout)
 $ErrorActionPreference = 'Stop'
 $dados = Get-Content -Raw -Encoding UTF8 $Layout | ConvertFrom-Json
@@ -8,13 +9,17 @@ $xl = New-Object -ComObject Excel.Application
 $xl.Visible = $false; $xl.DisplayAlerts = $false; $xl.ScreenUpdating = $false
 try {
   $wb = $xl.Workbooks.Open($Arquivo)
-  $ws = $wb.Worksheets.Item('ORGANOGRAMA')
+  $aba = 'ORGANOGRAMA'; if ($dados.aba) { $aba = $dados.aba }
+  $ws = $wb.Worksheets.Item($aba)
+  $ws.ResetAllPageBreaks() | Out-Null
   $ws.Cells.Clear() | Out-Null
   $milhar = $xl.International(4); $decimal = $xl.International(3)
   $fmtNum = "#${milhar}##0"; $fmtPct = "0${decimal}0%"
-  $ws.Columns.Item(1).ColumnWidth = 2
-  for ($c = 2; $c -le 25; $c++) { $ws.Columns.Item($c).ColumnWidth = 9.3 }
-  $ws.Columns.Item(26).ColumnWidth = 2
+  $cIni = 1; $cFim = 26; $larg = 9.3; $marg = 2
+  if ($dados.colunas) { $cIni = [int]$dados.colunas.primeira; $cFim = [int]$dados.colunas.ultima; $larg = [double]$dados.colunas.largura; $marg = [double]$dados.colunas.margem }
+  $ws.Columns.Item($cIni).ColumnWidth = $marg
+  for ($c = $cIni + 1; $c -lt $cFim; $c++) { $ws.Columns.Item($c).ColumnWidth = $larg }
+  $ws.Columns.Item($cFim).ColumnWidth = $marg
   $alturas = @{}
   foreach ($op in $dados.ops) {
     if ($op.box) {
@@ -48,12 +53,22 @@ try {
     if ($op.h) { $k = [int]$op.r; if (-not $alturas.ContainsKey($k) -or $alturas[$k] -lt $op.h) { $alturas[$k] = [double]$op.h } }
   }
   foreach ($k in $alturas.Keys) { $ws.Rows.Item($k).RowHeight = $alturas[$k] }
-  $ws.PageSetup.Orientation = 2; $ws.PageSetup.Zoom = $false; $ws.PageSetup.FitToPagesWide = 1; $ws.PageSetup.FitToPagesTall = $false
-  $ws.PageSetup.PrintArea = '$A$1:$Z$' + $dados.ultima
+  $ps = $ws.PageSetup; $ps.Orientation = 2
+  if ($dados.quebras) {
+    # uma folha A4 paisagem por parte: zoom fixo, quebras manuais, margens estreitas, centralizado, numero da folha no rodape
+    $ps.PaperSize = 9; $ps.Zoom = [int]$dados.zoom
+    $ps.LeftMargin = $xl.CentimetersToPoints(0.6); $ps.RightMargin = $xl.CentimetersToPoints(0.6)
+    $ps.TopMargin = $xl.CentimetersToPoints(0.8); $ps.BottomMargin = $xl.CentimetersToPoints(0.8)
+    $ps.HeaderMargin = $xl.CentimetersToPoints(0.3); $ps.FooterMargin = $xl.CentimetersToPoints(0.3)
+    $ps.CenterHorizontally = $true; $ps.CenterFooter = '&8Folha &P de &N'
+    foreach ($q in $dados.quebras) { $ws.HPageBreaks.Add($ws.Cells.Item([int]$q, 1)) | Out-Null }
+  } else { $ps.Zoom = $false; $ps.FitToPagesWide = 1; $ps.FitToPagesTall = $false }
+  $colFim = $ws.Cells.Item(1, $cFim).Address($true, $true) -replace '\$1$', ''
+  $ps.PrintArea = '$A$1:' + $colFim + '$' + $dados.ultima
   $ws.Activate(); $xl.ScreenUpdating = $true
   $janela = $wb.Windows.Item(1); $janela.DisplayGridlines = $false; $janela.Zoom = 90
   $ws.Range('A1').Select() | Out-Null
   $wb.Save()
-  'gravado: ' + $ws.UsedRange.Address(0, 0)
+  'gravado: ' + $ws.UsedRange.Address(0, 0) + ' | quebras: ' + (@(foreach ($b in $ws.HPageBreaks) { $b.Location.Row }) -join ',')
   $wb.Close($false)
 } finally { $xl.Quit(); [System.Runtime.InteropServices.Marshal]::ReleaseComObject($xl) | Out-Null }

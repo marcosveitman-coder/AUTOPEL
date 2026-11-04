@@ -72,3 +72,44 @@ O script do repositório refaz o desenho exatamente igual: as 738 operações fo
   saiu em branco.
 - **Texto com aspas:** heredoc do Bash com aspas no texto quebra o comando inteiro antes de rodar. Para documentação,
   gravar com a ferramenta de escrita de arquivo.
+
+## 2ª parte: aba "ORGANOGRAMA impressao"
+
+**Pedido:** a primeira parte da ORGANOGRAMA (linhas 1 a 64) ficou muito pequena na impressão. O usuário criou a aba
+em branco "ORGANOGRAMA impressao" e pediu as mesmas informações num layout melhor para imprimir, com uma equipe por
+folha.
+
+**Entrega (B1:AE115, 4 folhas A4 paisagem, zoom 94%, quebras nas linhas 23, 65 e 90):**
+1. **Folha 1 – equipe menor (3 vendedoras):**
+   - o supervisor ao centro;
+   - à esquerda, a diretoria, os status e a legenda;
+   - à direita, o resumo da equipe: pessoas, clientes, % no segmento, ativos, perdendo e a trabalhar, em número e %,
+     e o potencial;
+   - abaixo, as caixas da equipe.
+2. **Folha 2 – equipe maior:** a mesma estrutura, com 8 vendedores e venda interna e depois 4 representantes (3 linhas
+   de 4 caixas).
+3. **Folha 3 – tabela 1, carteira de cada pessoa:** quantidade e % na mesma célula, em duas linhas.
+4. **Folha 4:**
+   - tabela 2, potencial por segmento;
+   - tabela 3, segmentos × responsáveis, em duas metades lado a lado.
+
+**Caixas maiores:** cada uma tem 6 colunas (cerca de 5,5 cm na folha). Os números ficam em células próprias
+(clientes, no segmento, % ativos/perdendo/a trabalhar), e não numa frase só.
+
+**Conferência:**
+- os dados foram refeitos a partir do arquivo atual e saíram iguais aos da 1ª parte;
+- as 39 outras abas (incluindo a ORGANOGRAMA) ficaram iguais célula a célula;
+- dinâmicas 21 = 21, caches 9 = 9;
+- nos nomes definidos, só entrou a área de impressão da aba nova;
+- as quebras gravadas são só as 3 manuais;
+- foi feita uma imagem de cada folha;
+- o original foi trocado depois de conferir o md5 com o backup.
+
+**Lições:**
+- Para imprimir uma parte por folha:
+  - zoom fixo e quebras manuais (com "ajustar a 1 página de largura" o Excel reduz tudo junto);
+  - altura fixa em todas as linhas, para calcular a altura de cada folha antes de gravar.
+- Número de 5 dígitos não cabe numa coluna de largura 4,3 (vira `#####`): usar 2 colunas por valor.
+- Gravar número como texto deixa o triângulo verde de erro na célula: gravar como número com formato.
+- Comentários dos scripts não podem citar nomes de vendedores. Um comentário do `org_layout.py` foi corrigido nesta
+  sessão.

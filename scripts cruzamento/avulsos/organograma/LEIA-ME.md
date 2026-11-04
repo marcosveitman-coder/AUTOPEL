@@ -39,6 +39,31 @@ Monta a aba **ORGANOGRAMA**, o "constante organograma":
 
    Depois trocar o original.
 
+## Aba "ORGANOGRAMA impressao" (versão para imprimir)
+
+As mesmas informações, em **4 folhas A4 paisagem** (zoom fixo de 94% e quebras manuais):
+1. equipe menor;
+2. equipe maior (vendedores e venda interna, depois representantes);
+3. tabela 1, carteira de cada pessoa (quantidade em cima e % embaixo na mesma célula);
+4. tabela 2, potencial por segmento, e tabela 3, segmentos × responsáveis, em duas metades.
+
+Em cada folha de equipe:
+- o supervisor fica no centro;
+- à esquerda, a diretoria, os status e a legenda;
+- à direita, o resumo da equipe;
+- abaixo, as caixas de 6 colunas, 4 por linha.
+
+As 30 colunas (B..AE) são iguais, com largura de 4,3. Todas as alturas de linha são fixas, para o script calcular a
+altura de cada folha e o zoom.
+
+1. `python org_impressao.py` (depois do `org_dados.py`) → `org_impressao.json`.
+2. `powershell -File org_grava.ps1 -Arquivo "<cópia.xlsx>" -Layout org_impressao.json`. O mesmo gravador lê do json
+   a aba, as colunas, as quebras e o zoom. A saída mostra as quebras gravadas, que devem ser só as do json.
+3. `powershell -File org_png.ps1 -Arquivo "<cópia.xlsx>" -Layout org_impressao.json -Saida <pasta>`: uma imagem por
+   folha, para conferir.
+4. `python org_confere.py "<partida.xlsx>" "<cópia.xlsx>" "ORGANOGRAMA impressao"`: as outras abas célula a célula,
+   as dinâmicas, os caches e os nomes definidos.
+
 ## Cuidados
 
 - **O potencial é do segmento:** quem divide o segmento divide as mesmas oportunidades; não somar entre pessoas. No
@@ -46,5 +71,7 @@ Monta a aba **ORGANOGRAMA**, o "constante organograma":
 - **CLIENTES** = ativos + perdendo + a trabalhar (cartões do CRM). Onde há clientes sem segmento, NO + FORA fica menor
   que CLIENTES.
 - **Carteira dos supervisores:** é a visão do CRM de cada um e não bate com a soma das pessoas da equipe.
+- **Coluna estreita na impressão:** número de 5 dígitos em coluna de 4,3 vira `#####`. Na tabela 1, cada valor
+  ocupa 2 colunas.
 - **Faixa compartilhada:** caixas e quadros na mesma faixa de linhas dividem a altura. O quadro ao lado das caixas
   fica sem altura fixa, senão estica os cartões.

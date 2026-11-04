@@ -1,6 +1,6 @@
 """Desenho da aba ORGANOGRAMA: gera org_layout.json com as operacoes de celula (mesclar, valor, formato) que o
-org_grava.ps1 aplica pelo Excel. Colunas B..Y (24 colunas iguais): metade esquerda (B..M) = equipe da Sandra,
-metade direita (N..Y) = equipe do Americo; caixas de 4 colunas, 3 por linha, centralizadas em cada metade."""
+org_grava.ps1 aplica pelo Excel. Colunas B..Y (24 colunas iguais): metade esquerda (B..M) = equipe menor,
+metade direita (N..Y) = equipe maior; caixas de 4 colunas, 3 por linha, centralizadas em cada metade."""
 import json
 D = json.load(open('org_dados.json', encoding='utf8'))
 P = {p['id']: p for p in D['pessoas']}
@@ -68,7 +68,7 @@ r0 = fim_s + 2
 fs = bloco(EQ_S, r0, 2, f"EQUIPE {P[SUP[0]]['nome']} – {rotulo(EQ_S)} ({len(EQ_S)})")
 fa = bloco(VEND_A, r0, 14, f"EQUIPE {P[SUP[1]]['nome']} – {rotulo(VEND_A)} ({len(VEND_A)})")
 if REP_A: fa = bloco(REP_A, fa, 14, f"EQUIPE {P[SUP[1]]['nome']} – REPRESENTANTES ({len(REP_A)})")
-# resumo das equipes e legenda, embaixo da equipe da Sandra (equilibra as duas metades)
+# resumo das equipes e legenda, embaixo da equipe menor (equilibra as duas metades)
 rr = fs
 put(rr, 2, 'RESUMO DAS EQUIPES – NO SEGMENTO (CRM)', 13, bold=True, size=9, fill=NAVY, font=WHITE, halign='center'); rr += 1
 for c1, c2, t in [(2, 4, 'EQUIPE'), (5, 5, 'PESSOAS'), (6, 6, 'CLIENTES'), (7, 7, '% NO SEGM.'), (8, 8, 'ATIVOS'), (9, 9, '% ATIVOS'),
