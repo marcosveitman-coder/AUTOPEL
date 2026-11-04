@@ -56,6 +56,7 @@ Bases Claude/                       (fora do git: fat *.xlsx, supermercados*.xls
         ├── farmacias/              base consolidada de farmácias (Receita + redes + faturamento) + LEIA-ME.md
         ├── kraft_heinz/            prospecção de um grupo: Receita por razão social + linhas de uma raiz nas bases
         ├── mapa_final/             abas ALIMENTACAO/REDE DE LOJAS/CONSTRUÇÃO FINAL (CNPJ por rede + complementos) + LEIA-ME.md
+        ├── organograma/            aba ORGANOGRAMA do MAPA MERCADO (equipe, segmentos, carteira do CRM, potencial) + LEIA-ME.md
         └── midia/                  ver fotos e vídeos sem ffmpeg/Pillow (folha de contato, servidor com Range)
 ```
 
@@ -243,6 +244,13 @@ Armadilhas reais já vistas:
   - redes de postos e de conveniência vêm da Receita por CNAE (4731-8/00 e 4729-6/02);
   - nº de postos das bandeiras vem da ANP (Anuário, tabela 3.17, dados abertos em `dados/anp_dl/`).
   - O nº de uma distribuidora é de postos **com a bandeira**, não de postos próprios. Fecombustíveis e ABIEPS não listam redes.
+
+**Aba "ORGANOGRAMA"** (04/11/2026; `avulsos/organograma/`, "constante organograma"):
+- a equipe e a carteira vêm das telas do CRM, transcritas em `dados/equipe.json` (local, com nomes);
+- potencial = linhas com STATUS AUTOPEL diferente de ATIVO (coluna W das abas FINAL, coluna P da FARMACIA VF). É do
+  segmento: não somar entre pessoas;
+- gravada pelo Excel (COM) numa cópia. Conferir as outras abas célula a célula; nos nomes definidos só entra a área de
+  impressão.
 
 ---
 
