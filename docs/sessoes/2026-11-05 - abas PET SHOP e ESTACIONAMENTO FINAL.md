@@ -142,3 +142,38 @@ Os dados do organograma foram refeitos a partir do arquivo atual e não mudaram.
 
 **Lição:** conferir sempre `PageSetup.Pages.Count` e `VPageBreaks.Count` pelo COM, porque a margem física da impressora
 reduz a área útil. A imagem por `CopyPicture` não mostra esse problema.
+
+## 4ª parte: empresas da aba de pesquisa que não estão no mapeamento (vermelho)
+**Pedido:** cruzar as empresas da aba "Alessandra Dayan" com todas as bases do arquivo e pintar de vermelho as que não
+constam no mapeamento.
+
+**Como foi feito** (`confere_alessandra.py`, decisões em `dados/dec_alessandra.json`):
+- As 550 empresas das 11 tabelas da aba foram conferidas em três etapas:
+  1. referência da célula na coluna ORIGEM das abas FINAL (299 casos);
+  2. nome igual, sem palavras de tipo (106 casos);
+  3. revisão à mão (5 casos).
+- Só valem bases do mesmo segmento:
+  - drogarias: FARMACIA VF e FARMACIA CONSOLIDADO;
+  - supermercados: SUPERMERCADOS (reuniao) e IRTT;
+  - beleza, óticas e serviços: REDE DE LOJAS FINAL e IRTT;
+  - os outros segmentos: a aba FINAL do segmento.
+
+  Sem essa trava, "Óticas São José" casava com "Farmácia São José".
+- **Revisão à mão:**
+  - estão no mapeamento: Mart Minas, Spani, Koch/Komprão, Bacio di Latte e OJO/Ray-Ban;
+  - foram casos falsos: Óticas Martins, Raiz e Ipanema, que tinham batido com outras empresas.
+
+**Resultado:** 140 empresas não estão no mapeamento. Elas foram pintadas de vermelho (fundo vermelho, letra branca)
+nas 4 células de cada uma.
+- Beleza/Saúde: 44.
+- Óticas: 47.
+- Serviços/Franquias: 49.
+- Nas tabelas de drogarias, estacionamentos, postos, construção, alimentação, rede de lojas, supermercados e
+  conveniência, nenhuma faltou.
+
+**Gravação:**
+- feita pelo Excel numa cópia (`pinta_alessandra.ps1`);
+- conferência: as outras abas e os valores ficaram iguais, dinâmicas 21 = 21 e 560 células vermelhas.
+
+**Pendência:** não há aba de mapeamento para beleza/estética, óticas e serviços/franquias. Criar essas abas, se o
+usuário quiser, com o mesmo racional das abas FINAL.
