@@ -213,3 +213,42 @@ PET SHOP e da ESTACIONAMENTO FINAL, com o CNPJ e com segmento e subsegmento no f
 **Conferência:**
 - 168 CNPJs (CNPJ e referência), todos com dígito válido;
 - a pasta abriu no Excel com 43 abas e 21 dinâmicas.
+
+## 6ª parte: associações nacionais que faltaram e as grandes regionais (só pesquisa)
+**Pedido:** dizer se faltou alguma associação nacional e listar as grandes regionais de cada segmento.
+
+**Já usadas no arquivo:** ABRAS, APAS, ABF, ANAMACO, ABRAMAT, ABCEM, FEBRAMAT, ABVTEX, SBVC, IRTT, Abrafarma,
+Febrafar, Abrafad, Fecofar, Abrasel, ANR, Fecombustíveis, ABIEPS, ANP, IPB, ABINPET, ANCLIVEPA, ABRAPARK e Sindepark.
+
+**Nacionais que faltaram (conferidas na internet):**
+- ABAAS: atacarejo, com ranking próprio;
+- ABERC: refeições coletivas;
+- IDV: as cerca de 70 maiores varejistas;
+- Alshop e ABLOS: lojistas de shopping;
+- ACAD Brasil: academias;
+- ANEL: lavanderias;
+- AFRAC: automação comercial, o setor de PDV e bobinas;
+- Brasilcom: distribuidoras regionais de combustível;
+- Abióptica (indústria óptica) e Sindióptica (varejo óptico de SP).
+
+**Conhecidas, mas não conferidas agora:**
+- ABAD (atacado distribuidor), Abcfarma (farmácias independentes), ABIP (padarias), ABRASCE (shopping centers) e CNDL
+  (CDLs);
+- dos segmentos do CRM sem lista: ABCR (pedágio), ABRATI (ônibus), ABOL (logística), ANAHP (hospitais), ABComm
+  (e-commerce) e Abraplex (cinemas).
+
+**Regionais:**
+- **Supermercados:** 26 associações estaduais filiadas à ABRAS, da página de contatos da ABRAS. A ABRAS fala em 27; a
+  de Roraima não aparece na página.
+- **Postos:** sindicatos estaduais, como Minaspetro, Sulpetro, Paranapetro, Sincopetro e os Sindicombustíveis. Em
+  abril/2026, os sindicatos de 9 bases anunciaram a saída da Fecombustíveis: BA, MG, SP, Santos, PR, SC, RS, MT e DF.
+- **Distribuidoras:** 8 sindicatos ligados à Brasilcom.
+- **Material de construção:** 38 Acomacs e 3 Fecomacs ligadas à ANAMACO, e o Sincomavi (Grande SP).
+- **Farmácias:** Sincofarmas estaduais.
+- **Estacionamentos:** Sindepark (SP) e o sindicato de garagens e estacionamentos do RS.
+- **Óticas:** Sindióptica (SP).
+
+**Observações:**
+- ABLA é a associação das locadoras de automóveis: serve ao segmento Automotivo, Peças e Locadoras, não ao pet.
+- ABRASE não existe no setor pet. Talvez seja ABRASEL (bares e restaurantes) ou ABASE (supermercados da Bahia).
+- A ABRASCE é nacional.
