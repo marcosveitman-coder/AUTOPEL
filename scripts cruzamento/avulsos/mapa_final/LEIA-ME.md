@@ -1,4 +1,4 @@
-# Abas FINAL do MAPA MERCADO (alimentação, rede de lojas, construção)
+# Abas FINAL do MAPA MERCADO (alimentação, rede de lojas, construção, postos, pet shop e estacionamento)
 
 Monta as abas **ALIMENTACAO FINAL**, **REDE DE LOJAS FINAL** e **CONSTRUÇÃO FINAL**:
 
@@ -109,3 +109,53 @@ Ficam fora:
    - gera `postos_rows.pkl`, usando as decisões de `dec_postos.json` (distribuidoras, conveniência, nomes, grupos, exclusões e cortes);
    - cortes: 15+ postos no Brasil, ou entre as 25 maiores da região com 8+ postos; conveniência com 8+ lojas.
 5. `grava_abas.py` grava a aba, os blocos de postos na MAIORES POR REGIÃO, a tabela ANP e a R_E_S_U_M_O.
+
+## Abas PET SHOP  FINAL e ESTACIONAMENTO FINAL (05/11/2026)
+
+O nome da aba de pet tem **dois espaços** ("PET SHOP  FINAL"), como o usuário criou.
+
+**Ordem:**
+1. `python redes_pet_estac.py r11.pkl`: varre a Receita por CNAE e conta as unidades ativas por empresa (raiz) e por nome
+   fantasia. Leva cerca de 13 min.
+   - Pet: pet shop 4789-0/04, veterinária 7500-1/00, banho e tosa 9609-2/08, hotel 9609-2/07, farmácia veterinária
+     4771-7/04.
+   - Estacionamento: 5223-1/00.
+2. `busca_receita.py` com três consultas:
+   - `q12.json`: nomes das redes citadas (aba de origem e imprensa, em `dados/pet_estac_fontes.json`);
+   - `q13.json`: raízes das candidatas;
+   - `q14`/`q15`: raízes que faltaram.
+
+   As saídas são `r12.pkl` a `r15.pkl`.
+3. `python view_pet_estac.py`: candidatas por região, em `v_pet.txt` e `v_estac.txt`.
+4. `python view_origem_pet_estac.py`: candidatas de cada rede citada, em `v_origem.txt`.
+5. Decisões à mão em `dados/mk_dec_pet_estac.py`, que gera `dec_pet_estac.json`:
+   - CNPJ e nível de cada rede citada;
+   - junções de grupo;
+   - exclusões, nomes, notas e cortes.
+6. `python build_pet_estac.py`: gera `pet_rows.pkl`, `estac_rows.pkl` e `pet_estac_view.txt`.
+7. `python grava_pet_estac.py "<MAPA>" "<cópia>"`:
+   - grava as 2 abas (vazias), com as colunas A–W (U–W como nas outras abas FINAL);
+   - **acrescenta** blocos no fim da MAIORES POR REGIÃO e da R_E_S_U_M_O;
+   - não regrava nenhuma outra aba. As abas FINAL antigas têm colunas U–W do usuário e não podem ser regravadas pelo
+     `grava_abas.py`.
+8. `python confere_pet_estac.py "<MAPA>" "<cópia>"`:
+   - outras abas iguais célula a célula;
+   - dígito verificador e situação ativa de todo CNPJ;
+   - nomes repetidos;
+   - dinâmicas e nomes definidos.
+
+**Regras próprias:**
+- **Uma linha por grupo:**
+  - Indigo = Administradora Geral de Estacionamentos + PB Administradora (antiga PareBem) + Gepark + Center Park;
+  - Estapar inclui a marca Riopark; a Hora Park fica numa linha própria, com grupo Estapar;
+  - Netpark = NAA + NEE + NEP.
+- **Pet:**
+  - ficam fora agropecuárias, cooperativas e lojas rurais (farmácia veterinária sem nome de pet), hospitais
+    universitários e franqueados de redes já listadas;
+  - corte: 8+ unidades no Brasil, ou entre as 15 maiores da região com 4+.
+- **Estacionamento:**
+  - ficam fora pátios de veículos apreendidos, guinchos, transportadoras, hotéis e hospitais;
+  - corte: 15+ garagens, ou entre as 15 maiores da região com 5+.
+- **Redes pet também na REDE DE LOJAS FINAL** (Petz, Cobasi, Pet Camp, American Pet, Pet Fun, Petlove): mesmo nº de
+  lojas e mesma fonte. PORTE e STATUS AUTOPEL foram copiados de lá. Nas outras linhas, U = situação na Receita, e V e
+  W ficam em branco.

@@ -55,7 +55,7 @@ Bases Claude/                       (fora do git: fat *.xlsx, supermercados*.xls
     └── avulsos/                    scripts das entregas pontuais (IRTT, ABRAS, vendedor, XML…) + LEIA-ME.md
         ├── farmacias/              base consolidada de farmácias (Receita + redes + faturamento) + LEIA-ME.md
         ├── kraft_heinz/            prospecção de um grupo: Receita por razão social + linhas de uma raiz nas bases
-        ├── mapa_final/             abas ALIMENTACAO/REDE DE LOJAS/CONSTRUÇÃO FINAL (CNPJ por rede + complementos) + LEIA-ME.md
+        ├── mapa_final/             abas FINAL do MAPA (alimentação, lojas, construção, postos, pet, estacionamento) + LEIA-ME.md
         ├── organograma/            aba ORGANOGRAMA do MAPA MERCADO (equipe, segmentos, carteira do CRM, potencial) + LEIA-ME.md
         └── midia/                  ver fotos e vídeos sem ffmpeg/Pillow (folha de contato, servidor com Range)
 ```
@@ -244,6 +244,19 @@ Armadilhas reais já vistas:
   - redes de postos e de conveniência vêm da Receita por CNAE (4731-8/00 e 4729-6/02);
   - nº de postos das bandeiras vem da ANP (Anuário, tabela 3.17, dados abertos em `dados/anp_dl/`).
   - O nº de uma distribuidora é de postos **com a bandeira**, não de postos próprios. Fecombustíveis e ABIEPS não listam redes.
+- **Abas PET SHOP  FINAL (dois espaços no nome) e ESTACIONAMENTO FINAL** (05/11/2026; `redes_pet_estac.py` →
+  `build_pet_estac.py` → `grava_pet_estac.py`, decisões em `dados/mk_dec_pet_estac.py`):
+  - as abas FINAL antigas têm colunas **U–W do usuário** (STATUS RECEITA, PORTE, STATUS AUTOPEL). **Nunca regravá-las com
+    `grava_abas.py`**: aba nova se grava sozinha, e na MAIORES POR REGIÃO e na R_E_S_U_M_O só se acrescenta no fim;
+  - pet = pet shop, veterinária, banho e tosa, hotel e farmácia veterinária. Ficam fora agropecuária, cooperativa e loja
+    rural (CNAE 4771-7/04 sem nome de pet), hospital universitário e franqueado;
+  - estacionamento = CNAE 5223-1/00, sem pátio de veículos apreendidos, guincho ou transportadora. Grupos numa linha
+    só: Indigo (com a antiga PareBem), Estapar (com a marca Riopark), Netpark (3 empresas);
+  - as redes pet que já estavam na REDE DE LOJAS FINAL aparecem nas duas abas: ao somar, contar uma vez;
+  - IPB, ABINPET, ANCLIVEPA, ABRAPARK e Sindepark não publicam lista de redes. ABLA e ABRASE não são entidades do setor
+    pet;
+  - corte regional "top N com X+": ao excluir uma candidata, entra outra. Buscar na Receita todas as candidatas acima do
+    corte mínimo de uma vez (`q16`), e não só as N primeiras.
 
 **Aba "ORGANOGRAMA"** (04/11/2026; `avulsos/organograma/`, "constante organograma"):
 - a equipe e a carteira vêm das telas do CRM, transcritas em `dados/equipe.json` (local, com nomes);

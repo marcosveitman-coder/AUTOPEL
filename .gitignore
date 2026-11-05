@@ -11,3 +11,5 @@
 !*.sql
 !*.ps1
 __pycache__/
+# dados locais das abas FINAL (decisoes com CNPJ, visoes da Receita): nunca sobem
+scripts cruzamento/avulsos/mapa_final/dados/
