@@ -106,3 +106,39 @@ O usuário criou as abas **PET SHOP  FINAL** (com dois espaços no nome) e **EST
 - **Bash com aspas:** texto com apóstrofo dentro de heredoc ou de `python -c` quebra o comando. Gravar o script com a
   ferramenta de escrita de arquivo.
 - **BrasilAPI:** pode ficar fora do ar (serviço indisponível ou excesso de pedidos). A cópia local da Receita resolve.
+
+## 2ª parte: conferência da origem dos estacionamentos
+As 50 empresas da tabela H–K da aba de pesquisa (linhas 3 a 52) estão todas na ESTACIONAMENTO FINAL. Nenhuma faltou.
+- 44 têm linha própria.
+- 6 entraram na linha do grupo: PB Estacionamentos e Gepark na Indigo, Rio Park na Estapar, NAA e NEE na Netpark.
+
+## 3ª parte: ORGANOGRAMA impressao com qualidade de resumo executivo
+**Pedido:** na impressão, "No segmento" quebrava em duas linhas e ficava cortado. Atualizar a aba e acabar com o
+desleixo.
+
+**Causas:**
+1. **Letra mais larga que a estimativa:** a largura das letras era estimada. "No segmento" ocupava 93 px numa célula de
+   102 px e quebrou na tela do usuário (escala de tela).
+2. **Página mais larga que a área útil:** a impressora tem margem física de ~9 mm. A área útil é de ~757 pt e a aba
+   tinha 808 pt. A última coluna ia para outra folha: eram **12 páginas, e não 6**. Isso já acontecia na versão
+   anterior e não tinha sido conferido.
+
+**Correção:**
+- **Largura real das letras:**
+  - a Verdana 10 foi medida no Windows (`mede_verdana.ps1` → `verdana10.txt`), com 10% de folga;
+  - o `org_impressao.py` para com erro se alguma palavra não couber na célula.
+- **Grade:** 60 colunas de 16 px, e as 3 colunas entre as caixas com 5 px. Largura total de 740 pt.
+- **Caixas:** "No segmento" com a quantidade e o % em células separadas. Sem segmento, mostra "sem segmento".
+- **Tabelas:** cabeçalhos sem negrito nas colunas estreitas e colunas de segmento e de pessoas mais largas.
+- **Margens laterais:** 0,4 cm.
+
+**Conferência no Excel:**
+- 6 páginas, nenhuma quebra vertical, zoom 100%;
+- imagens das 6 folhas sem texto cortado;
+- as outras abas iguais célula a célula, dinâmicas 21 = 21;
+- nos nomes definidos, só mudou a área de impressão.
+
+Os dados do organograma foram refeitos a partir do arquivo atual e não mudaram.
+
+**Lição:** conferir sempre `PageSetup.Pages.Count` e `VPageBreaks.Count` pelo COM, porque a margem física da impressora
+reduz a área útil. A imagem por `CopyPicture` não mostra esse problema.

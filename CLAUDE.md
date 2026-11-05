@@ -270,6 +270,10 @@ Armadilhas reais já vistas:
   - quebras manuais e todas as alturas fixas, estimadas pela largura das letras;
   - é feita por `org_impressao.py`, com o mesmo `org_grava.ps1`;
   - conferir com `org_png.ps1` (imagem de cada folha) e `org_confere.py`.
+  - **largura real da Verdana** (`verdana10.txt`, de `mede_verdana.ps1`) com 10% de folga. O script para se uma palavra
+    não couber na célula;
+  - a impressora daqui só imprime ~757 pt de largura. A aba tem 740 pt (colunas de 16 px e folgas de 5 px). Conferir
+    `PageSetup.Pages.Count` = 6 e `VPageBreaks.Count` = 0 pelo COM.
 
 ---
 

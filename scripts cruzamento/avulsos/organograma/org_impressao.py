@@ -13,21 +13,28 @@ NAVY, BLUE, LIGHT, GREEN, GRAY, WHITE, DARK = (31, 58, 95), (46, 117, 182), (221
 OURO, OURO_T, CINZA = (255, 242, 204), (127, 96, 0), (89, 89, 89)
 COR = {'Diretoria': (NAVY, WHITE), 'Supervisora': (BLUE, WHITE), 'Supervisor': (BLUE, WHITE), 'Vendedora': (LIGHT, DARK), 'Vendedor': (LIGHT, DARK),
        'Venda interna': (GREEN, DARK), 'Representante': (GRAY, DARK)}
-C0, NC = 2, 62                      # colunas B..BK
+C0, NC = 2, 63                      # colunas B..BL (4 caixas de 15 colunas + 3 de folga)
 CF = C0 + NC - 1
-COLPT = 17 * 0.75                   # largura 1,72 = 17 px = 12,75 pt
+GAPS = {C0 + 15, C0 + 31, C0 + 47}  # colunas estreitas entre as caixas
+def px(c): return 5 if c in GAPS else 16   # 16 px = 12 pt; a impressora so imprime ~757 pt de largura (margem fisica)
+def span(c1, c2): return sum(px(c) for c in range(c1, c2 + 1))
+FOLGA = 1.10                        # o Excel desenha a letra mais larga que a medida (escala de tela)
 LIM = 556                           # altura util (pt) de A4 paisagem com margens de 0,6/0,7 cm
 ops, H = [], {}
 # ---------- largura das letras (Verdana, fracao do tamanho) e estimativa de linhas
-def wch(ch):
-    if ch.isdigit(): return 0.636
-    if ch.isupper(): return 0.72
-    if ch.islower(): return 0.56
-    return {' ': 0.352, '.': 0.364, ',': 0.364, ':': 0.454, ';': 0.454, '%': 1.076, '★': 0.95, '(': 0.454, ')': 0.454,
-            '–': 0.6, '-': 0.431, '·': 0.364, '/': 0.454, '=': 0.818, '>': 0.818, '≤': 0.818, '&': 0.706}.get(ch, 0.7)
-def larg_txt(t, size, bold): return sum(wch(c) for c in t) * size * (1.08 if bold else 1) * 1.04
-def linhas(t, cols, size=10, bold=False, indent=0):
-    util = cols * COLPT - 5 - indent * 8
+import os as _os
+VERD = {'Regular': {}, 'Bold': {}}
+for _l in open(_os.path.join(_os.path.dirname(_os.path.abspath(__file__)), 'verdana10.txt'), encoding='utf-8-sig'):
+    _st, _cp, _w = _l.split('\t'); VERD[_st][chr(int(_cp))] = float(_w)
+def larg_txt(t, size, bold):
+    """largura em px (96 dpi) do texto em Verdana, com a folga."""
+    tab = VERD['Bold' if bold else 'Regular']
+    return sum(tab.get(c, tab['M']) for c in t) * size / 10 * FOLGA
+FALHAS = []
+def linhas(t, larg, size=10, bold=False, indent=0):
+    util = larg - 7 - indent * 9
+    for w in str(t).replace('\n', ' ').split():
+        if larg_txt(w, size, bold) > util: FALHAS.append((w, larg))
     n = 0
     for par in str(t).split('\n'):
         atual, n_par = '', 1
@@ -39,11 +46,14 @@ def linhas(t, cols, size=10, bold=False, indent=0):
                 while larg_txt(atual, size, bold) > util: n_par += 1; atual = atual[len(atual) // 2:]
         n += n_par
     return n
-def altura(t, cols, size=10, bold=False, indent=0): return max(16, round(linhas(t, cols, size, bold, indent) * size * 1.27 + 4, 1))
+def altura(t, larg, size=10, bold=False, indent=0): return max(15, round(linhas(t, larg, size, bold, indent) * size * 1.275 + 3, 1))
 def put(r, c, v, c2=None, size=10, auto=True, **f):
     c2 = c2 or c
+    _txt = pc(v, 1) if f.get('fmt') == 'p' and isinstance(v, float) else br(v) if f.get('fmt') == 'n' and isinstance(v, int) else str(v)
+    if f.pop('uma', False) and larg_txt(_txt, size, f.get('bold', False)) > span(c, c2) - 7 - f.get('indent', 0) * 9:
+        FALHAS.append((str(v), span(c, c2)))
     ops.append(dict(r=r, c=c, c2=c2, v=v, size=size, **f))
-    if auto and f.get('wrap', True): alt(r, altura(v if not isinstance(v, float) else '100,0%', c2 - c + 1, size, f.get('bold', False), f.get('indent', 0)))
+    if auto and f.get('wrap', True): alt(r, altura(_txt, span(c, c2), size, f.get('bold', False), f.get('indent', 0)))
 def alt(r, h): H[r] = max(H.get(r, 0), h)
 def br(n): return f'{n:,}'.replace(',', '.')
 def pc(a, b): return f'{100 * a / b:.1f}%'.replace('.', ',') if b else '—'
@@ -70,23 +80,29 @@ def sup_txt(p): return p['perfil'].lower()
 def card(p, r, c):
     fill, font = COR[p['perfil']]
     no, fora = p['no_total'], p['fora_total']
-    put(r, c, p['nome'], c + 13, size=11, bold=True, fill=fill, font=font, halign='center', wrap=True)
-    put(r + 1, c, p['perfil'], c + 13, fill=fill, font=font, halign='center')
-    put(r + 2, c, segtxt(p) or 'Sem segmento no CRM', c + 13, halign='center', wrap=True)
+    put(r, c, p['nome'], c + 14, size=11, bold=True, fill=fill, font=font, halign='center', wrap=True)
+    put(r + 1, c, p['perfil'], c + 14, fill=fill, font=font, halign='center')
+    put(r + 2, c, segtxt(p) or 'Sem segmento no CRM', c + 14, halign='center', wrap=True)
     base, arr = (no, p['no']) if no else (p['total'], [p['ativos'], p['perdendo'], p['atrab']])
     pot = sum(p['potencial'].values())
-    lin = [('Clientes', p['total'], 'n'), ('No segmento', qp(no, no + fora) if no else 'não definido', None)] + \
-          [(t, v / base if base else '—', 'p' if base else None) for t, v in zip(['Ativos', 'Perdendo', 'A trabalhar'], arr)] + \
-          [('Potencial', pot if pot else 'sem lista', 'n' if pot else None)]
-    for i, (t, v, fm) in enumerate(lin):
-        extra = dict(fill=OURO, font=OURO_T) if t == 'Potencial' and pot else dict(font=CINZA) if t == 'Potencial' else {}
-        put(r + 3 + i, c, ' ' + t, c + 5, border=True, **extra)
-        put(r + 3 + i, c + 6, v, c + 13, fmt=fm, bold=True, halign='center', border=True, **extra)
-    ops.append(dict(box=[r, c, r + 8, c + 13]))
+    put(r + 3, c, ' Clientes', c + 6, border=True, uma=True); put(r + 3, c + 7, p['total'], c + 14, fmt='n', bold=True, halign='center', border=True, uma=True)
+    put(r + 4, c, ' No segmento', c + 6, border=True, uma=True)
+    if no:
+        put(r + 4, c + 7, no, c + 10, fmt='n', bold=True, halign='center', border=True, uma=True)
+        put(r + 4, c + 11, no / (no + fora), c + 14, fmt='p', bold=True, halign='center', border=True, uma=True)
+    else:
+        put(r + 4, c + 7, 'sem segmento', c + 14, bold=True, halign='center', border=True, uma=True)
+    for i, (t, v) in enumerate(zip(['Ativos', 'Perdendo', 'A trabalhar'], arr)):
+        put(r + 5 + i, c, ' ' + t, c + 6, border=True, uma=True)
+        put(r + 5 + i, c + 7, v / base if base else '—', c + 14, fmt='p' if base else None, bold=True, halign='center', border=True, uma=True)
+    extra = dict(fill=OURO, font=OURO_T) if pot else dict(font=CINZA)
+    put(r + 8, c, ' Potencial', c + 6, border=True, uma=True, **extra)
+    put(r + 8, c + 7, pot if pot else 'sem lista', c + 14, fmt='n' if pot else None, bold=True, halign='center', border=True, uma=True, **extra)
+    ops.append(dict(box=[r, c, r + 8, c + 14]))
     return r + 8
 def caixas(ids, r):
     for i in range(0, len(ids), 4):
-        lin = ids[i:i + 4]; larg = 14 * len(lin) + 2 * (len(lin) - 1); start = C0 + (NC - larg) // 2
+        lin = ids[i:i + 4]; larg = 15 * len(lin) + 1 * (len(lin) - 1); start = C0 + (NC - larg) // 2
         for j, k in enumerate(lin): ult = card(P[k], r, start + 16 * j)
         r = ult + 1
         if i + 4 < len(ids): alt(r, 10); r += 1
@@ -117,7 +133,7 @@ def banner(r, sp, eq):
     for (x1, x2), (t, v) in zip(partes(C0, NC, 7), cel):
         extra = dict(fill=OURO, font=OURO_T) if t == 'Potencial' else {}
         put(r + 1, x1, t, x2, bold=True, fill=extra.get('fill', LIGHT), font=extra.get('font', DARK), halign='center', border=True, wrap=True)
-        put(r + 2, x1, v, x2, fmt='n' if isinstance(v, int) else None, size=11, bold=True, halign='center', border=True, **extra)
+        put(r + 2, x1, v, x2, fmt='n' if isinstance(v, int) else None, size=10, bold=True, halign='center', border=True, uma=True, **extra)
     ops.append(dict(box=[r, C0, r + 2, CF]))
     r += 3
     ops.append(dict(vline=[C0 + NC // 2 - 1, r, r])); alt(r, 12)
@@ -145,14 +161,14 @@ for s in SUP:
         r = caixas(ids, r)
         r = legenda(r)
 # ---------- carteira de cada pessoa: uma folha por equipe
-T1 = [(2, 13)] + [(14 + 5 * i, 18 + 5 * i) for i in range(9)] + [(59, 63)]
+T1 = [(2, 14)] + [(15 + 5 * i, 19 + 5 * i) for i in range(9)] + [(60, 64)]
 def t1_cab(r):
-    for c1, c2, t in [(2, 13, ''), (14, 28, 'CARTEIRA'), (29, 43, 'NO SEGMENTO'), (44, 58, 'FORA DO SEGMENTO'), (59, 63, '')]:
+    for c1, c2, t in [(2, 14, ''), (15, 29, 'CARTEIRA'), (30, 44, 'NO SEGMENTO'), (45, 59, 'FORA DO SEGMENTO'), (60, 64, '')]:
         put(r, c1, t, c2, bold=True, fill=BLUE, font=WHITE, halign='center', border=True)
     r += 1
     for (c1, c2), t in zip(T1, ['Nome e perfil', 'Clientes', 'No segmento', 'Fora do segmento', 'Ativos', 'Perdendo', 'A trabalhar',
                                 'Ativos', 'Perdendo', 'A trabalhar', 'Potencial']):
-        put(r, c1, t, c2, bold=True, fill=LIGHT, font=DARK, halign='center', wrap=True, border=True)
+        put(r, c1, t, c2, bold=False, fill=LIGHT, font=DARK, halign='center', wrap=True, border=True)
     return r + 1
 def t1_linha(r, k):
     p = P[k]; no, fora = p['no_total'], p['fora_total']; tot = no + fora
@@ -182,33 +198,33 @@ for n, (rot, ids) in enumerate([('DIRETORIA E EQUIPE ' + P[SUP[0]]['nome'], [DIR
 r = nova_folha(r)
 r = titulo(r, 'CONSTANTE ORGANOGRAMA – POTENCIAL E SEGMENTOS', None)
 r = faixa(r, '2. POTENCIAL POR SEGMENTO – LISTAS DE MERCADO DESTE ARQUIVO')
-T2 = [(2, 8), (9, 22)] + [(23 + 5 * i, 27 + 5 * i) for i in range(3)] + [(38, 43)] + [(44 + 5 * i, 48 + 5 * i) for i in range(4)]
-for (c1, c2), t in zip(T2, ['Segmento', 'Aba (coluna do STATUS AUTOPEL)', 'Total na lista', 'Ativo', 'Inativo', 'Inativando', 'Lead no CRM', 'Não é cliente', 'A trabalhar', 'Potencial']):
-    put(r, c1, t, c2, bold=True, fill=LIGHT, font=DARK, halign='center', wrap=True, border=True)
+T2 = [(2, 9), (10, 23)] + [(24 + 5 * i, 28 + 5 * i) for i in range(3)] + [(39, 44)] + [(45 + 5 * i, 49 + 5 * i) for i in range(4)]
+for (c1, c2), t in zip(T2, ['Segmento', 'Aba (coluna do status)', 'Total na lista', 'Ativo', 'Inativo', 'Inativando', 'Lead no CRM', 'Não é cliente', 'A trabalhar', 'Potencial']):
+    put(r, c1, t, c2, bold=False, fill=LIGHT, font=DARK, halign='center', wrap=True, border=True)
 r += 1
 for seg, b in POT.items():
     st = b['status']; f = dict(border=True)
-    put(r, 2, nomeseg(seg), 8, bold=True, indent=1, **f); put(r, 9, f"{b['aba']} ({b['col']})", 22, indent=1, **f)
+    put(r, 2, nomeseg(seg), 9, bold=True, **f); put(r, 10, f" {b['aba']} ({b['col']})", 23, **f)
     for (c1, c2), k in zip(T2[2:9], [None, 'ATIVO', 'INATIVO', 'INATIVANDO', 'LEAD NO CRM', 'NÃO É CLIENTE', 'A TRABALHAR']):
         put(r, c1, b['total'] if k is None else st.get(k, 0), c2, fmt='n', halign='center', **f)
-    put(r, 59, b['potencial'], 63, fmt='n', halign='center', bold=True, fill=OURO, font=OURO_T, **f)
+    put(r, 60, b['potencial'], 64, fmt='n', halign='center', bold=True, fill=OURO, font=OURO_T, **f)
     r += 1
 alt(r, 6); r += 1
 put(r, C0, 'POTENCIAL = linhas da lista do segmento com STATUS AUTOPEL diferente de ATIVO. O potencial é do segmento: quem divide o segmento divide as mesmas '
            'oportunidades (não somar entre pessoas). Segmentos sem lista de mercado nestas abas aparecem sem potencial.', CF, wrap=True); r += 1
 alt(r, 12); r += 1
 r = faixa(r, '3. SEGMENTOS E RESPONSÁVEIS (CRM)')
-T3 = [(2, 15), (16, 20), (21, 63)]
+T3 = [(2, 15), (16, 21), (22, 64)]
 for (c1, c2), t in zip(T3, ['Segmento', 'Pessoas', 'Responsáveis (★ = segmento principal da pessoa)']):
     put(r, c1, t, c2, bold=True, fill=LIGHT, font=DARK, halign='center', wrap=True, border=True)
 r += 1
 for seg, ps in sorted(D['segmentos'].items(), key=lambda x: (-len(x[1]), x[0])):
     f = dict(border=True)
-    put(r, 2, nomeseg(seg), 15, bold=True, indent=1, **f); put(r, 16, len(ps), 20, fmt='n', halign='center', **f)
-    put(r, 21, ', '.join(ps), 63, indent=1, wrap=True, **f); r += 1
+    put(r, 2, nomeseg(seg), 15, bold=True, indent=1, **f); put(r, 16, len(ps), 21, fmt='n', halign='center', **f)
+    put(r, 22, ', '.join(ps), 64, indent=1, wrap=True, **f); r += 1
 SEM = D['sem_responsavel']
-put(r, 2, 'Sem responsável', 15, bold=True, indent=1, border=True, font=CINZA); put(r, 16, len(SEM), 20, fmt='n', halign='center', border=True, font=CINZA)
-put(r, 21, ', '.join(nomeseg(s) for s in SEM), 63, indent=1, wrap=True, border=True, font=CINZA); r += 1
+put(r, 2, 'Sem responsável', 15, bold=True, indent=1, border=True, font=CINZA); put(r, 16, len(SEM), 21, fmt='n', halign='center', border=True, font=CINZA)
+put(r, 22, ', '.join(nomeseg(s) for s in SEM), 64, indent=1, wrap=True, border=True, font=CINZA); r += 1
 alt(r, 6); r += 1
 put(r, C0, 'Fonte: telas do CRM (Segmentos & Vendedores e carteira de cada pessoa), recebidas em 04/11/2026; potencial: abas ALIMENTACAO, REDE DE LOJAS e '
            'CONSTRUÇÃO FINAL (coluna W) e "FARMACIA VF" (coluna P) deste arquivo.', CF, wrap=True)
@@ -217,8 +233,9 @@ for o in ops: o.setdefault('wrap', True)
 ops += [dict(rowh=[k, v]) for k, v in sorted(H.items())]
 lim = folhas_ini + [ultima + 1]
 folhas = [round(sum(H.get(x, 16) for x in range(a, b))) for a, b in zip(lim, lim[1:])]
+assert not FALHAS, ('texto que nao cabe na celula', sorted(set(FALHAS))[:20])
 assert max(folhas) <= LIM, ('folha maior que a pagina', folhas)
 assert min(o['size'] for o in ops if 'size' in o) >= 10
 json.dump(dict(ops=ops, ultima=ultima, aba='ORGANOGRAMA impressao', fonte='Verdana', zoom=100, quebras=quebras, folhas=folhas,
-               colunas=dict(primeira=1, ultima=CF + 1, largura=1.72, margem=1)), open('org_impressao.json', 'w', encoding='utf8'), ensure_ascii=False)
+               colunas=dict(primeira=1, ultima=CF + 1, largura=1.58, margem=0.5, px={str(c): px(c) for c in range(C0, CF + 1) if px(c) != 16})), open('org_impressao.json', 'w', encoding='utf8'), ensure_ascii=False)
 print('operacoes', len(ops), 'ultima', ultima, 'quebras', quebras, 'alturas das folhas (pt)', folhas)

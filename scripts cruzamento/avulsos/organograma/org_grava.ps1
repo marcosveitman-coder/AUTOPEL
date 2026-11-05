@@ -25,6 +25,7 @@ try {
   $ws.Columns.Item($cIni).ColumnWidth = $marg
   for ($c = $cIni + 1; $c -lt $cFim; $c++) { $ws.Columns.Item($c).ColumnWidth = $larg }
   $ws.Columns.Item($cFim).ColumnWidth = $marg
+  if ($dados.colunas.px) { foreach ($pr in $dados.colunas.px.PSObject.Properties) { $pxv = [double]$pr.Value; if ($pxv -ge 12) { $w = ($pxv - 5) / 7 } else { $w = $pxv / 12 }; $ws.Columns.Item([int]$pr.Name).ColumnWidth = $w } }
   $alturas = @{}
   foreach ($op in $dados.ops) {
     if ($op.box) {
@@ -63,7 +64,7 @@ try {
   if ($dados.quebras) {
     # uma folha A4 paisagem por parte: zoom fixo, quebras manuais, margens estreitas, centralizado, numero da folha no rodape
     $ps.PaperSize = 9; $ps.Zoom = [int]$dados.zoom
-    $ps.LeftMargin = $xl.CentimetersToPoints(0.5); $ps.RightMargin = $xl.CentimetersToPoints(0.5)
+    $ps.LeftMargin = $xl.CentimetersToPoints(0.4); $ps.RightMargin = $xl.CentimetersToPoints(0.4)
     $ps.TopMargin = $xl.CentimetersToPoints(0.6); $ps.BottomMargin = $xl.CentimetersToPoints(0.7)
     $ps.HeaderMargin = $xl.CentimetersToPoints(0.2); $ps.FooterMargin = $xl.CentimetersToPoints(0.2)
     $ps.CenterHorizontally = $true; $ps.CenterFooter = '&"Verdana"&10Folha &P de &N'

@@ -80,3 +80,11 @@ da Verdana, fixa a altura de cada linha e para com erro se alguma folha passar d
   gravado como número (senão aparece o triângulo verde) e nada de zoom abaixo de 100%.
 - **Faixa compartilhada:** caixas e quadros na mesma faixa de linhas dividem a altura. O quadro ao lado das caixas
   fica sem altura fixa, senão estica os cartões.
+
+### Legibilidade e largura da página (05/11/2026)
+- **Largura das letras:** a largura de cada letra vem de `verdana10.txt`, medida por `mede_verdana.ps1`, com 10% de
+  folga, porque o Excel desenha a letra mais larga conforme a escala da tela. O `org_impressao.py` para se alguma
+  palavra não couber na célula. Corrigir o layout, nunca diminuir a letra.
+- **Grade:** 60 colunas de 16 px e 3 colunas de folga de 5 px entre as caixas, num total de 740 pt. A impressora tem
+  margem física e só imprime ~757 pt.
+- **Conferir pelo COM:** `PageSetup.Pages.Count` tem de ser 6 e `VPageBreaks.Count` tem de ser 0.
