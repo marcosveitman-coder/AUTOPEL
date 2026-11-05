@@ -252,3 +252,31 @@ Febrafar, Abrafad, Fecofar, Abrasel, ANR, Fecombustíveis, ABIEPS, ANP, IPB, ABI
 - ABLA é a associação das locadoras de automóveis: serve ao segmento Automotivo, Peças e Locadoras, não ao pet.
 - ABRASE não existe no setor pet. Talvez seja ABRASEL (bares e restaurantes) ou ABASE (supermercados da Bahia).
 - A ABRASCE é nacional.
+
+## 7ª parte: aba ASSOCIASSOES MAPA (nome pedido pelo usuário)
+
+**Pedido:** criar a aba "ASSOCIASSOES MAPA" no MAPA MERCADO com a tabela de associações da 6ª parte.
+
+**Entrega:** a aba nova vai no fim do arquivo e tem 118 linhas:
+- 45 nacionais e 73 regionais;
+- 13 colunas, entre elas segmento, sigla, nome, UF, região, situação no estudo, onde foi usada, se foi conferida na internet e o site.
+
+**Situação no estudo:**
+
+| Situação | Linhas |
+|---|---|
+| Já usada | 9 |
+| Consultada, sem lista de redes | 14 |
+| Faltou consultar | 22 |
+| Regional a consultar | 71 |
+| Citada | 1 |
+| Não encontrada | 1 |
+
+**Script:** `avulsos/mapa_final/grava_associacoes.py <MAPA.xlsx> <saida.xlsx>`. A gravação é feita pelo XML (sheet44): mudaram só `workbook.xml`, os rels, `Content_Types` e `app.xml`.
+
+**Conferências:**
+- as 21 dinâmicas continuam no arquivo;
+- o arquivo abre no Excel;
+- antes da troca, o original era igual à cópia de partida.
+
+**Pendente:** os nomes completos de Abrafad, Fecofar, Febramat, IRTT e SINCOFAC estão em branco, com nota.
