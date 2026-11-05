@@ -255,6 +255,9 @@ Armadilhas reais já vistas:
   - as redes pet que já estavam na REDE DE LOJAS FINAL aparecem nas duas abas: ao somar, contar uma vez;
   - IPB, ABINPET, ANCLIVEPA, ABRAPARK e Sindepark não publicam lista de redes. ABLA e ABRASE não são entidades do setor
     pet;
+  - **aba OUTROS FINAL** (`build_outros.py` → `grava_outros.py`, decisões em `dados/mk_dec_outros.py`): as empresas da aba
+    de pesquisa sem aba de mapeamento (beleza, óticas, serviços), com SEGMENTO (PESQUISA) e SUBSEGMENTO nas colunas X–Y.
+    A escolha automática do CNPJ exige CNAE do subsegmento e descarta associação de franqueados;
   - corte regional "top N com X+": ao excluir uma candidata, entra outra. Buscar na Receita todas as candidatas acima do
     corte mínimo de uma vez (`q16`), e não só as N primeiras.
 

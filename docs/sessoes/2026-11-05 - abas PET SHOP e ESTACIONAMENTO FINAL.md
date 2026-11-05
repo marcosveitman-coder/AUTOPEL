@@ -177,3 +177,39 @@ nas 4 células de cada uma.
 
 **Pendência:** não há aba de mapeamento para beleza/estética, óticas e serviços/franquias. Criar essas abas, se o
 usuário quiser, com o mesmo racional das abas FINAL.
+
+## 5ª parte: aba OUTROS FINAL
+**Pedido:** criar uma aba só, OUTROS FINAL, para as 140 empresas que não estavam no mapeamento. O modelo é o mesmo da
+PET SHOP e da ESTACIONAMENTO FINAL, com o CNPJ e com segmento e subsegmento no fim.
+
+**Entrega:** aba nova no fim da pasta, com 140 linhas e as colunas A–W das outras abas FINAL.
+- **Colunas novas:**
+  - X: SEGMENTO (PESQUISA), com Beleza / Saúde / Bem-estar, Óticas ou Serviços / Franquias;
+  - Y: SUBSEGMENTO, com 19 subsegmentos, como Odontologia, Academias e pilates, Depilação e estética, Cosméticos e
+    perfumaria, Idiomas e cursos, Lavanderias e Seguros e crédito.
+- **CNPJ:**
+  - 52 confirmados (franqueadoras com CNAE 7740-3/00 ou empresas da marca);
+  - 31 prováveis;
+  - 42 com CNPJ de uma unidade (franqueadora não achada);
+  - 14 não confirmados (nome genérico ou franqueadora sem o nome da marca: Wizard, CNA, Seguralta, Velox…);
+  - 1 com a franqueadora inapta (Via Lorran).
+- **Nº de lojas:** o da aba de pesquisa. Sem número, as unidades com o nome na Receita.
+
+**Como foi feito:**
+- `dados/outros_lista.py`: nomes, subsegmentos e termos de busca.
+- `busca_receita.py q17` e `q18`: busca na Receita.
+- `build_outros.py`: escolha automática do CNPJ, com estas travas:
+  - CNAE compatível com o subsegmento;
+  - nunca uma associação de franqueados;
+  - franqueadora antes de unidade.
+- `dados/mk_dec_outros.py`: decisões à mão. Exemplos:
+  - Espaçolaser é a Corpóreos S.A.;
+  - Hinode é o Grupo Hinode Participações;
+  - CCAA é o CCAA Centro de Cultura Anglo Americana;
+  - homônimos de outro ramo foram descartados (Hinode Telecom, Bamboo Pneus, Granado Imóveis).
+- `grava_outros.py`: cria a aba pelo XML. Mudaram só `workbook.xml`, `rels`, `Content_Types` e `app.xml`, e entrou a
+  `sheet43`.
+
+**Conferência:**
+- 168 CNPJs (CNPJ e referência), todos com dígito válido;
+- a pasta abriu no Excel com 43 abas e 21 dinâmicas.
