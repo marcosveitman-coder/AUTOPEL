@@ -64,7 +64,7 @@ A conta está certa, mas depende de hipóteses que os números de hoje põem à 
    - a regra respeita o TOTVS. Com PontoPedido = 2 × MedContr, novembro subiria R$ 1,8 mi;
    - 191 SKUs têm PontoPedido 0 e venda (eram 177 em 23/10).
 
-## Sugestões (aguardando decisão do usuário)
+## Sugestões (o usuário decidiu não aplicar: a conta fica como está)
 - Na Situação compra, separar:
   - "1 RUPTURA – cobrar PC" (o Comprado já cobre) de "1 RUPTURA – comprar";
   - criar "AGUARDANDO PC VENCIDO" para os SKUs que só estão no ponto por causa de pedido vencido ou sem data.
