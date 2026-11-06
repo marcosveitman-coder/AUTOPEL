@@ -1,7 +1,7 @@
 """Dados da aba ORGANOGRAMA ("constante organograma") do MAPA MERCADO.
 Estrutura e segmentos: telas do CRM (Segmentos & Vendedores). Carteira de cada pessoa: telas "carteira ..." do CRM
 (ativos <= 290 dias, perdendo 291-365, a trabalhar > 365 ou sem compra; no segmento x fora do segmento).
-Potencial: linhas das abas ALIMENTACAO/REDE DE LOJAS/CONSTRUCAO FINAL (coluna W) e "FARMACIA VF" (coluna P)
+Potencial: linhas das abas ALIMENTACAO/REDE DE LOJAS/CONSTRUCAO/POSTOS/ESTACIONAMENTO/PET SHOP FINAL (coluna W) e "FARMACIA VF" (coluna P)
 com STATUS AUTOPEL diferente de ATIVO. Uso: python org_dados.py <MAPA.xlsx>  ->  org_dados.json (le equipe.json: pessoas, perfis, segmentos e carteira)"""
 import sys, json, collections, openpyxl
 MAPA = sys.argv[1]
@@ -11,7 +11,10 @@ CART = {p['id']: (p['carteira']['cards'], p['carteira']['no_segmento'], p['carte
 PES = [(p['id'], p['nome'], p['perfil'], p['sup'], p['segmentos']) for p in EQ['pessoas']]
 # potencial: segmento do CRM -> (aba, coluna, linha do cabecalho)
 BASE = {'ALIMENTACAO': ('ALIMENTACAO FINAL', 'W', 1), 'REDE DE LOJAS': ('REDE DE LOJAS FINAL', 'W', 1),
-        'CONSTRUCAO': ('CONSTRUÇÃO FINAL', 'W', 1), 'DROGARIAS': ('"FARMACIA VF"', 'P', 6)}
+        'CONSTRUCAO': ('CONSTRUÇÃO FINAL', 'W', 1), 'DROGARIAS': ('"FARMACIA VF"', 'P', 6),
+        # 05/11/2026: abas FINAL novas com STATUS AUTOPEL (ATIVO < 360 dias / INATIVO / NAO E CLIENTE)
+        'POSTOS E CONVENIENCIAS': ('POSTOS GAS & CONVENIENCIA FINAL', 'W', 1), 'ESTACIONAMENTOS': ('ESTACIONAMENTO FINAL', 'W', 1),
+        'PET SHOP': ('PET SHOP  FINAL', 'W', 1)}
 wb = openpyxl.load_workbook(MAPA, read_only=True)
 POT = {}
 for seg, (aba, col, h) in BASE.items():

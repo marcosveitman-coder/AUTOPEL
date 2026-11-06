@@ -261,13 +261,46 @@ Armadilhas reais já vistas:
   - corte regional "top N com X+": ao excluir uma candidata, entra outra. Buscar na Receita todas as candidatas acima do
     corte mínimo de uma vez (`q16`), e não só as N primeiras.
 
+**STATUS RECEITA / PORTE / STATUS AUTOPEL** (colunas U–W das abas FINAL e ao lado das tabelas da Alessandra Dayan,
+05/11/2026; `mapa_final/status_*.py`):
+- **STATUS AUTOPEL** (regra do usuário):
+  - ATIVO = última compra há menos de 360 dias (contados do dia);
+  - INATIVO = comprou há mais tempo **ou** está cadastrado no TOTVS sem nota;
+  - NÃO É CLIENTE = nem cadastro nem compra.
+  - "LEAD NO CRM" e "INATIVANDO" eram do CRM e saíram.
+- **Datas:** bases de faturamento + o `Ultimo faturamento - SQL.csv` **do dia**, da pasta de relatórios TOTVS (`CSV\`,
+  atualizado diariamente, como o `Clientes - SQL.csv`).
+- **Vínculos** além das regras gerais:
+  - grupo do cadastro (Descrição) com o mesmo núcleo da rede;
+  - parênteses sem "+" no nome não viram nome de busca;
+  - grupo administrador só é nome de busca se tiver uma rede só;
+  - produto personalizado comprado por quem revende papel (distribuidor, logística, suprimentos) não vale;
+  - comprador disputado por 2 redes vale para a da mesma UF.
+- **PORTE:**
+  - o valor que o usuário já gravou fica;
+  - senão, o faturamento do IRTT por bandeira (o "valor do GRUPO" só vale para a linha que é o grupo inteiro);
+  - senão, nº de lojas × média por loja do tipo: franquia R$ 1,49 mi (ABF), lojas e construção R$ 7,42 mi (IRTT), posto
+    R$ 15 mi (ANP), estacionamento R$ 2,26 mi (Estapar), minimercado autônomo R$ 0,13 mi (Market4U).
+- Revisar à mão os vínculos fracos e os status que mudaram antes de gravar. A planilha de conferência (data, vínculo,
+  cliente) vai para a pasta do usuário, fora do git.
+- **Alessandra Dayan:**
+  - desde 05/11, cada tabela tem STATUS RECEITA, PORTE e STATUS AUTOPEL logo depois da BASE;
+  - as tabelas a partir de CONVENIÊNCIA andaram 2, 4, 6 e 8 colunas;
+  - os endereços "Alessandra Dayan: XX" da coluna ORIGEM foram atualizados. O de-para está em
+    `dados/alessandra_refs_0511.json`, e o `alessandra_cruzamento.json` ainda usa os endereços antigos;
+  - **endereço de célula escrito em texto não anda sozinho**: antes de inserir colunas, procurar referências em texto.
+
 **Aba "ORGANOGRAMA"** (04/11/2026; `avulsos/organograma/`, "constante organograma"):
 - a equipe e a carteira vêm das telas do CRM, transcritas em `dados/equipe.json` (local, com nomes);
 - potencial = linhas com STATUS AUTOPEL diferente de ATIVO (coluna W das abas FINAL, coluna P da FARMACIA VF). É do
   segmento: não somar entre pessoas;
 - gravada pelo Excel (COM) numa cópia. Conferir as outras abas célula a célula; nos nomes definidos só entra a área de
   impressão.
-- a aba **"ORGANOGRAMA impressao"** tem as mesmas informações em 6 folhas A4 paisagem a 100%:
+- **o usuário mexeu à mão na aba ORGANOGRAMA** (anotação em Z71, blocos movidos): não regravar pelo `org_layout.py`. Em
+  05/11 só a impressão foi atualizada;
+- potencial desde 05/11: também POSTOS E CONVENIENCIAS, ESTACIONAMENTOS e PET SHOP (coluna W das abas FINAL novas);
+- a aba **"ORGANOGRAMA impressao"** tem as mesmas informações em 7 folhas A4 paisagem a 100% (a 7ª, segmentos ×
+  responsáveis, desde 05/11):
   - **Verdana, tamanho 10 ou maior, sem itálico** (pedido do usuário);
   - a equipe maior ocupa 2 folhas, e a carteira tem uma folha por equipe;
   - quebras manuais e todas as alturas fixas, estimadas pela largura das letras;
@@ -276,7 +309,7 @@ Armadilhas reais já vistas:
   - **largura real da Verdana** (`verdana10.txt`, de `mede_verdana.ps1`) com 10% de folga. O script para se uma palavra
     não couber na célula;
   - a impressora daqui só imprime ~757 pt de largura. A aba tem 740 pt (colunas de 16 px e folgas de 5 px). Conferir
-    `PageSetup.Pages.Count` = 6 e `VPageBreaks.Count` = 0 pelo COM.
+    `PageSetup.Pages.Count` = 7 e `VPageBreaks.Count` = 0 pelo COM.
 
 ---
 

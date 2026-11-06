@@ -148,6 +148,6 @@ for seg, ps in segs + [(s, []) for s in SEM]:
     f = dict(size=8, border=True)
     put(r, 2, nomeseg(seg), 6, bold=True, **f); put(r, 7, len(ps), 7, fmt='n', halign='center', **f)
     put(r, 8, ', '.join(ps) if ps else 'sem responsável', 25, font=(128, 128, 128) if not ps else None, **f); r += 1
-put(r, 2, 'Fonte: telas do CRM (Segmentos & Vendedores e carteira de cada pessoa), recebidas em 04/11/2026; potencial: abas ALIMENTACAO, REDE DE LOJAS e CONSTRUÇÃO FINAL (coluna W) e "FARMACIA VF" (coluna P) deste arquivo.', 25, size=8, italic=True, h=15)
+put(r, 2, 'Fonte: telas do CRM (Segmentos & Vendedores e carteira de cada pessoa), recebidas em 04/11/2026; potencial: abas ALIMENTACAO, REDE DE LOJAS, CONSTRUÇÃO, POSTOS GAS & CONVENIENCIA, ESTACIONAMENTO e PET SHOP FINAL (coluna W, STATUS AUTOPEL de 05/11/2026) e "FARMACIA VF" (coluna P) deste arquivo.', 25, size=8, italic=True, h=15)
 json.dump(dict(ops=ops, ultima=r), open('org_layout.json', 'w', encoding='utf8'), ensure_ascii=False)
 print('operacoes', len(ops), 'ultima linha', r)

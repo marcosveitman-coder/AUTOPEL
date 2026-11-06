@@ -1,8 +1,8 @@
 """Desenho da aba "ORGANOGRAMA impressao": as mesmas informacoes da aba ORGANOGRAMA, para imprimir em A4 paisagem a
 100%, com letra Verdana de tamanho 10 ou maior e sem italico.
 Folhas: uma por grupo de caixas (equipe menor; equipe maior - vendedores e venda interna; equipe maior -
-representantes), depois a carteira de cada pessoa (uma folha por equipe) e o potencial por segmento + segmentos x
-responsaveis. Grade de 62 colunas estreitas (B..BK); caixas de 14 colunas, 4 por linha.
+representantes), depois a carteira de cada pessoa (uma folha por equipe), o potencial por segmento (folha 6) e os
+segmentos x responsaveis (folha 7, desde 05/11/2026). Grade de 62 colunas estreitas (B..BK); caixas de 14 colunas, 4 por linha.
 As alturas das linhas sao estimadas pela largura das letras da Verdana (texto quebrado em celula mesclada nao tem
 autoajuste) e cada folha e conferida contra a altura util da pagina. Gera org_impressao.json para o org_grava.ps1."""
 import json, math
@@ -198,13 +198,13 @@ for n, (rot, ids) in enumerate([('DIRETORIA E EQUIPE ' + P[SUP[0]]['nome'], [DIR
 r = nova_folha(r)
 r = titulo(r, 'CONSTANTE ORGANOGRAMA – POTENCIAL E SEGMENTOS', None)
 r = faixa(r, '2. POTENCIAL POR SEGMENTO – LISTAS DE MERCADO DESTE ARQUIVO')
-T2 = [(2, 9), (10, 23)] + [(24 + 5 * i, 28 + 5 * i) for i in range(3)] + [(39, 44)] + [(45 + 5 * i, 49 + 5 * i) for i in range(4)]
+T2 = [(2, 11), (12, 23)] + [(24 + 5 * i, 28 + 5 * i) for i in range(3)] + [(39, 44)] + [(45 + 5 * i, 49 + 5 * i) for i in range(4)]
 for (c1, c2), t in zip(T2, ['Segmento', 'Aba (coluna do status)', 'Total na lista', 'Ativo', 'Inativo', 'Inativando', 'Lead no CRM', 'Não é cliente', 'A trabalhar', 'Potencial']):
     put(r, c1, t, c2, bold=False, fill=LIGHT, font=DARK, halign='center', wrap=True, border=True)
 r += 1
 for seg, b in POT.items():
     st = b['status']; f = dict(border=True)
-    put(r, 2, nomeseg(seg), 9, bold=True, **f); put(r, 10, f" {b['aba']} ({b['col']})", 23, **f)
+    put(r, 2, nomeseg(seg), 11, bold=True, **f); put(r, 12, f" {b['aba']} ({b['col']})", 23, **f)
     for (c1, c2), k in zip(T2[2:9], [None, 'ATIVO', 'INATIVO', 'INATIVANDO', 'LEAD NO CRM', 'NÃO É CLIENTE', 'A TRABALHAR']):
         put(r, c1, b['total'] if k is None else st.get(k, 0), c2, fmt='n', halign='center', **f)
     put(r, 60, b['potencial'], 64, fmt='n', halign='center', bold=True, fill=OURO, font=OURO_T, **f)
@@ -213,6 +213,9 @@ alt(r, 6); r += 1
 put(r, C0, 'POTENCIAL = linhas da lista do segmento com STATUS AUTOPEL diferente de ATIVO. O potencial é do segmento: quem divide o segmento divide as mesmas '
            'oportunidades (não somar entre pessoas). Segmentos sem lista de mercado nestas abas aparecem sem potencial.', CF, wrap=True); r += 1
 alt(r, 12); r += 1
+# 05/11/2026: com POSTOS, ESTACIONAMENTO e PET SHOP no potencial, a folha 6 passou da pagina -> segmentos x responsaveis na folha 7
+r = nova_folha(r)
+r = titulo(r, 'CONSTANTE ORGANOGRAMA – SEGMENTOS E RESPONSÁVEIS', None)
 r = faixa(r, '3. SEGMENTOS E RESPONSÁVEIS (CRM)')
 T3 = [(2, 15), (16, 21), (22, 64)]
 for (c1, c2), t in zip(T3, ['Segmento', 'Pessoas', 'Responsáveis (★ = segmento principal da pessoa)']):
@@ -226,8 +229,8 @@ SEM = D['sem_responsavel']
 put(r, 2, 'Sem responsável', 15, bold=True, indent=1, border=True, font=CINZA); put(r, 16, len(SEM), 21, fmt='n', halign='center', border=True, font=CINZA)
 put(r, 22, ', '.join(nomeseg(s) for s in SEM), 64, indent=1, wrap=True, border=True, font=CINZA); r += 1
 alt(r, 6); r += 1
-put(r, C0, 'Fonte: telas do CRM (Segmentos & Vendedores e carteira de cada pessoa), recebidas em 04/11/2026; potencial: abas ALIMENTACAO, REDE DE LOJAS e '
-           'CONSTRUÇÃO FINAL (coluna W) e "FARMACIA VF" (coluna P) deste arquivo.', CF, wrap=True)
+put(r, C0, 'Fonte: telas do CRM (Segmentos & Vendedores e carteira de cada pessoa), recebidas em 04/11/2026; potencial: abas ALIMENTACAO, REDE DE LOJAS, CONSTRUÇÃO, POST'
+           'OS GAS & CONVENIENCIA, ESTACIONAMENTO e PET SHOP FINAL (coluna W, STATUS AUTOPEL de 05/11/2026) e "FARMACIA VF" (coluna P) deste arquivo.', CF, wrap=True)
 ultima = r
 for o in ops: o.setdefault('wrap', True)
 ops += [dict(rowh=[k, v]) for k, v in sorted(H.items())]

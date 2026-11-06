@@ -1,4 +1,4 @@
-# Grava a aba ORGANOGRAMA pelo Excel (COM) numa copia do MAPA MERCADO, a partir do org_layout.json.
+﻿# Grava a aba ORGANOGRAMA pelo Excel (COM) numa copia do MAPA MERCADO, a partir do org_layout.json.
 # Uso: powershell -File org_grava.ps1 -Arquivo <copia.xlsx> -Layout <org_layout.json | org_impressao.json>
 # O org_impressao.json traz aba, colunas, quebras de pagina e zoom (aba "ORGANOGRAMA impressao", uma folha A4 por parte).
 param([string]$Arquivo, [string]$Layout)
@@ -23,7 +23,7 @@ try {
   $cIni = 1; $cFim = 26; $larg = 9.3; $marg = 2
   if ($dados.colunas) { $cIni = [int]$dados.colunas.primeira; $cFim = [int]$dados.colunas.ultima; $larg = [double]$dados.colunas.largura; $marg = [double]$dados.colunas.margem }
   $ws.Columns.Item($cIni).ColumnWidth = $marg
-  for ($c = $cIni + 1; $c -lt $cFim; $c++) { $ws.Columns.Item($c).ColumnWidth = $larg }
+  if ($cFim - $cIni -gt 1) { $ws.Range($ws.Cells.Item(1, $cIni + 1), $ws.Cells.Item(1, $cFim - 1)).EntireColumn.ColumnWidth = [double]$larg }  # faixa unica (coluna a coluna dava InvalidCast na ORGANOGRAMA)
   $ws.Columns.Item($cFim).ColumnWidth = $marg
   if ($dados.colunas.px) { foreach ($pr in $dados.colunas.px.PSObject.Properties) { $pxv = [double]$pr.Value; if ($pxv -ge 12) { $w = ($pxv - 5) / 7 } else { $w = $pxv / 12 }; $ws.Columns.Item([int]$pr.Name).ColumnWidth = $w } }
   $alturas = @{}

@@ -14,14 +14,23 @@ Monta a aba **ORGANOGRAMA**, o "constante organograma":
   `AUTOPEL_ORGANOGRAMA_EQUIPE`.
 - **Potencial**, lido do próprio MAPA MERCADO:
   - coluna W (STATUS AUTOPEL) das abas ALIMENTACAO FINAL, REDE DE LOJAS FINAL e CONSTRUÇÃO FINAL;
-  - coluna P da "FARMACIA VF", cabeçalho na linha 6.
+  - coluna P da "FARMACIA VF", cabeçalho na linha 6;
+  - desde 05/11/2026, também a coluna W da POSTOS GAS & CONVENIENCIA FINAL, da ESTACIONAMENTO FINAL e da PET SHOP  FINAL.
 - **Segmento do CRM → aba:**
   - ALIMENTACAO → ALIMENTACAO FINAL;
   - REDE DE LOJAS → REDE DE LOJAS FINAL;
   - CONSTRUCAO → CONSTRUÇÃO FINAL;
   - DROGARIAS → FARMACIA VF.
 
-  Os outros segmentos ainda não têm lista de mercado e aparecem sem potencial.
+  - POSTOS E CONVENIENCIAS → POSTOS GAS & CONVENIENCIA FINAL;
+  - ESTACIONAMENTOS → ESTACIONAMENTO FINAL;
+  - PET SHOP → PET SHOP  FINAL (segmento sem responsável no CRM).
+
+  Os outros segmentos ainda não têm lista de mercado e aparecem sem potencial. A OUTROS FINAL mistura beleza, óticas e
+  serviços e não corresponde a um segmento do CRM.
+
+**A aba ORGANOGRAMA foi editada à mão pelo usuário** (anotação em Z71, blocos de resumo e legenda em outra posição).
+Não regravar a aba com o `org_layout.py` sem perguntar. Em 05/11 só a "ORGANOGRAMA impressao" foi atualizada.
 
 ## Ordem
 
@@ -41,14 +50,15 @@ Monta a aba **ORGANOGRAMA**, o "constante organograma":
 
 ## Aba "ORGANOGRAMA impressao" (versão para imprimir)
 
-As mesmas informações, em **6 folhas A4 paisagem impressas a 100%**. A letra é Verdana, sempre com tamanho 10 ou
+As mesmas informações, em **7 folhas A4 paisagem impressas a 100%** (6 até 04/11/2026). A letra é Verdana, sempre com tamanho 10 ou
 maior e sem itálico (pedido do usuário):
 1. equipe menor;
 2. equipe maior, parte 1: vendedores e venda interna;
 3. equipe maior, parte 2: representantes;
 4. carteira de cada pessoa: diretoria e equipe menor;
 5. carteira de cada pessoa: equipe maior;
-6. potencial por segmento e segmentos × responsáveis.
+6. potencial por segmento;
+7. segmentos × responsáveis (separada da folha 6 em 05/11, quando o potencial ganhou 3 segmentos).
 
 Em cada folha de equipe:
 - no topo, uma faixa do supervisor: pessoas, clientes, no segmento, ativos, perdendo, a trabalhar e potencial;

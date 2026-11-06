@@ -159,3 +159,25 @@ O nome da aba de pet tem **dois espaços** ("PET SHOP  FINAL"), como o usuário 
 - **Redes pet também na REDE DE LOJAS FINAL** (Petz, Cobasi, Pet Camp, American Pet, Pet Fun, Petlove): mesmo nº de
   lojas e mesma fonte. PORTE e STATUS AUTOPEL foram copiados de lá. Nas outras linhas, U = situação na Receita, e V e
   W ficam em branco.
+
+## STATUS RECEITA, PORTE e STATUS AUTOPEL (05/11/2026)
+
+Colunas U–W das 7 abas FINAL e 3 colunas ao lado de cada tabela da aba Alessandra Dayan.
+Sessão: `docs/sessoes/2026-11-05 - status receita, porte e status autopel.md`.
+
+**Ordem:**
+1. `python status_coleta.py "<MAPA>"`: gera `status_itens.pkl` e `q19.json`.
+2. `python busca_receita.py q19.json r19.pkl`: cerca de 9 min.
+3. Rodar o `status_autopel.py`:
+   - com as variáveis `AUTOPEL_ULTFAT_CSV` e `AUTOPEL_CLIENTES_CSV` apontando para cópias do dia dos CSVs do TOTVS, e
+     `AUTOPEL_HOJE=AAAA-MM-DD`;
+   - revisar à mão em `status_autopel_view.txt` os vínculos fracos e os status que mudaram.
+4. `python status_final.py "<conferencia.xlsx>"`: valores finais e a planilha de conferência para o usuário.
+5. `python status_grava.py "<MAPA>" "<cópia>"`: U–W das abas FINAL pelo XML. Na coluna V, só grava onde está vazia.
+6. `python status_alessandra.py "<cópia>"` e depois `powershell -File status_alessandra.ps1 -Arquivo "<cópia>"`: o Excel insere as colunas
+   que faltam e grava a Alessandra. **Só uma vez:** depois de 05/11, as colunas já existem e os endereços mudaram (ver
+   `dados/alessandra_refs_0511.json`). Para refazer, gravar os valores nas colunas que já existem.
+7. Conferir:
+   - `confere_zip.py`;
+   - `../organograma/org_confere.py` (outras abas, dinâmicas e nomes);
+   - todas as células U–W contra o `status_final.pkl`.
