@@ -14,6 +14,10 @@ from gravar_coluna_xml import gravar_celulas, _sheet_path
 s = lambda x: str(x).strip() if x is not None else ''
 REF = 'REDE DE LOJAS FINAL'  # aba modelo de estilo e largura para a POSTOS
 
+# cabecalho das abas FINAL: linha 1 ate 05/11/2026; linha 6 depois que caixas_final.ps1 pos a tabela de caixas por porte no topo
+def linha_cab(rows):
+    return next(i for i, r in enumerate(rows[:12]) if len(r) > 1 and str(r[1] or '').strip() == 'NOME FANTASIA')
+
 
 def estilos(z, aba, refs):
     x = z.read(_sheet_path(z, aba)).decode('utf8')
@@ -39,19 +43,23 @@ def main(src, dst):
         atual[aba] = rows
     wb.close()
     z = zipfile.ZipFile(dst)
-    st_ref, larg_ref = estilos(z, REF, ['U1', 'V1', 'W1', 'U2', 'V2', 'W2'])
+    hr = linha_cab(atual[REF]) + 1 if REF in atual else 1
+    st_ref, larg_ref = estilos(z, REF, [f'{c}{hr + k}' for k in (0, 1) for c in 'UVW'])
+    st_ref = {c + str(k + 1): st_ref[f'{c}{hr + k}'] for k in (0, 1) for c in 'UVW'}
     z.close()
     for aba in sorted({k[0] for k in F}):
         rows = atual[aba]
-        h = [s(x) for x in rows[0]]
+        hi = linha_cab(rows)
+        h = [s(x) for x in rows[hi]]
         tem = len(h) >= 23 and h[20:23] == ['STATUS RECEITA', 'PORTE', 'STATUS AUTOPEL']
         cel, larguras = {}, None
         z = zipfile.ZipFile(dst)
-        st, _ = estilos(z, aba if tem else REF, ['U1', 'V1', 'W1', 'U2', 'V2', 'W2'])
+        st, _ = estilos(z, aba if tem else REF, [f'{c}{hi + k}' for k in (1, 2) for c in 'UVW'])
+        st = {c + str(k): st[f'{c}{hi + k}'] for k in (1, 2) for c in 'UVW'}  # chaves U1/U2 = cabecalho/1a linha de dados
         z.close()
         if not tem:
             assert len(h) <= 20 or all(x == '' for x in h[20:23]), (aba, h[20:23])
-            for c, t in zip('UVW', ['STATUS RECEITA', 'PORTE', 'STATUS AUTOPEL']): cel[(c, 1)] = (t, st_ref[c + '1'])
+            for c, t in zip('UVW', ['STATUS RECEITA', 'PORTE', 'STATUS AUTOPEL']): cel[(c, hi + 1)] = (t, st_ref[c + '1'])
             larguras = {c: larg_ref.get(openpyxl.utils.column_index_from_string(c), 18) for c in 'UVW'}
         n_v = 0
         for (a, lin), f in F.items():

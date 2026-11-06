@@ -13,6 +13,7 @@ try {
   $ws = $wb.Worksheets.Item($aba)
   $ws.ResetAllPageBreaks() | Out-Null
   $ws.Cells.Clear() | Out-Null
+  $ws.Hyperlinks.Delete() | Out-Null
   if ($dados.fonte) {
     # aba de impressao: letra unica na aba toda e alturas/larguras zeradas antes de redesenhar
     $ws.Cells.Font.Name = $dados.fonte; $ws.Cells.Font.Size = 10
@@ -44,6 +45,8 @@ try {
     $rg = $ws.Range($ws.Cells.Item($op.r, $op.c), $ws.Cells.Item($op.r, $op.c2))
     if ($op.c2 -gt $op.c) { $rg.Merge() | Out-Null }
     $cel = $ws.Cells.Item($op.r, $op.c)
+    # numero com lista na aba DETALHE (org_detalhe.py): hiperlink; a aparencia e refeita logo abaixo (letra, cor, sem sublinhado)
+    if ($op.alvo) { $null = $ws.Hyperlinks.Add($cel, '', "'DETALHE'!A$([int]$op.alvo)", 'Ver a lista na aba DETALHE') }
     if ($op.fmt -eq 'n') { $rg.NumberFormatLocal = $fmtNum; $cel.Value2 = [double]$op.v }
     elseif ($op.fmt -eq 'p') { $rg.NumberFormatLocal = $fmtPct; $cel.Value2 = [double]$op.v }
     else { $rg.NumberFormat = '@'; $cel.Value2 = [string]$op.v }
@@ -57,6 +60,7 @@ try {
     if ($op.wrap) { $rg.WrapText = $true }
     if ($op.indent) { $rg.IndentLevel = [int]$op.indent }
     if ($op.border) { $rg.Borders.LineStyle = 1; $rg.Borders.Weight = 2; $rg.Borders.Color = (Cor @(191, 191, 191)) }
+    if ($op.alvo) { $rg.Font.Name = $(if ($dados.fonte) { $dados.fonte } else { 'Calibri' }); $rg.Font.Underline = -4142; if (-not $op.font) { $rg.Font.Color = 0 } }
     if ($op.h) { $k = [int]$op.r; if (-not $alturas.ContainsKey($k) -or $alturas[$k] -lt $op.h) { $alturas[$k] = [double]$op.h } }
   }
   foreach ($k in $alturas.Keys) { $ws.Rows.Item($k).RowHeight = $alturas[$k] }

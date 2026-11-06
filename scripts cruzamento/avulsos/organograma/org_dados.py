@@ -9,12 +9,12 @@ import os
 EQ = json.load(open(os.environ.get('AUTOPEL_ORGANOGRAMA_EQUIPE') or 'equipe.json', encoding='utf8'))  # local, fora do git (nomes e carteira)
 CART = {p['id']: (p['carteira']['cards'], p['carteira']['no_segmento'], p['carteira']['fora_segmento']) for p in EQ['pessoas']}
 PES = [(p['id'], p['nome'], p['perfil'], p['sup'], p['segmentos']) for p in EQ['pessoas']]
-# potencial: segmento do CRM -> (aba, coluna, linha do cabecalho)
-BASE = {'ALIMENTACAO': ('ALIMENTACAO FINAL', 'W', 1), 'REDE DE LOJAS': ('REDE DE LOJAS FINAL', 'W', 1),
-        'CONSTRUCAO': ('CONSTRUÇÃO FINAL', 'W', 1), 'DROGARIAS': ('"FARMACIA VF"', 'P', 6),
+# potencial: segmento do CRM -> (aba, coluna, linha do cabecalho). Abas FINAL: cabecalho na linha 6 desde 05/11/2026 (caixas_final.ps1)
+BASE = {'ALIMENTACAO': ('ALIMENTACAO FINAL', 'W', 6), 'REDE DE LOJAS': ('REDE DE LOJAS FINAL', 'W', 6),
+        'CONSTRUCAO': ('CONSTRUÇÃO FINAL', 'W', 6), 'DROGARIAS': ('"FARMACIA VF"', 'P', 6),
         # 05/11/2026: abas FINAL novas com STATUS AUTOPEL (ATIVO < 360 dias / INATIVO / NAO E CLIENTE)
-        'POSTOS E CONVENIENCIAS': ('POSTOS GAS & CONVENIENCIA FINAL', 'W', 1), 'ESTACIONAMENTOS': ('ESTACIONAMENTO FINAL', 'W', 1),
-        'PET SHOP': ('PET SHOP  FINAL', 'W', 1)}
+        'POSTOS E CONVENIENCIAS': ('POSTOS GAS & CONVENIENCIA FINAL', 'W', 6), 'ESTACIONAMENTOS': ('ESTACIONAMENTO FINAL', 'W', 6),
+        'PET SHOP': ('PET SHOP  FINAL', 'W', 6)}
 wb = openpyxl.load_workbook(MAPA, read_only=True)
 POT = {}
 for seg, (aba, col, h) in BASE.items():

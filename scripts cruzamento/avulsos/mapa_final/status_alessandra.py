@@ -14,6 +14,10 @@ DADOS = os.environ.get('AUTOPEL_MAPA_FINAL_DADOS') or os.path.join(HERE, 'dados'
 sys.path.insert(0, os.path.join(HERE, '..'))
 from gravar_coluna_xml import gravar_coluna
 
+# cabecalho das abas FINAL: linha 1 ate 05/11/2026; linha 6 depois que caixas_final.ps1 pos a tabela de caixas por porte no topo
+def linha_cab(rows):
+    return next(i for i, r in enumerate(rows[:12]) if len(r) > 1 and str(r[1] or '').strip() == 'NOME FANTASIA')
+
 
 def main(mapa):
     P = pickle.load(open(os.path.join(DADOS, 'status_final.pkl'), 'rb'))
@@ -44,10 +48,11 @@ def main(mapa):
     for aba in wb.sheetnames:
         if not aba.endswith('FINAL'): continue
         rows = list(wb[aba].iter_rows(values_only=True))
-        h = [str(x or '').strip() for x in rows[0]]
+        hi = linha_cab(rows)
+        h = [str(x or '').strip() for x in rows[hi]]
         if 'ORIGEM' not in h: continue
         j = h.index('ORIGEM')
-        for n, r in enumerate(rows[1:], start=2):
+        for n, r in enumerate(rows[hi + 1:], start=hi + 2):
             v = r[j] if j < len(r) else None
             if not isinstance(v, str) or 'Alessandra Dayan:' not in v: continue
             nv = re.sub(r'(Alessandra Dayan: )([A-Z]+\d+)', lambda m: m.group(1) + depara.get(m.group(2), m.group(2)), v)

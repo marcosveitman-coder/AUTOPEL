@@ -106,3 +106,22 @@ da Verdana, fixa a altura de cada linha e para com erro se alguma folha passar d
 - **Grade:** 60 colunas de 16 px e 3 colunas de folga de 5 px entre as caixas, num total de 740 pt. A impressora tem
   margem física e só imprime ~757 pt.
 - **Conferir pelo COM:** `PageSetup.Pages.Count` tem de ser 6 e `VPageBreaks.Count` tem de ser 0.
+
+## Aba DETALHE e números clicáveis (06/11/2026)
+
+Os números de potencial (caixas, faixas de supervisor, carteira) e da tabela por segmento da "ORGANOGRAMA impressao" são
+hiperlinks para a aba **DETALHE**, que traz as listas: RAZÃO SOCIAL, NOME FANTASIA, Nº DE LOJAS, CNPJ, STATUS AUTOPEL e
+origem. É clique simples e sem macro. Os números de carteira vêm do CRM e não têm lista.
+
+Ordem (na pasta `dados`):
+1. `python ../org_dados.py "<MAPA>"`;
+2. `python ../org_impressao.py`: marca os números com `link`;
+3. `python ../org_detalhe.py "<MAPA>"`:
+   - gera `detalhe.tsv` e `detalhe.json`;
+   - põe a linha de destino (`alvo`) no `org_impressao.json`;
+   - para se a contagem por status for diferente da do `org_dados.json`;
+4. `powershell -File ../org_detalhe.ps1 -Arquivo "<cópia>"`: cria ou regrava a DETALHE, no fim da pasta;
+5. `powershell -File ../org_grava.ps1 -Arquivo "<cópia>" -Layout org_impressao.json`: grava a impressão com os links,
+   na mesma letra, cor e sem sublinhado.
+
+A DETALHE e a impressão andam juntas, porque os links apontam para números de linha da DETALHE.

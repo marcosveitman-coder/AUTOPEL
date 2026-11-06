@@ -181,3 +181,13 @@ Sessão: `docs/sessoes/2026-11-05 - status receita, porte e status autopel.md`.
    - `confere_zip.py`;
    - `../organograma/org_confere.py` (outras abas, dinâmicas e nomes);
    - todas as células U–W contra o `status_final.pkl`.
+
+## Caixas por mês (06/11/2026)
+
+`powershell -File caixas_final.ps1 -Arquivo "<cópia>"` (só uma vez). Nas 7 abas FINAL:
+- insere 5 linhas no topo, e o cabeçalho vai para a linha 6;
+- copia a tabela a/b/c/d da FARMACIA VF (W1:X4) para as linhas 1–4;
+- cria a coluna "Total de caixas/ mês" (1ª letra do PORTE × Nº DE LOJAS);
+- refaz o filtro e congela o painel abaixo da linha 6.
+
+Depois disso, os scripts desta pasta acham o cabeçalho pela função `linha_cab` (linha 1 ou 6).

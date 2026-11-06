@@ -19,6 +19,10 @@ CAMPOS = {'nome': 'NOME FANTASIA', 'raz': 'RAZÃO SOCIAL', 'grupo': 'GRUPO ADMIN
           'segm': 'SEGMENTO', 'origem': 'ORIGEM', 'obs': 'OBSERVAÇÃO', 'U': 'STATUS RECEITA', 'V': 'PORTE', 'W': 'STATUS AUTOPEL',
           'sub': 'SUBSEGMENTO', 'segp': 'SEGMENTO (PESQUISA)', 'rede': 'LOJAS ATIVAS COM O NOME NA RECEITA (TODOS OS CNPJs)'}
 
+# cabecalho das abas FINAL: linha 1 ate 05/11/2026; linha 6 depois que caixas_final.ps1 pos a tabela de caixas por porte no topo
+def linha_cab(rows):
+    return next(i for i, r in enumerate(rows[:12]) if len(r) > 1 and str(r[1] or '').strip() == 'NOME FANTASIA')
+
 
 def dig(c):
     def k(b, w):
@@ -33,13 +37,14 @@ def main(mapa):
     itens, cnpjs = [], set()
     for aba in ABAS:
         rows = list(wb[aba].iter_rows(values_only=True))
-        h = [s(x) for x in rows[0]]
+        hi = linha_cab(rows)
+        h = [s(x) for x in rows[hi]]
         col = {}
         for k, nome in CAMPOS.items():
             j = [i for i, x in enumerate(h) if x == nome] or ([i for i, x in enumerate(h) if x.startswith(nome)] if k == 'lojas' else [])
             if j: col[k] = j[0]
         print(aba, len(rows) - 1, 'linhas | sem coluna:', [k for k in CAMPOS if k not in col], '| colunas:', len(h))
-        for n, r in enumerate(rows[1:], start=2):
+        for n, r in enumerate(rows[hi + 1:], start=hi + 2):
             if not any(v not in (None, '') for v in r[:6]): continue
             it = dict(aba=aba, lin=n, **{k: r[j] if j < len(r) else None for k, j in col.items()})
             it['cnpj'] = D(it.get('cnpj')); it['ref'] = D(it.get('ref'))

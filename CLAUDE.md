@@ -261,6 +261,14 @@ Armadilhas reais já vistas:
   - corte regional "top N com X+": ao excluir uma candidata, entra outra. Buscar na Receita todas as candidatas acima do
     corte mínimo de uma vez (`q16`), e não só as N primeiras.
 
+**Caixas por mês nas abas FINAL** (06/11/2026; `mapa_final/caixas_final.ps1`):
+- desde 06/11, as 7 abas FINAL têm **o cabeçalho na linha 6**, como a FARMACIA VF;
+- nas linhas 1–4 fica a tabela a/b/c/d (17/12/7/4, copiada da FARMACIA VF W1:X4): a letra na W (OUTROS: Y) e o valor na
+  coluna nova;
+- coluna nova "Total de caixas/ mês" (X; OUTROS: Z) = valor da 1ª letra do PORTE × N(Nº DE LOJAS);
+- os scripts acham o cabeçalho sozinhos (`linha_cab`), e o `org_dados.py` lê a W na linha 6;
+- **não ler as abas FINAL pela linha 1**.
+
 **STATUS RECEITA / PORTE / STATUS AUTOPEL** (colunas U–W das abas FINAL e ao lado das tabelas da Alessandra Dayan,
 05/11/2026; `mapa_final/status_*.py`):
 - **STATUS AUTOPEL** (regra do usuário):
@@ -300,6 +308,10 @@ Armadilhas reais já vistas:
   Não regravar pelo `org_layout.py`: para mudar números, usar `org_potencial.py` + `org_potencial.ps1`, que trocam só as
   células de potencial e inserem as linhas novas da tabela de potencial (05/11);
 - potencial desde 05/11: também POSTOS E CONVENIENCIAS, ESTACIONAMENTOS e PET SHOP (coluna W das abas FINAL novas);
+- **aba DETALHE** (06/11, no fim da pasta): as listas por trás dos números de potencial e da tabela por segmento da
+  impressão. Os 56 números são hiperlinks (clique simples, sem macro: o arquivo continua .xlsx). Refazer na ordem
+  `org_dados` → `org_impressao` → `org_detalhe.py` → `org_detalhe.ps1` → `org_grava.ps1`. A DETALHE e a impressão andam
+  juntas, porque os links apontam para linhas da DETALHE. Os números de carteira (CRM) não têm lista;
 - a aba **"ORGANOGRAMA impressao"** tem as mesmas informações em 7 folhas A4 paisagem a 100% (a 7ª, segmentos ×
   responsáveis, desde 05/11):
   - **Verdana, tamanho 10 ou maior, sem itálico** (pedido do usuário);
@@ -437,7 +449,10 @@ Armadilhas reais já vistas:
   - **Coluna nova em tabela com formatação até o fim da planilha:** `ListColumns.Add` falha. Escrever os cabeçalhos
     ao lado e usar `ListObject.Resize`.
   - **Matriz grande:** se `Range.Value2 = object[,]` der erro de conversão, usar `Range.Value`.
-  - **PowerShell não diferencia maiúsculas:** `$J`/`$j`, `$V`/`$v`, `$T`/`$t` colidem. Usar nomes longos.
+  - **.ps1 com acento** ("Nº", "CONSTRUÇÃO", "Área de Trabalho") tem de ser **UTF-8 com BOM**: sem ele, o PowerShell 5.1
+  lê errado. O `ConvertFrom-Json` do 5.1 não lê JSON grande: passar dezenas de milhares de linhas por TSV.
+- `Hyperlinks.Add` troca a fonte da célula pelo estilo "Hyperlink": refazer fonte, cor e sublinhado depois.
+- **PowerShell não diferencia maiúsculas:** `$J`/`$j`, `$V`/`$v`, `$T`/`$t` colidem. Usar nomes longos.
   - **Tabela com filtro ligado:** gravar `DataBodyRange.Formula` numa coluna nova pula as linhas ocultas. Guardar o
     filtro, `AutoFilter.ShowAllData()`, gravar e devolver o filtro no fim.
   - O Excel renumera estilos ao salvar: comparar formatação pelo conteúdo do estilo, não pelo índice

@@ -2,7 +2,9 @@
 100%, com letra Verdana de tamanho 10 ou maior e sem italico.
 Folhas: uma por grupo de caixas (equipe menor; equipe maior - vendedores e venda interna; equipe maior -
 representantes), depois a carteira de cada pessoa (uma folha por equipe), o potencial por segmento (folha 6) e os
-segmentos x responsaveis (folha 7, desde 05/11/2026). Grade de 62 colunas estreitas (B..BK); caixas de 14 colunas, 4 por linha.
+segmentos x responsaveis (folha 7, desde 05/11/2026).
+Numeros de potencial e da tabela por segmento levam 'link' (P|pessoa ou S|segmento|status): o org_detalhe.py troca pelo
+endereco da lista na aba DETALHE, e o org_grava.ps1 grava o hiperlink. Grade de 62 colunas estreitas (B..BK); caixas de 14 colunas, 4 por linha.
 As alturas das linhas sao estimadas pela largura das letras da Verdana (texto quebrado em celula mesclada nao tem
 autoajuste) e cada folha e conferida contra a altura util da pagina. Gera org_impressao.json para o org_grava.ps1."""
 import json, math
@@ -97,7 +99,8 @@ def card(p, r, c):
         put(r + 5 + i, c + 7, v / base if base else '—', c + 14, fmt='p' if base else None, bold=True, halign='center', border=True, uma=True)
     extra = dict(fill=OURO, font=OURO_T) if pot else dict(font=CINZA)
     put(r + 8, c, ' Potencial', c + 6, border=True, uma=True, **extra)
-    put(r + 8, c + 7, pot if pot else 'sem lista', c + 14, fmt='n' if pot else None, bold=True, halign='center', border=True, uma=True, **extra)
+    put(r + 8, c + 7, pot if pot else 'sem lista', c + 14, fmt='n' if pot else None, bold=True, halign='center', border=True, uma=True,
+        link=f"P|{p['id']}" if pot else None, **extra)
     ops.append(dict(box=[r, c, r + 8, c + 14]))
     return r + 8
 def caixas(ids, r):
@@ -133,7 +136,8 @@ def banner(r, sp, eq):
     for (x1, x2), (t, v) in zip(partes(C0, NC, 7), cel):
         extra = dict(fill=OURO, font=OURO_T) if t == 'Potencial' else {}
         put(r + 1, x1, t, x2, bold=True, fill=extra.get('fill', LIGHT), font=extra.get('font', DARK), halign='center', border=True, wrap=True)
-        put(r + 2, x1, v, x2, fmt='n' if isinstance(v, int) else None, size=10, bold=True, halign='center', border=True, uma=True, **extra)
+        put(r + 2, x1, v, x2, fmt='n' if isinstance(v, int) else None, size=10, bold=True, halign='center', border=True, uma=True,
+            link=f"P|{sp['id']}" if t == 'Potencial' and v else None, **extra)
     ops.append(dict(box=[r, C0, r + 2, CF]))
     r += 3
     ops.append(dict(vline=[C0 + NC // 2 - 1, r, r])); alt(r, 12)
@@ -179,7 +183,9 @@ def t1_linha(r, k):
     vals = [p['total'], q(no, tot), q(fora, tot)] + [q(p['no'][i], no) for i in range(3)] + [q(p['fora'][i], fora) for i in range(3)]
     pot = sum(p['potencial'].values())
     vals.append(pot if pot else '—')
-    for (c1, c2), v in zip(T1[1:], vals): put(r, c1, v, c2, fmt='n' if isinstance(v, int) else None, halign='center', **f)
+    for i, ((c1, c2), v) in enumerate(zip(T1[1:], vals)):
+        lk = f'P|{k}' if i == len(vals) - 1 and pot else None  # numero de potencial -> lista na aba DETALHE
+        put(r, c1, v, c2, fmt='n' if isinstance(v, int) else None, halign='center', link=lk, **f)
     return r + 1
 semseg = [P[k] for k in [DIR] + SUP if P[k]['no_total'] + P[k]['fora_total'] < P[k]['total']]
 quem = ' e '.join(('na diretoria' if not p['sup'] else 'no supervisor ' + p['nome'].title()) for p in semseg)
@@ -206,8 +212,10 @@ for seg, b in POT.items():
     st = b['status']; f = dict(border=True)
     put(r, 2, nomeseg(seg), 11, bold=True, **f); put(r, 12, f" {b['aba']} ({b['col']})", 23, **f)
     for (c1, c2), k in zip(T2[2:9], [None, 'ATIVO', 'INATIVO', 'INATIVANDO', 'LEAD NO CRM', 'NÃO É CLIENTE', 'A TRABALHAR']):
-        put(r, c1, b['total'] if k is None else st.get(k, 0), c2, fmt='n', halign='center', **f)
-    put(r, 60, b['potencial'], 64, fmt='n', halign='center', bold=True, fill=OURO, font=OURO_T, **f)
+        v = b['total'] if k is None else st.get(k, 0)
+        put(r, c1, v, c2, fmt='n', halign='center', link=f"S|{seg}|{k or 'TOTAL'}" if v else None, **f)
+    put(r, 60, b['potencial'], 64, fmt='n', halign='center', bold=True, fill=OURO, font=OURO_T,
+        link=f"S|{seg}|POTENCIAL" if b['potencial'] else None, **f)
     r += 1
 alt(r, 6); r += 1
 put(r, C0, 'POTENCIAL = linhas da lista do segmento com STATUS AUTOPEL diferente de ATIVO. O potencial é do segmento: quem divide o segmento divide as mesmas '
