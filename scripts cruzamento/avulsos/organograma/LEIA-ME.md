@@ -107,21 +107,55 @@ da Verdana, fixa a altura de cada linha e para com erro se alguma folha passar d
   margem física e só imprime ~757 pt.
 - **Conferir pelo COM:** `PageSetup.Pages.Count` tem de ser 6 e `VPageBreaks.Count` tem de ser 0.
 
-## Aba DETALHE e números clicáveis (06/11/2026)
+## Duplo clique nos números da "ORGANOGRAMA impressao" (macro, 06/11/2026)
 
-Os números de potencial (caixas, faixas de supervisor, carteira) e da tabela por segmento da "ORGANOGRAMA impressao" são
-hiperlinks para a aba **DETALHE**, que traz as listas: RAZÃO SOCIAL, NOME FANTASIA, Nº DE LOJAS, CNPJ, STATUS AUTOPEL e
-origem. É clique simples e sem macro. Os números de carteira vêm do CRM e não têm lista.
+O MAPA MERCADO passou a ser **.xlsm**. Com duplo clique em qualquer número da "ORGANOGRAMA impressao" (311 números:
+carteira, potencial, tabela por segmento e pessoas da equipe), a macro cria a aba **DETALHE** com a lista daquele
+número: RAZÃO SOCIAL, NOME FANTASIA, Nº DE LOJAS e CNPJ, mais as colunas de apoio.
 
-Ordem (na pasta `dados`):
+**Nenhuma lista fica guardada no arquivo.** A macro lê na hora:
+- **carteira** (clientes, no segmento, fora, ativos, perdendo, a trabalhar):
+  - fonte: o `Ultimo faturamento - SQL.csv` do dia, da pasta de relatórios do TOTVS (caminho na CONFIG DETALHE);
+  - sem o CSV, a aba ULTIMO FATURAMENTO do arquivo;
+- **potencial e tabela por segmento:** as abas FINAL e a "FARMACIA VF".
+
+A aba DETALHE é refeita a cada duplo clique e apagada ao abrir e ao fechar o arquivo:
+- montar ou apagar a lista não marca o arquivo como alterado;
+- se alguém salvar com a lista aberta, ela some na abertura seguinte.
+
+No `BeforeSave` não funciona: o Excel ignora exclusão de aba e limpeza de células durante o salvamento, e o salvamento
+automático do OneDrive apagaria a lista enquanto ela é lida.
+
+**Carteira do CRM pelo TOTVS** (conferida com as telas de 04/11):
+- um cliente por **vendedor + código de cliente**, com a data da nota mais recente entre as lojas do código;
+- ativo ≤ 290 dias, perdendo 291–365, a trabalhar acima disso ou sem nota;
+- no segmento = segmento do cliente entre os segmentos do vendedor;
+- quanto bate: por pessoa, quase exato (ex.: 779 × 782; ativos 150 × 149);
+- **supervisão** = vendedores da equipe (soma; 1.818 × 1.804 e 8.889 × 8.707);
+- **diretoria** = clientes dos diretores no TOTVS (40.444 × 40.072). A divisão no/fora do segmento da diretoria não dá
+  para refazer: a macro mostra todos os clientes do status e avisa;
+- **venda interna** = carteira "VENDA INDIRETA INTERNA" do TOTVS;
+- pessoa → nome no TOTVS em `dados/detalhe_vendedores.json` (local, com nomes; gerado na 1ª vez pelas regras do
+  `org_detalhe.py`).
+
+**Ordem** (na pasta `dados`):
 1. `python ../org_dados.py "<MAPA>"`;
-2. `python ../org_impressao.py`: marca os números com `link`;
-3. `python ../org_detalhe.py "<MAPA>"`:
-   - gera `detalhe.tsv` e `detalhe.json`;
-   - põe a linha de destino (`alvo`) no `org_impressao.json`;
-   - para se a contagem por status for diferente da do `org_dados.json`;
-4. `powershell -File ../org_detalhe.ps1 -Arquivo "<cópia>"`: cria ou regrava a DETALHE, no fim da pasta;
-5. `powershell -File ../org_grava.ps1 -Arquivo "<cópia>" -Layout org_impressao.json`: grava a impressão com os links,
-   na mesma letra, cor e sem sublinhado.
+2. `python ../org_impressao.py`: marca cada número com `det` (o que ele conta);
+3. com `AUTOPEL_ULTFAT_CSV=<CSV do dia>`, `python ../org_detalhe.py "<MAPA>"`: gera `config_detalhe.tsv`;
+4. `powershell -File ../org_detalhe.ps1 -Arquivo "<cópia>"`: grava a aba oculta CONFIG DETALHE e apaga a DETALHE se
+   existir;
+5. `powershell -File ../org_grava.ps1 -Arquivo "<cópia>" -Layout org_impressao.json` (só se a impressão mudou);
+6. `python ../org_xlsm.py "<cópia>.xlsx" "<saída>.xlsm"`: põe a macro (`vba_ThisWorkbook.txt` e `vba_DetalheMod.txt`).
+   Usa o `../vba_projeto.py`, que monta o `vbaProject.bin` sem o Excel;
+7. teste (Excel oculto, com tempo limite):
+   - `org_detalhe_teste.ps1` monta a lista de todos os números, simula o duplo clique, salva e reabre;
+   - `org_detalhe_esperado.py` confere cada quantidade com o recálculo em Python.
 
-A DETALHE e a impressão andam juntas, porque os links apontam para números de linha da DETALHE.
+**Por que montar o `vbaProject.bin` sem o Excel:**
+- o Excel daqui não deixa gravar macro por automação, porque a opção "Confiar no acesso ao modelo de objeto do projeto
+  do VBA" está desligada, e opção de segurança não se muda;
+- o `vba_projeto.py` segue as especificações MS-OVBA e MS-CFB. O Excel compila o código ao abrir.
+
+**Se o arquivo já é .xlsm:**
+- para trocar só a macro, partir de uma cópia **.xlsx** do arquivo e refazer o passo 6;
+- para trocar só a configuração, os passos 3–4 bastam, rodados direto no .xlsm.

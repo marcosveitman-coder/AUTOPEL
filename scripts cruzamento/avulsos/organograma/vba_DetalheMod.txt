@@ -1,0 +1,574 @@
+Attribute VB_Name = "DetalheMod"
+Option Explicit
+'
+' Aba DETALHE do MAPA MERCADO (06/11/2026).
+' Duplo clique num numero da aba "ORGANOGRAMA impressao" -> abre uma aba nova, DETALHE, com a lista por tras do numero
+' (razao social, nome fantasia, no de lojas, CNPJ e mais algumas colunas de apoio).
+' O significado de cada numero, as pessoas, os segmentos e o caminho do CSV do TOTVS ficam na aba oculta
+' "CONFIG DETALHE" (gerada pelo org_detalhe.py). A aba DETALHE e apagada ao abrir e ao fechar o arquivo (nao cresce).
+'   C = carteira (CSV "Ultimo faturamento" do TOTVS; reserva: aba ULTIMO FATURAMENTO deste arquivo)
+'   P = potencial e S = tabela por segmento (abas FINAL e "FARMACIA VF" deste arquivo)
+'   E = pessoas da equipe
+'
+' leitura do CSV em UTF-8: binario + conversao do Windows (o ADODB.Stream levava minutos para 84 MB)
+#If VBA7 Then
+Private Declare PtrSafe Function MBtoWC Lib "kernel32" Alias "MultiByteToWideChar" (ByVal CodePage As Long, ByVal dwFlags As Long, _
+    ByVal lpMultiByteStr As LongPtr, ByVal cbMultiByte As Long, ByVal lpWideCharStr As LongPtr, ByVal cchWideChar As Long) As Long
+#Else
+Private Declare Function MBtoWC Lib "kernel32" Alias "MultiByteToWideChar" (ByVal CodePage As Long, ByVal dwFlags As Long, _
+    ByVal lpMultiByteStr As Long, ByVal cbMultiByte As Long, ByVal lpWideCharStr As Long, ByVal cchWideChar As Long) As Long
+#End If
+
+Private Const ABA_ORG As String = "ORGANOGRAMA impressao"
+Private Const ABA_CFG As String = "CONFIG DETALHE"
+Private Const ABA_DET As String = "DETALHE"
+
+Private uCarimbo As String
+Private uFonte As String
+Private uN As Long
+Private uCod() As String, uLoja() As String, uCnpj() As String, uNome() As String, uFant() As String
+Private uSeg() As String, uVend() As String, uDir() As String, uDt() As Double
+
+' ============================================================ entrada (chamada pelo ThisWorkbook)
+Public Function EnderecoBase(ByVal Target As Range) As String
+    EnderecoBase = Target.Cells(1, 1).MergeArea.Cells(1, 1).Address(False, False)
+End Function
+
+Public Function TemDetalhe(ByVal Target As Range) As Boolean
+    On Error GoTo nao
+    TemDetalhe = (AcharLinha("CELULAS", EnderecoBase(Target)) > 0)
+    Exit Function
+nao:
+    TemDetalhe = False
+End Function
+
+Public Sub AbrirDetalhe(ByVal Target As Range)
+    Dim res As String
+    res = MontarDetalhe(EnderecoBase(Target))
+    If Left$(res, 4) = "ERRO" Then MsgBox "Não foi possível montar a lista." & vbCrLf & Mid$(res, 6), vbExclamation, "DETALHE"
+End Sub
+
+Public Function MontarDetalhe(ByVal endereco As String) As String
+    ' devolve "OK|linhas" ou "ERRO|mensagem" (sem caixa de mensagem: tambem usado no teste automatico)
+    Dim r As Long, tipo As String, quem As String, segs As String, st As String, rotulo As String, numero As String
+    Dim dados As Variant, cab As Variant, nota As String, n As Long
+    On Error GoTo erro
+    r = AcharLinha("CELULAS", endereco)
+    If r = 0 Then
+        MontarDetalhe = "ERRO|célula sem lista: " & endereco
+        Exit Function
+    End If
+    tipo = Txt(Cfg.Cells(r, 2).Value2)
+    quem = Txt(Cfg.Cells(r, 3).Value2)
+    segs = Txt(Cfg.Cells(r, 4).Value2)
+    st = Txt(Cfg.Cells(r, 5).Value2)
+    rotulo = Txt(Cfg.Cells(r, 6).Value2)
+    numero = Txt(Cfg.Cells(r, 7).Value2)
+    Application.ScreenUpdating = False
+    Application.Cursor = xlWait
+    Select Case tipo
+        Case "C": Carteira quem, segs, st, dados, cab, nota, n
+        Case "P": Listas segs, "POTENCIAL", dados, cab, nota, n
+        Case "S": Listas segs, st, dados, cab, nota, n
+        Case "E": Equipe quem, dados, cab, nota, n
+        Case Else: Err.Raise 5, , "tipo desconhecido: " & tipo
+    End Select
+    Escrever rotulo, numero, nota, cab, dados, n, endereco, tipo
+    Application.Cursor = xlDefault
+    Application.ScreenUpdating = True
+    Application.StatusBar = False
+    MontarDetalhe = "OK|" & n
+    Exit Function
+erro:
+    MontarDetalhe = "ERRO|" & Err.Description
+    Application.Cursor = xlDefault
+    Application.ScreenUpdating = True
+    Application.StatusBar = False
+End Function
+
+Public Sub ApagarDetalhe()
+    Dim ws As Worksheet
+    On Error Resume Next
+    Set ws = ThisWorkbook.Worksheets(ABA_DET)
+    On Error GoTo 0
+    If ws Is Nothing Then Exit Sub
+    Application.DisplayAlerts = False
+    ws.Delete
+    Application.DisplayAlerts = True
+End Sub
+
+Public Sub ApagarSemMarcar()
+    ' chamado ao abrir e ao fechar: apaga a aba DETALHE sem deixar o arquivo "alterado" se ele nao estava.
+    ' (Durante o salvamento o Excel ignora exclusao de aba e limpeza de celulas; e com o salvamento automatico do
+    ' OneDrive mexer na lista ao salvar a apagaria enquanto o usuario le. Por isso a limpeza e ao abrir e ao fechar.)
+    Dim ws As Worksheet, limpo As Boolean
+    On Error Resume Next
+    Set ws = ThisWorkbook.Worksheets(ABA_DET)
+    On Error GoTo 0
+    If ws Is Nothing Then Exit Sub
+    limpo = ThisWorkbook.Saved
+    ApagarDetalhe
+    If limpo Then ThisWorkbook.Saved = True
+End Sub
+
+' ============================================================ configuracao (aba oculta CONFIG DETALHE)
+Private Function Cfg() As Worksheet
+    Set Cfg = ThisWorkbook.Worksheets(ABA_CFG)
+End Function
+
+Private Function Txt(ByVal v As Variant) As String
+    If IsError(v) Then
+        Txt = ""
+    ElseIf IsEmpty(v) Then
+        Txt = ""
+    Else
+        Txt = Trim$(CStr(v))
+    End If
+End Function
+
+Private Function ValorCfg(ByVal chave As String) As String
+    Dim r As Long
+    For r = 1 To 30
+        If Txt(Cfg.Cells(r, 1).Value2) = chave Then
+            ValorCfg = Txt(Cfg.Cells(r, 2).Value2)
+            Exit Function
+        End If
+    Next r
+End Function
+
+Private Function InicioSecao(ByVal titulo As String) As Long
+    ' primeira linha de dados da secao (titulo na coluna A, cabecalho na linha seguinte)
+    Dim r As Long, ult As Long
+    ult = Cfg.Cells(Cfg.Rows.Count, 1).End(xlUp).Row
+    For r = 1 To ult
+        If Txt(Cfg.Cells(r, 1).Value2) = titulo Then
+            InicioSecao = r + 2
+            Exit Function
+        End If
+    Next r
+End Function
+
+Private Function AcharLinha(ByVal secao As String, ByVal chave As String) As Long
+    Dim r As Long
+    r = InicioSecao(secao)
+    If r = 0 Then Exit Function
+    Do While Txt(Cfg.Cells(r, 1).Value2) <> ""
+        If Txt(Cfg.Cells(r, 1).Value2) = chave Then
+            AcharLinha = r
+            Exit Function
+        End If
+        r = r + 1
+    Loop
+End Function
+
+' ============================================================ carteira (TOTVS)
+Private Sub Carteira(ByVal quem As String, ByVal escopoSeg As String, ByVal st As String, _
+                     ByRef dados As Variant, ByRef cab As Variant, ByRef nota As String, ByRef n As Long)
+    Dim rp As Long, escopo As String, alvo As String, i As Long, j As Long, k As Long, m As Long, r As Long
+    Dim chave As String, s As String, hoje As Double, dias As Long, dAtivo As Long, dPerd As Long
+    Dim segVend As Object, idx As Object, nomes As Variant, x As Variant, filtraSeg As Boolean, noSeg As Boolean
+    Dim aVend() As String, aCod() As String, aCnpj() As String, aNome() As String, aFant() As String, aSeg() As String
+    Dim aLojas() As Long, aDt() As Double, aTem() As Boolean, aSt() As String, aNo() As Boolean, sel() As Long, d() As Variant
+
+    rp = AcharLinha("PESSOAS", quem)
+    If rp = 0 Then Err.Raise 5, , "pessoa não configurada: " & quem
+    escopo = Txt(Cfg.Cells(rp, 4).Value2)
+    alvo = ";" & Txt(Cfg.Cells(rp, 5).Value2) & ";"
+    dAtivo = CLng(Val(ValorCfg("DIAS ATIVO")))
+    dPerd = CLng(Val(ValorCfg("DIAS PERDENDO")))
+    CarregarUF
+
+    ' segmentos de cada vendedor (pessoas com escopo VEND): para separar "no segmento" e "fora"
+    Set segVend = CreateObject("Scripting.Dictionary")
+    r = InicioSecao("PESSOAS")
+    Do While Txt(Cfg.Cells(r, 1).Value2) <> ""
+        If Txt(Cfg.Cells(r, 4).Value2) = "VEND" And Txt(Cfg.Cells(r, 5).Value2) <> "" Then
+            nomes = Split(Txt(Cfg.Cells(r, 5).Value2), ";")
+            For Each x In nomes
+                segVend(CStr(x)) = ";" & Txt(Cfg.Cells(r, 6).Value2) & ";"
+            Next x
+        End If
+        r = r + 1
+    Loop
+
+    ' um cliente por vendedor + codigo (como no CRM); data = nota mais recente entre as lojas do codigo
+    Set idx = CreateObject("Scripting.Dictionary")
+    ReDim aVend(1 To uN): ReDim aCod(1 To uN): ReDim aCnpj(1 To uN): ReDim aNome(1 To uN): ReDim aFant(1 To uN)
+    ReDim aSeg(1 To uN): ReDim aLojas(1 To uN): ReDim aDt(1 To uN): ReDim aTem(1 To uN)
+    For i = 1 To uN
+        If escopo = "DIR" Then
+            If uDir(i) = "" Then GoTo proximo
+            If InStr(1, alvo, ";" & uDir(i) & ";", vbBinaryCompare) = 0 Then GoTo proximo
+        Else
+            If uVend(i) = "" Then GoTo proximo
+            If InStr(1, alvo, ";" & uVend(i) & ";", vbBinaryCompare) = 0 Then GoTo proximo
+        End If
+        chave = uVend(i) & "|" & uCod(i)
+        If idx.Exists(chave) Then
+            j = idx(chave)
+        Else
+            k = k + 1
+            j = k
+            idx.Add chave, j
+            aVend(j) = uVend(i): aCod(j) = uCod(i): aSeg(j) = uSeg(i)
+            aCnpj(j) = uCnpj(i): aNome(j) = uNome(i): aFant(j) = uFant(i)
+        End If
+        aLojas(j) = aLojas(j) + 1
+        If uDt(i) > aDt(j) Then aDt(j) = uDt(i)
+        If uLoja(i) = "0001" And Not aTem(j) Then
+            aTem(j) = True
+            aCnpj(j) = uCnpj(i): aNome(j) = uNome(i): aFant(j) = uFant(i)
+        End If
+proximo:
+    Next i
+
+    hoje = CDbl(Date)
+    filtraSeg = (escopoSeg = "NO" Or escopoSeg = "FORA") And escopo <> "DIR"
+    If k > 0 Then
+        ReDim aSt(1 To k): ReDim aNo(1 To k): ReDim sel(1 To k)
+    End If
+    For j = 1 To k
+        If aDt(j) = 0 Then
+            s = "T"
+        Else
+            dias = CLng(hoje - aDt(j))
+            If dias <= dAtivo Then
+                s = "A"
+            ElseIf dias <= dPerd Then
+                s = "P"
+            Else
+                s = "T"
+            End If
+        End If
+        aSt(j) = s
+        noSeg = False
+        If segVend.Exists(aVend(j)) Then noSeg = (InStr(1, segVend(aVend(j)), ";" & aSeg(j) & ";", vbBinaryCompare) > 0)
+        aNo(j) = noSeg
+        If st <> "TODOS" And st <> s Then GoTo pula
+        If filtraSeg Then
+            If escopoSeg = "NO" And Not noSeg Then GoTo pula
+            If escopoSeg = "FORA" And noSeg Then GoTo pula
+        End If
+        m = m + 1
+        sel(m) = j
+pula:
+    Next j
+
+    n = m
+    cab = Array("RAZÃO SOCIAL", "NOME FANTASIA", "Nº DE LOJAS", "CNPJ", "SEGMENTO", "NO SEGMENTO DO VENDEDOR", _
+                "ÚLTIMA COMPRA", "DIAS SEM COMPRAR", "STATUS", "VENDEDOR", "CÓDIGO DO CLIENTE")
+    If n > 0 Then
+        ReDim d(1 To n, 1 To 11)
+        For i = 1 To n
+            j = sel(i)
+            d(i, 1) = aNome(j): d(i, 2) = aFant(j): d(i, 3) = aLojas(j): d(i, 4) = aCnpj(j): d(i, 5) = aSeg(j)
+            If segVend.Exists(aVend(j)) Then d(i, 6) = IIf(aNo(j), "SIM", "NÃO")
+            If aDt(j) > 0 Then
+                d(i, 7) = aDt(j)
+                d(i, 8) = CLng(hoje - aDt(j))
+            End If
+            Select Case aSt(j)
+                Case "A": d(i, 9) = "Ativo"
+                Case "P": d(i, 9) = "Perdendo"
+                Case Else: d(i, 9) = "A trabalhar"
+            End Select
+            d(i, 10) = aVend(j): d(i, 11) = aCod(j)
+        Next i
+        dados = d
+    End If
+    nota = "Carteira montada pelo TOTVS (" & uFonte & "): um cliente por vendedor + código, como no CRM. Status pela última nota até hoje (" & _
+           Format$(Date, "dd/mm/yyyy") & "): ativo até " & dAtivo & " dias, perdendo até " & dPerd & ", a trabalhar acima disso ou sem compra."
+    If escopo = "EQUIPE" Then nota = nota & " Equipe = clientes dos vendedores da equipe no organograma."
+    If escopo = "DIR" Then nota = nota & " Diretoria = clientes dos diretores " & Replace(Txt(Cfg.Cells(rp, 5).Value2), ";", ", ") & " no TOTVS."
+    If escopo = "DIR" And (escopoSeg = "NO" Or escopoSeg = "FORA") Then
+        nota = nota & " Atenção: a divisão no/fora do segmento da diretoria usa os segmentos de todos os vendedores do CRM, que não estão neste arquivo; a lista traz todos os clientes desse status."
+    End If
+    If Txt(Cfg.Cells(rp, 5).Value2) = "" Then nota = nota & " Atenção: esta pessoa não foi achada como vendedora no TOTVS."
+End Sub
+
+Private Sub CarregarUF()
+    Dim p As String, fso As Object, carimbo As String
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    p = Replace(ValorCfg("CSV"), "%USERPROFILE%", Environ$("USERPROFILE"))
+    If p <> "" Then
+        If fso.FileExists(p) Then
+            carimbo = p & "|" & CStr(fso.GetFile(p).DateLastModified)
+            If carimbo = uCarimbo And uN > 0 Then Exit Sub
+            Application.StatusBar = "DETALHE: lendo o Ultimo faturamento do TOTVS..."
+            LerCSV p
+            uFonte = "Ultimo faturamento de " & Format$(fso.GetFile(p).DateLastModified, "dd/mm/yyyy hh:mm")
+            uCarimbo = carimbo
+            Exit Sub
+        End If
+    End If
+    If uCarimbo = "ABA" And uN > 0 Then Exit Sub
+    Application.StatusBar = "DETALHE: lendo a aba " & ValorCfg("ABA RESERVA") & "..."
+    LerAba ValorCfg("ABA RESERVA")
+    uFonte = "aba " & ValorCfg("ABA RESERVA") & " deste arquivo, porque o CSV do dia não foi achado"
+    uCarimbo = "ABA"
+End Sub
+
+Private Sub PrepararUF(ByVal n As Long)
+    If n < 1 Then n = 1
+    ReDim uCod(1 To n): ReDim uLoja(1 To n): ReDim uCnpj(1 To n): ReDim uNome(1 To n): ReDim uFant(1 To n)
+    ReDim uSeg(1 To n): ReDim uVend(1 To n): ReDim uDir(1 To n): ReDim uDt(1 To n)
+    uN = 0
+End Sub
+
+Private Function LerUtf8(ByVal p As String) As String
+    Dim f As Integer, b() As Byte, n As Long, k As Long, s As String
+    f = FreeFile
+    Open p For Binary Access Read Shared As #f
+    n = LOF(f)
+    If n = 0 Then
+        Close #f
+        Exit Function
+    End If
+    ReDim b(0 To n - 1)
+    Get #f, , b
+    Close #f
+    k = MBtoWC(65001, 0, VarPtr(b(0)), n, 0, 0)
+    s = String$(k, vbNullChar)
+    k = MBtoWC(65001, 0, VarPtr(b(0)), n, StrPtr(s), k)
+    LerUtf8 = s
+End Function
+
+Private Sub LerCSV(ByVal p As String)
+    Dim tudo As String, lin() As String, c() As String, i As Long, k As Long
+    tudo = LerUtf8(p)
+    lin = Split(tudo, vbLf)
+    tudo = vbNullString
+    PrepararUF UBound(lin) + 1
+    For i = 2 To UBound(lin)              ' linha 0 = titulo do relatorio, linha 1 = cabecalho
+        If Len(lin(i)) > 20 Then
+            c = Split(lin(i), ";")
+            If UBound(c) >= 24 Then
+                k = k + 1
+                uCod(k) = NormCod(c(0), 6): uLoja(k) = NormCod(c(1), 4): uCnpj(k) = Trim$(c(2))
+                uNome(k) = Trim$(c(5)): uFant(k) = Trim$(c(6)): uSeg(k) = Trim$(c(13))
+                uVend(k) = Trim$(c(15)): uDir(k) = Trim$(c(21)): uDt(k) = DataTexto(c(24))
+            End If
+        End If
+    Next i
+    uN = k
+End Sub
+
+Private Sub LerAba(ByVal nome As String)
+    Dim ws As Worksheet, ult As Long, v As Variant, i As Long, k As Long
+    Set ws = ThisWorkbook.Worksheets(nome)
+    ult = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row
+    If ult < 3 Then Err.Raise 5, , "a aba " & nome & " está vazia"
+    v = ws.Range(ws.Cells(2, 1), ws.Cells(ult, 25)).Value2
+    PrepararUF ult
+    For i = 1 To ult - 1
+        If Txt(v(i, 1)) <> "" Then
+            k = k + 1
+            uCod(k) = NormCod(Txt(v(i, 1)), 6): uLoja(k) = NormCod(Txt(v(i, 2)), 4): uCnpj(k) = Txt(v(i, 3))
+            uNome(k) = Txt(v(i, 6)): uFant(k) = Txt(v(i, 7)): uSeg(k) = Txt(v(i, 14))
+            uVend(k) = Txt(v(i, 16)): uDir(k) = Txt(v(i, 22))
+            If VarType(v(i, 25)) = vbDouble Then
+                uDt(k) = v(i, 25)
+            Else
+                uDt(k) = DataTexto(Txt(v(i, 25)))
+            End If
+        End If
+    Next i
+    uN = k
+End Sub
+
+Private Function NormCod(ByVal s As String, ByVal nd As Long) As String
+    s = Trim$(s)
+    If s <> "" And Len(s) <= 9 And Not (s Like "*[!0-9]*") Then
+        NormCod = Format$(CLng(s), String$(nd, "0"))
+    Else
+        NormCod = s
+    End If
+End Function
+
+Private Function DataTexto(ByVal s As String) As Double
+    s = Trim$(s)
+    If Len(s) >= 10 Then
+        If Mid$(s, 3, 1) = "/" And Mid$(s, 6, 1) = "/" Then
+            On Error Resume Next
+            DataTexto = CDbl(DateSerial(CInt(Mid$(s, 7, 4)), CInt(Mid$(s, 4, 2)), CInt(Left$(s, 2))))
+            On Error GoTo 0
+        End If
+    End If
+End Function
+
+' ============================================================ listas de mercado (potencial e tabela por segmento)
+Private Sub Listas(ByVal segs As String, ByVal st As String, ByRef dados As Variant, ByRef cab As Variant, ByRef nota As String, ByRef n As Long)
+    Dim chaves() As String, q As Long, nq As Long, rs As Long, c As Long, h As String, i As Long, m As Long, total As Long, s As String
+    Dim ws() As Worksheet, hr() As Long, cS() As Long, cR() As Long, cF() As Long, cL() As Long, cC() As Long, ult() As Long, nomeSeg() As String
+    Dim vS As Variant, vR As Variant, vF As Variant, vL As Variant, vC As Variant, d() As Variant, abas As String
+
+    chaves = Split(segs, ";")
+    nq = UBound(chaves) - LBound(chaves) + 1
+    ReDim ws(1 To nq): ReDim hr(1 To nq): ReDim cS(1 To nq): ReDim cR(1 To nq): ReDim cF(1 To nq)
+    ReDim cL(1 To nq): ReDim cC(1 To nq): ReDim ult(1 To nq): ReDim nomeSeg(1 To nq)
+    For q = 1 To nq
+        rs = AcharLinha("SEGMENTOS", chaves(LBound(chaves) + q - 1))
+        If rs = 0 Then Err.Raise 5, , "segmento não configurado: " & chaves(LBound(chaves) + q - 1)
+        nomeSeg(q) = Txt(Cfg.Cells(rs, 2).Value2)
+        Set ws(q) = ThisWorkbook.Worksheets(Txt(Cfg.Cells(rs, 3).Value2))
+        cS(q) = ws(q).Range(Txt(Cfg.Cells(rs, 4).Value2) & "1").Column
+        hr(q) = CLng(Val(Txt(Cfg.Cells(rs, 5).Value2)))
+        For c = 1 To ws(q).Cells(hr(q), ws(q).Columns.Count).End(xlToLeft).Column
+            h = UCase$(Txt(ws(q).Cells(hr(q), c).Value2))
+            If h = "RAZÃO SOCIAL" And cR(q) = 0 Then cR(q) = c
+            If h = "NOME FANTASIA" And cF(q) = 0 Then cF(q) = c
+            If Left$(h, 11) = "Nº DE LOJAS" And cL(q) = 0 Then cL(q) = c
+            If h = "CNPJ" And cC(q) = 0 Then cC(q) = c
+        Next c
+        If cR(q) = 0 Or cF(q) = 0 Or cL(q) = 0 Or cC(q) = 0 Then Err.Raise 5, , "colunas não achadas na aba " & ws(q).Name
+        ult(q) = ws(q).Cells(ws(q).Rows.Count, cS(q)).End(xlUp).Row
+        If ult(q) > hr(q) Then total = total + ult(q) - hr(q)
+        abas = abas & IIf(abas = "", "", ", ") & ws(q).Name
+    Next q
+
+    cab = Array("RAZÃO SOCIAL", "NOME FANTASIA", "Nº DE LOJAS", "CNPJ", "SEGMENTO", "STATUS AUTOPEL", "ORIGEM (ABA E LINHA)")
+    If total > 0 Then ReDim d(1 To total, 1 To 7)
+    For q = 1 To nq
+        If ult(q) > hr(q) Then
+            vS = Coluna(ws(q), cS(q), hr(q) + 1, ult(q))
+            vR = Coluna(ws(q), cR(q), hr(q) + 1, ult(q))
+            vF = Coluna(ws(q), cF(q), hr(q) + 1, ult(q))
+            vL = Coluna(ws(q), cL(q), hr(q) + 1, ult(q))
+            vC = Coluna(ws(q), cC(q), hr(q) + 1, ult(q))
+            For i = 1 To ult(q) - hr(q)
+                s = UCase$(Txt(vS(i, 1)))
+                If s <> "" Then
+                    If st = "TOTAL" Or (st = "POTENCIAL" And s <> "ATIVO") Or s = st Then
+                        m = m + 1
+                        d(m, 1) = Txt(vR(i, 1)): d(m, 2) = Txt(vF(i, 1))
+                        If IsNumeric(vL(i, 1)) And Not IsEmpty(vL(i, 1)) Then d(m, 3) = vL(i, 1)
+                        d(m, 4) = FormataCnpj(vC(i, 1)): d(m, 5) = nomeSeg(q): d(m, 6) = s
+                        d(m, 7) = ws(q).Name & " – linha " & (hr(q) + i)
+                    End If
+                End If
+            Next i
+        End If
+    Next q
+    n = m
+    If n > 0 Then dados = d
+    If st = "POTENCIAL" Then
+        nota = "Potencial = linhas com STATUS AUTOPEL diferente de ATIVO nas abas " & abas & " deste arquivo."
+    Else
+        nota = "Linhas da aba " & abas & " deste arquivo" & IIf(st = "TOTAL", ".", " com STATUS AUTOPEL = " & st & ".")
+    End If
+End Sub
+
+Private Function Coluna(ByVal ws As Worksheet, ByVal c As Long, ByVal r1 As Long, ByVal r2 As Long) As Variant
+    Dim v As Variant, a() As Variant
+    v = ws.Range(ws.Cells(r1, c), ws.Cells(r2, c)).Value2
+    If r1 = r2 Then
+        ReDim a(1 To 1, 1 To 1)
+        a(1, 1) = v
+        Coluna = a
+    Else
+        Coluna = v
+    End If
+End Function
+
+Private Function FormataCnpj(ByVal v As Variant) As String
+    Dim s As String, i As Long, dg As String
+    s = Txt(v)
+    For i = 1 To Len(s)
+        If Mid$(s, i, 1) Like "#" Then dg = dg & Mid$(s, i, 1)
+    Next i
+    If Len(dg) = 14 Then
+        FormataCnpj = Left$(dg, 2) & "." & Mid$(dg, 3, 3) & "." & Mid$(dg, 6, 3) & "/" & Mid$(dg, 9, 4) & "-" & Right$(dg, 2)
+    Else
+        FormataCnpj = s
+    End If
+End Function
+
+' ============================================================ pessoas da equipe
+Private Sub Equipe(ByVal quem As String, ByRef dados As Variant, ByRef cab As Variant, ByRef nota As String, ByRef n As Long)
+    Dim r As Long, m As Long, d() As Variant
+    cab = Array("PESSOA", "PERFIL", "CLIENTES NO CRM", "VENDEDOR NO TOTVS", "SEGMENTOS NO CRM")
+    ReDim d(1 To 100, 1 To 5)
+    r = InicioSecao("PESSOAS")
+    Do While Txt(Cfg.Cells(r, 1).Value2) <> ""
+        If Txt(Cfg.Cells(r, 7).Value2) = quem And m < 100 Then
+            m = m + 1
+            d(m, 1) = Txt(Cfg.Cells(r, 2).Value2): d(m, 2) = Txt(Cfg.Cells(r, 3).Value2)
+            d(m, 3) = Val(Txt(Cfg.Cells(r, 8).Value2))
+            d(m, 4) = Replace(Txt(Cfg.Cells(r, 5).Value2), ";", "; ")
+            d(m, 5) = Replace(Txt(Cfg.Cells(r, 6).Value2), ";", "; ")
+        End If
+        r = r + 1
+    Loop
+    n = m
+    If n > 0 Then dados = d
+    nota = "Pessoas da equipe no organograma (telas do CRM de " & ValorCfg("DATA CRM") & ")."
+End Sub
+
+' ============================================================ aba DETALHE
+Private Sub Escrever(ByVal rotulo As String, ByVal numero As String, ByVal nota As String, ByVal cab As Variant, _
+                     ByVal dados As Variant, ByVal n As Long, ByVal endereco As String, ByVal tipo As String)
+    Dim ws As Worksheet, nc As Long, c As Long, larg As Variant, win As Window, limpo As Boolean
+    limpo = ThisWorkbook.Saved            ' montar a lista nao deixa o arquivo "alterado"
+    ApagarDetalhe
+    Set ws = ThisWorkbook.Worksheets.Add(After:=ThisWorkbook.Worksheets(ThisWorkbook.Worksheets.Count))
+    ws.Name = ABA_DET
+    nc = UBound(cab) - LBound(cab) + 1
+    ws.Cells.Font.Name = "Calibri"
+    ws.Cells.Font.Size = 10
+    ws.Cells(1, 1).Value2 = "DETALHE – " & rotulo
+    ws.Cells(1, 1).Font.Bold = True
+    ws.Cells(1, 1).Font.Size = 14
+    ws.Cells(2, 1).Value2 = "No organograma: " & numero & ".   Nesta lista: " & Format$(n, "#,##0") & IIf(n = 1, " linha.", " linhas.")
+    ws.Cells(2, 1).Font.Bold = True
+    ws.Cells(3, 1).Value2 = nota
+    ws.Cells(3, 1).Font.Italic = True
+    ws.Cells(4, 1).Value2 = "Esta aba é refeita a cada duplo clique e apagada ao fechar o arquivo, para ele não crescer. " & _
+                            "Para guardar a lista, copie para outro arquivo."
+    ws.Cells(4, 1).Font.Italic = True
+    ws.Cells(4, 1).Font.Color = RGB(128, 128, 128)
+    ws.Hyperlinks.Add Anchor:=ws.Cells(1, nc), Address:="", SubAddress:="'" & ABA_ORG & "'!" & endereco, _
+                      TextToDisplay:=ChrW(8592) & " voltar ao organograma"
+    With ws.Range(ws.Cells(5, 1), ws.Cells(5, nc))
+        .Value = cab
+        .Font.Bold = True
+        .Interior.Color = RGB(221, 235, 247)
+        .WrapText = True
+    End With
+    ' texto: CNPJ e codigo do cliente (zeros a esquerda); antes de gravar os dados
+    If tipo = "E" Then
+        ws.Columns(4).NumberFormat = "@"
+    Else
+        ws.Columns(4).NumberFormat = "@"
+        If tipo = "C" Then ws.Columns(11).NumberFormat = "@"
+    End If
+    If n > 0 Then ws.Range(ws.Cells(6, 1), ws.Cells(5 + n, nc)).Value = dados
+    If n > 0 Then
+        ws.Range(ws.Cells(6, 3), ws.Cells(5 + n, 3)).NumberFormat = "#,##0"
+        If tipo = "C" Then
+            ws.Range(ws.Cells(6, 7), ws.Cells(5 + n, 7)).NumberFormat = "dd/mm/yyyy"
+            ws.Range(ws.Cells(6, 8), ws.Cells(5 + n, 8)).NumberFormat = "#,##0"
+        End If
+    End If
+    If tipo = "C" Then
+        larg = Array(42, 30, 13, 20, 24, 13, 12, 12, 12, 30, 13)
+    ElseIf tipo = "E" Then
+        larg = Array(30, 16, 14, 40, 60)
+    Else
+        larg = Array(46, 32, 13, 20, 22, 16, 40)
+    End If
+    For c = 1 To nc
+        ws.Columns(c).ColumnWidth = larg(LBound(larg) + c - 1)
+    Next c
+    If n > 1 Then ws.Range(ws.Cells(5, 1), ws.Cells(5 + n, nc)).Sort Key1:=ws.Cells(5, 3), Order1:=xlDescending, Header:=xlYes
+    ws.Range(ws.Cells(5, 1), ws.Cells(5 + IIf(n > 0, n, 1), nc)).AutoFilter
+    ws.Activate
+    Set win = ThisWorkbook.Windows(1)
+    win.FreezePanes = False
+    win.ScrollRow = 1
+    win.ScrollColumn = 1
+    win.SplitColumn = 0
+    win.SplitRow = 5
+    win.FreezePanes = True
+    ws.Range("A1").Select
+    If limpo Then ThisWorkbook.Saved = True
+End Sub

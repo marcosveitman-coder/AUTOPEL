@@ -1,0 +1,35 @@
+Attribute VB_Name = "ThisWorkbook"
+Attribute VB_Base = "0{00020819-0000-0000-C000-000000000046}"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = True
+Attribute VB_TemplateDerived = False
+Attribute VB_Customizable = True
+Option Explicit
+'
+' Duplo clique num numero da aba "ORGANOGRAMA impressao" -> aba DETALHE com a lista (DetalheMod).
+' A aba DETALHE e apagada ao abrir e ao fechar o arquivo, sem marca-lo como alterado (o arquivo nao cresce).
+'
+Private Sub Workbook_SheetBeforeDoubleClick(ByVal Sh As Object, ByVal Target As Range, Cancel As Boolean)
+    If Sh.Name <> "ORGANOGRAMA impressao" Then Exit Sub
+    If Not DetalheMod.TemDetalhe(Target) Then Exit Sub
+    Cancel = True
+    DetalheMod.AbrirDetalhe Target
+End Sub
+
+Private Sub Workbook_Open()
+    DetalheMod.ApagarSemMarcar
+End Sub
+
+Private Sub Workbook_BeforeClose(Cancel As Boolean)
+    DetalheMod.ApagarSemMarcar
+End Sub
+
+Public Function TesteDuploClique(ByVal endereco As String) As String
+    ' usado so no teste automatico: simula o duplo clique numa celula
+    Dim cancelar As Boolean
+    Workbook_SheetBeforeDoubleClick ThisWorkbook.Worksheets("ORGANOGRAMA impressao"), _
+        ThisWorkbook.Worksheets("ORGANOGRAMA impressao").Range(endereco), cancelar
+    TesteDuploClique = IIf(cancelar, "TRATADO", "IGNORADO")
+End Function

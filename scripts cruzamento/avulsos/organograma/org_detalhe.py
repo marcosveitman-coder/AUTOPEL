@@ -1,114 +1,122 @@
-"""Aba DETALHE do MAPA MERCADO: as listas por tras dos numeros da "ORGANOGRAMA impressao" (05/11/2026).
-O usuario queria "clicar no numero e abrir a lista", como o duplo clique de uma tabela dinamica. Sem macro (o arquivo
-e .xlsx), cada numero vira um hiperlink para o ponto certo desta aba.
-Layout:
-  1. POTENCIAL POR PESSOA E EQUIPE: um bloco por pessoa (ancora P|id) com os segmentos que formam o numero e um link
-     "ver lista" para a lista de potencial de cada segmento;
-  2. um bloco por segmento (ancora S|seg|TOTAL): primeiro os ATIVOS (S|seg|ATIVO), depois o POTENCIAL = tudo que nao e
-     ATIVO (S|seg|POTENCIAL), separado por status (S|seg|INATIVO, ...). Cada linha da lista aparece uma vez so.
-Colunas: RAZAO SOCIAL, NOME FANTASIA, No DE LOJAS, CNPJ (pedido do usuario) + STATUS AUTOPEL e ORIGEM (aba e linha).
-Le o MAPA (abas do potencial, mesmas colunas do org_dados.py), org_dados.json e org_impressao.json; grava detalhe.tsv e detalhe.json
-(para org_detalhe.ps1) e acrescenta 'alvo' (linha na DETALHE) nos numeros com 'link' do org_impressao.json.
-Uso (na pasta dados, depois do org_dados.py e do org_impressao.py): python ../org_detalhe.py "<MAPA.xlsx>" """
-import sys, re, json, collections
-import openpyxl
-from openpyxl.utils import column_index_from_string as ci
+"""Aba oculta "CONFIG DETALHE" do MAPA MERCADO (06/11/2026): o que a macro do duplo clique precisa saber.
+Com duplo clique num numero da "ORGANOGRAMA impressao", a macro (vba_DetalheMod.txt) monta a aba DETALHE com a lista
+por tras do numero. Nenhuma lista fica guardada no arquivo: a macro le na hora
+  - carteira (clientes, no segmento, ativos, perdendo, a trabalhar): o CSV "Ultimo faturamento" do TOTVS (um cliente
+    por vendedor + codigo, como o CRM; status pela nota mais recente: ativo <= 290 dias, perdendo <= 365, a trabalhar);
+  - potencial e tabela por segmento: as abas FINAL e "FARMACIA VF" do proprio arquivo.
+Esta etapa grava em config_detalhe.tsv (para o org_detalhe.ps1):
+  - CSV, aba reserva, dias, data do CRM;
+  - PESSOAS: id, nome, perfil, escopo (VEND = vendedor, EQUIPE = vendedores da equipe, DIR = diretores no TOTVS),
+    nomes no TOTVS, segmentos, supervisor e clientes no CRM;
+  - SEGMENTOS: aba e coluna do STATUS AUTOPEL de cada lista de mercado;
+  - CELULAS: endereco de cada numero clicavel, tipo (C/P/S/E), pessoa, segmento, status, rotulo e o numero mostrado.
+Pessoa -> vendedor no TOTVS: dados/detalhe_vendedores.json (local, tem nomes). Se nao existir, e criado pelas regras:
+nome do CRM contido no nome do TOTVS (o mais perto do total do CRM), venda interna = carteira "VENDA INDIRETA INTERNA",
+supervisao = os vendedores da equipe, diretoria = diretores com 10%+ dos clientes.
+Uso (na pasta dados): AUTOPEL_ULTFAT_CSV=<CSV do dia> python ../org_detalhe.py "<MAPA>" """
+import os, sys, re, json, collections, datetime as dt
+import pandas as pd, openpyxl
+from openpyxl.utils import get_column_letter as L
 D = json.load(open('org_dados.json', encoding='utf8'))
 IMP = json.load(open('org_impressao.json', encoding='utf8'))
+EQ = json.load(open(os.environ.get('AUTOPEL_ORGANOGRAMA_EQUIPE') or 'equipe.json', encoding='utf8'))
+CSV = os.environ['AUTOPEL_ULTFAT_CSV']
+DIAS_ATIVO, DIAS_PERDENDO = 290, 365
 ACENTO = {'ALIMENTACAO': 'Alimentação', 'CONSTRUCAO': 'Construção', 'POSTOS E CONVENIENCIAS': 'Postos e Conveniências', 'DROGARIAS': 'Drogarias',
           'REDE DE LOJAS': 'Rede de Lojas', 'ESTACIONAMENTOS': 'Estacionamentos', 'PET SHOP': 'Pet Shop'}
-ORDEM = ['ATIVO', 'INATIVO', 'INATIVANDO', 'LEAD NO CRM', 'NÃO É CLIENTE', 'A TRABALHAR']
-s = lambda x: str(x).strip() if x is not None else ''
 br = lambda n: f'{n:,}'.replace(',', '.')
+pct = lambda x: f'{100 * x:.1f}%'.replace('.', ',')
 
 
-def fmt_cnpj(v):
-    d = re.sub(r'\D', '', s(v))
-    return f'{d[:2]}.{d[2:5]}.{d[5:8]}/{d[8:12]}-{d[12:]}' if len(d) == 14 else s(v)
+def ultfat():
+    U = pd.read_csv(CSV, sep=';', skiprows=1, dtype=str, encoding='utf-8-sig', keep_default_na=False).apply(lambda c: c.str.strip())
+    U.columns = [f'c{i}' for i in range(U.shape[1])]
+    return U
+
+
+def vendedores(U):
+    arq = 'detalhe_vendedores.json'
+    if os.path.exists(arq):
+        return json.load(open(arq, encoding='utf8'))
+    cli = U.groupby('c15').c0.nunique().to_dict()             # clientes (codigos) por vendedor no TOTVS
+    tot = U.groupby(['c15', 'c0']).ngroups
+    dirs = U.groupby(['c15', 'c0']).c21.first().value_counts()
+    M = {}
+    for p in EQ['pessoas']:
+        crm = sum(p['carteira']['cards'])
+        if p['perfil'] == 'Diretoria':
+            M[p['id']] = dict(escopo='DIR', totvs=sorted(n for n, c in dirs.items() if n and c >= 0.10 * tot))
+        elif p['perfil'] in ('Supervisor', 'Supervisora'):
+            M[p['id']] = dict(escopo='EQUIPE', totvs=[])
+        elif p['perfil'] == 'Venda interna':
+            M[p['id']] = dict(escopo='VEND', totvs=[n for n in cli if 'VENDA INDIRETA INTERNA' in n])
+        else:
+            cand = [n for n in cli if all(w in n.split() for w in p['nome'].split())]
+            M[p['id']] = dict(escopo='VEND', totvs=sorted(cand, key=lambda n: abs(cli[n] - crm))[:1])
+    for p in EQ['pessoas']:
+        if M[p['id']]['escopo'] == 'EQUIPE':
+            M[p['id']]['totvs'] = sorted({n for q in EQ['pessoas'] if q['sup'] == p['id'] for n in M[q['id']]['totvs']})
+    json.dump(M, open(arq, 'w', encoding='utf8'), ensure_ascii=False, indent=1)
+    return M
 
 
 def main(mapa):
+    U = ultfat()
+    V = vendedores(U)
+    data_crm = re.search(r'\d{2}/\d{2}/\d{4}', EQ['_fonte']).group(0)
+    caminho = os.path.abspath(CSV)
+    perfil = os.environ.get('USERPROFILE', '')
+    if perfil and caminho.lower().startswith(perfil.lower()):
+        caminho = '%USERPROFILE%' + caminho[len(perfil):]
+    linhas = [['CONFIGURAÇÃO DA ABA DETALHE (gerada pelo org_detalhe.py em ' + dt.date.today().strftime('%d/%m/%Y') +
+               '). Usada pela macro do duplo clique na ORGANOGRAMA impressao. Só o caminho do CSV pode ser trocado à mão.'],
+              ['CSV', caminho], ['ABA RESERVA', 'ULTIMO FATURAMENTO'], ['DIAS ATIVO', str(DIAS_ATIVO)],
+              ['DIAS PERDENDO', str(DIAS_PERDENDO)], ['DATA CRM', data_crm], []]
+    # pessoas
+    linhas += [['PESSOAS'], ['ID', 'NOME', 'PERFIL', 'ESCOPO', 'TOTVS', 'SEGMENTOS', 'SUPERVISOR', 'CLIENTES CRM']]
+    for p in EQ['pessoas']:
+        v = V[p['id']]
+        linhas.append([p['id'], p['nome'], p['perfil'], v['escopo'], ';'.join(v['totvs']), ';'.join(s.lstrip('*') for s in p['segmentos']),
+                       p['sup'], str(sum(p['carteira']['cards']))])
+    # segmentos (listas de mercado)
     wb = openpyxl.load_workbook(mapa, read_only=True, data_only=True)
-    listas = {}
+    linhas += [[], ['SEGMENTOS'], ['CHAVE', 'NOME', 'ABA', 'COLUNA STATUS', 'LINHA CABECALHO']]
     for seg, b in D['potencial'].items():
         aba = '"FARMACIA VF"' if b['aba'] == 'FARMACIA VF' else b['aba']
-        rows = list(wb[aba].iter_rows(values_only=True))
-        jst = ci(b['col']) - 1
-        hi = next(i for i, r in enumerate(rows[:12]) if len(r) > jst and s(r[jst]).upper() == 'STATUS AUTOPEL')
-        h = [s(x).upper() for x in rows[hi]]
-        col = lambda nome, ini=False: next(j for j, x in enumerate(h) if (x.startswith(nome) if ini else x == nome))
-        jr, jf, jl, jc = col('RAZÃO SOCIAL'), col('NOME FANTASIA'), col('Nº DE LOJAS', True), col('CNPJ')
-        L = []
-        for n, r in enumerate(rows[hi + 1:], start=hi + 2):
-            st = s(r[jst]).upper() if jst < len(r) else ''
-            if not st: continue
-            lj = r[jl] if jl < len(r) and isinstance(r[jl], (int, float)) else None
-            L.append([s(r[jr]), s(r[jf]), lj, fmt_cnpj(r[jc]), st, f"{b['aba']} – linha {n}"])
-        cnt = collections.Counter(x[4] for x in L)
-        assert dict(cnt) == {k.upper(): v for k, v in b['status'].items()}, ('contagem diferente do org_dados', seg, dict(cnt), b['status'])
-        listas[seg] = L
+        rows = list(wb[aba].iter_rows(min_row=1, max_row=12, values_only=True))
+        j = openpyxl.utils.column_index_from_string(b['col']) - 1
+        hr = next(i + 1 for i, r in enumerate(rows) if len(r) > j and str(r[j] or '').strip().upper() == 'STATUS AUTOPEL')
+        linhas.append([seg, ACENTO.get(seg, seg.title()), aba, b['col'], str(hr)])
     wb.close()
-    linhas, estilos, ancora, links = [], [], {}, []   # links: (linha, coluna, alvo_linha, texto da dica)
-    def add(v, est=None):
-        linhas.append(v); estilos.append(est); return len(linhas)
-    dt = '05/11/2026'
-    r = add(['DETALHE – listas por trás dos números da aba "ORGANOGRAMA impressao"', '', '', '', '', '← voltar ao organograma'], 'titulo')
-    links.append((r, 6, 'ORGANOGRAMA', 'Voltar à aba ORGANOGRAMA impressao'))
-    add([f'Clique num número de potencial ou da tabela por segmento da ORGANOGRAMA impressao para chegar aqui. STATUS AUTOPEL de {dt}: '
-         'ATIVO = comprou há menos de 360 dias. POTENCIAL = tudo que não é ATIVO. Cada empresa aparece uma vez, no bloco do seu segmento.',
-         '', '', '', '', ''], 'nota')
-    add([''] * 6)
-    # ---- 1. por pessoa
-    r = add(['1. POTENCIAL POR PESSOA E EQUIPE (soma dos segmentos; na supervisão e na diretoria, cada segmento da equipe uma vez)', '', '', '', '', ''], 'secao')
-    add(['PESSOA / EQUIPE', 'PERFIL', 'SEGMENTO', 'POTENCIAL', 'ABA', 'LISTA'], 'cab')
-    pend = []
-    for p in D['pessoas']:
-        if not p['potencial']: continue
-        r0 = add([p['nome'], p['perfil'], 'TOTAL', sum(p['potencial'].values()), '', ''], 'pessoa')
-        ancora[f"P|{p['id']}"] = r0
-        for seg, v in sorted(p['potencial'].items(), key=lambda kv: -kv[1]):
-            rr = add(['', '', ACENTO.get(seg, seg.title()), v, D['potencial'][seg]['aba'], 'ver lista →'], 'dado')
-            pend.append((rr, seg))
-    add([''] * 6)
-    # ---- 2. por segmento
-    add(['2. LISTAS POR SEGMENTO (primeiro os ATIVOS, depois o POTENCIAL, por status)', '', '', '', '', ''], 'secao')
-    CAB = ['RAZÃO SOCIAL', 'NOME FANTASIA', 'Nº DE LOJAS', 'CNPJ', 'STATUS AUTOPEL', 'ORIGEM (aba e linha)']
-    for seg, L in listas.items():
-        b = D['potencial'][seg]
-        add([''] * 6)
-        r = add([f"{ACENTO.get(seg, seg.title()).upper()} – {b['aba']} (coluna {b['col']}): {br(len(L))} na lista, {br(b['potencial'])} de potencial",
-                 '', '', '', '', '← voltar ao organograma'], 'bloco')
-        links.append((r, 6, 'ORGANOGRAMA', 'Voltar à aba ORGANOGRAMA impressao'))
-        ancora[f'S|{seg}|TOTAL'] = r
-        add(CAB, 'cab')
-        por = collections.defaultdict(list)
-        for x in L: por[x[4]].append(x)
-        for st in [x for x in ORDEM if x in por] + sorted(set(por) - set(ORDEM)):
-            if st != 'ATIVO' and f'S|{seg}|POTENCIAL' not in ancora:
-                ancora[f'S|{seg}|POTENCIAL'] = add([f'POTENCIAL (tudo que não é ATIVO): {br(b["potencial"])}', '', '', '', '', ''], 'pot')
-            ancora[f'S|{seg}|{st}'] = add([f'{st}: {br(len(por[st]))}', '', '', '', '', ''], 'status')
-            for x in sorted(por[st], key=lambda x: (-(x[2] or 0), x[1] or x[0])):
-                add(x, None)
-    for rr, seg in pend:
-        links.append((rr, 6, ancora[f'S|{seg}|POTENCIAL'], 'Ver a lista de potencial do segmento'))
-    # numeros da ORGANOGRAMA impressao -> linha da DETALHE
-    sem = []
+    # celulas clicaveis
+    P = {p['id']: p for p in EQ['pessoas']}
+    linhas += [[], ['CELULAS'], ['CELULA', 'TIPO', 'QUEM', 'SEGMENTO', 'STATUS', 'ROTULO', 'NUMERO']]
+    vistos = set()
     for o in IMP['ops']:
-        if o.get('link'):
-            if o['link'] in ancora: o['alvo'] = ancora[o['link']]
-            else: sem.append(o['link'])
-    assert not sem, ('link sem destino na DETALHE', sem)
-    json.dump(IMP, open('org_impressao.json', 'w', encoding='utf8'), ensure_ascii=False)
-    # linhas num TSV (o ConvertFrom-Json do PowerShell 5.1 nao aguenta 90 mil linhas); estilos e links no json
-    limpa = lambda v: '' if v is None else re.sub(r'[\t\r\n]+', ' ', str(v))
-    with open('detalhe.tsv', 'w', encoding='utf-8-sig', newline='\n') as f:
-        for l in linhas: f.write('\t'.join(limpa(v) for v in l) + '\n')
-    por_estilo = collections.defaultdict(list)
-    for i, e in enumerate(estilos, start=1):
-        if e: por_estilo[e].append(i)
-    json.dump(dict(n=len(linhas), estilos=por_estilo, links=links), open('detalhe.json', 'w', encoding='utf8'), ensure_ascii=False)
-    print('DETALHE:', len(linhas), 'linhas |', len(ancora), 'âncoras |', sum(1 for o in IMP['ops'] if o.get('alvo')), 'números com link |',
-          {seg: len(L) for seg, L in listas.items()})
+        d = o.get('det')
+        if not d:
+            continue
+        cel = f"{L(o['c'])}{o['r']}"
+        assert cel not in vistos, cel
+        vistos.add(cel)
+        n = d['n']
+        if d['t'] == 'C':
+            num = f"{br(n)} clientes" + (f" ({pct(o['v'])})" if o.get('fmt') == 'p' else '') + f" no CRM de {data_crm}"
+            linhas.append([cel, 'C', d['q'], d['s'], d['st'], f"{P[d['q']]['nome']} – {d['rot']}", num])
+        elif d['t'] == 'P':
+            num = f"{br(n)} oportunidades (" + ', '.join(ACENTO.get(s, s) for s in d['segs'].split(';')) + ')'
+            linhas.append([cel, 'P', d['q'], d['segs'], 'POTENCIAL', f"{P[d['q']]['nome']} – {d['rot']}", num])
+        elif d['t'] == 'S':
+            linhas.append([cel, 'S', '', d['segs'], d['st'], d['rot'], f'{br(n)} na tabela por segmento'])
+        elif d['t'] == 'E':
+            linhas.append([cel, 'E', d['q'], '', '', f"{P[d['q']]['nome']} – {d['rot']}", f'{n} pessoas'])
+    limpa = lambda v: re.sub(r'[\t\r\n]+', ' ', str(v))
+    with open('config_detalhe.tsv', 'w', encoding='utf-8-sig', newline='') as f:
+        for l in linhas:
+            f.write('\t'.join(limpa(v) for v in (l + [''] * 8)[:8]) + '\r\n')
+    print('CONFIG DETALHE:', len(linhas), 'linhas |', len(vistos), 'números clicáveis')
+    for p in EQ['pessoas']:
+        print(f"   {p['perfil'][:13]:13} {V[p['id']]['escopo']:6} {len(V[p['id']]['totvs'])} nome(s) no TOTVS")
 
 
 if __name__ == '__main__':

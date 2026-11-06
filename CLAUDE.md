@@ -308,10 +308,17 @@ Armadilhas reais já vistas:
   Não regravar pelo `org_layout.py`: para mudar números, usar `org_potencial.py` + `org_potencial.ps1`, que trocam só as
   células de potencial e inserem as linhas novas da tabela de potencial (05/11);
 - potencial desde 05/11: também POSTOS E CONVENIENCIAS, ESTACIONAMENTOS e PET SHOP (coluna W das abas FINAL novas);
-- **aba DETALHE** (06/11, no fim da pasta): as listas por trás dos números de potencial e da tabela por segmento da
-  impressão. Os 56 números são hiperlinks (clique simples, sem macro: o arquivo continua .xlsx). Refazer na ordem
-  `org_dados` → `org_impressao` → `org_detalhe.py` → `org_detalhe.ps1` → `org_grava.ps1`. A DETALHE e a impressão andam
-  juntas, porque os links apontam para linhas da DETALHE. Os números de carteira (CRM) não têm lista;
+- **duplo clique nos números da impressão** (06/11): o MAPA virou **MAPA MERCADO.xlsm**. A macro (`organograma/vba_*.txt`)
+  monta a aba DETALHE na hora, e nenhuma lista fica guardada no arquivo. Detalhes no LEIA-ME da pasta:
+  - carteira pelo CSV do dia do TOTVS;
+  - potencial pelas abas;
+  - significado de cada número na aba oculta CONFIG DETALHE;
+  - a DETALHE é apagada ao abrir e ao fechar, sem marcar o arquivo como alterado.
+- **Carteira do CRM = TOTVS:**
+  - um cliente por **vendedor + código de cliente**; status pela nota mais recente das lojas do código (ativo ≤ 290 dias,
+    perdendo ≤ 365);
+  - no segmento = segmento do cliente entre os segmentos do vendedor;
+  - bate quase exato por pessoa. Supervisão = soma da equipe; diretoria = diretores no TOTVS (aproximado);
 - a aba **"ORGANOGRAMA impressao"** tem as mesmas informações em 7 folhas A4 paisagem a 100% (a 7ª, segmentos ×
   responsáveis, desde 05/11):
   - **Verdana, tamanho 10 ou maior, sem itálico** (pedido do usuário);
@@ -419,6 +426,10 @@ Armadilhas reais já vistas:
 
 - **Sempre** fazer backup no scratchpad antes. Confirmar que o arquivo **não está aberto no Excel** (abrir `r+b`).
   Se estiver, pedir para fechar.
+- **O MAPA MERCADO é .xlsm desde 06/11/2026** (macro do duplo clique na ORGANOGRAMA impressao):
+  - a gravação pelo XML (`gravar_coluna_xml.py`) e pelo Excel (COM) funciona igual;
+  - nunca salvar pelo openpyxl: perderia a macro, as dinâmicas e o resto;
+  - o `.xlsx` antigo pode ainda estar na pasta: trabalhar no `.xlsm`.
 - Gravar **só** as colunas pedidas. Depois conferir célula a célula que as outras colunas e abas ficaram iguais.
 - Pasta com **tabela dinâmica, gráfico ou segmentação** (ex.: MAPA MERCADO): **não salvar pelo openpyxl**. Gravar
   direto no XML da aba com `scripts cruzamento/avulsos/gravar_coluna_xml.py` e conferir que só a parte daquela aba mudou.
@@ -452,6 +463,16 @@ Armadilhas reais já vistas:
   - **.ps1 com acento** ("Nº", "CONSTRUÇÃO", "Área de Trabalho") tem de ser **UTF-8 com BOM**: sem ele, o PowerShell 5.1
   lê errado. O `ConvertFrom-Json` do 5.1 não lê JSON grande: passar dezenas de milhares de linhas por TSV.
 - `Hyperlinks.Add` troca a fonte da célula pelo estilo "Hyperlink": refazer fonte, cor e sublinhado depois.
+- **Macro sem o Excel:** a automação não pode gravar VBA ("Confiar no acesso ao modelo de objeto do projeto do VBA"
+  desligada; não mudar). Montar o `vbaProject.bin` com `avulsos/vba_projeto.py` (MS-OVBA + MS-CFB) e pôr no .xlsm.
+- **Testar macro** com `Application.Run` num Excel oculto próprio, dentro de um processo com tempo limite:
+  - erro de compilação abre janela modal e trava;
+  - encerrar só o PID desse Excel, achado pelo `Hwnd`; o usuário pode estar com outro Excel aberto.
+- **Ler CSV grande em VBA:** binário + `MultiByteToWideChar` (UTF-8), cerca de 1 s para 84 MB. O
+  `ADODB.Stream.ReadText` leva minutos.
+- **No `BeforeSave` o Excel ignora, sem erro, exclusão de aba e `Cells.Clear`.** Só aceita gravar célula. Na pasta do
+  OneDrive o salvamento automático também dispara o `BeforeSave`, e mexer no conteúdo ali estraga o que o usuário está
+  vendo. Limpar no `Workbook_Open` e no `Workbook_BeforeClose`, devolvendo `ThisWorkbook.Saved` como estava.
 - **PowerShell não diferencia maiúsculas:** `$J`/`$j`, `$V`/`$v`, `$T`/`$t` colidem. Usar nomes longos.
   - **Tabela com filtro ligado:** gravar `DataBodyRange.Formula` numa coluna nova pula as linhas ocultas. Guardar o
     filtro, `AutoFilter.ShowAllData()`, gravar e devolver o filtro no fim.

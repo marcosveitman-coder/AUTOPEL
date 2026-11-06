@@ -3,8 +3,8 @@
 Folhas: uma por grupo de caixas (equipe menor; equipe maior - vendedores e venda interna; equipe maior -
 representantes), depois a carteira de cada pessoa (uma folha por equipe), o potencial por segmento (folha 6) e os
 segmentos x responsaveis (folha 7, desde 05/11/2026).
-Numeros de potencial e da tabela por segmento levam 'link' (P|pessoa ou S|segmento|status): o org_detalhe.py troca pelo
-endereco da lista na aba DETALHE, e o org_grava.ps1 grava o hiperlink. Grade de 62 colunas estreitas (B..BK); caixas de 14 colunas, 4 por linha.
+Cada numero leva 'det' (o que ele conta: carteira C, potencial P, tabela por segmento S, pessoas da equipe E): o
+org_detalhe.py grava esse significado na aba oculta CONFIG DETALHE, e a macro do duplo clique monta a lista na aba DETALHE. Grade de 62 colunas estreitas (B..BK); caixas de 14 colunas, 4 por linha.
 As alturas das linhas sao estimadas pela largura das letras da Verdana (texto quebrado em celula mesclada nao tem
 autoajuste) e cada folha e conferida contra a altura util da pagina. Gera org_impressao.json para o org_grava.ps1."""
 import json, math
@@ -87,20 +87,23 @@ def card(p, r, c):
     put(r + 2, c, segtxt(p) or 'Sem segmento no CRM', c + 14, halign='center', wrap=True)
     base, arr = (no, p['no']) if no else (p['total'], [p['ativos'], p['perdendo'], p['atrab']])
     pot = sum(p['potencial'].values())
-    put(r + 3, c, ' Clientes', c + 6, border=True, uma=True); put(r + 3, c + 7, p['total'], c + 14, fmt='n', bold=True, halign='center', border=True, uma=True)
+    C = lambda s, st, rot, n: dict(t='C', q=p['id'], s=s, st=st, rot=rot, n=n)
+    put(r + 3, c, ' Clientes', c + 6, border=True, uma=True)
+    put(r + 3, c + 7, p['total'], c + 14, fmt='n', bold=True, halign='center', border=True, uma=True, det=C('TODOS', 'TODOS', 'Clientes', p['total']))
     put(r + 4, c, ' No segmento', c + 6, border=True, uma=True)
     if no:
-        put(r + 4, c + 7, no, c + 10, fmt='n', bold=True, halign='center', border=True, uma=True)
-        put(r + 4, c + 11, no / (no + fora), c + 14, fmt='p', bold=True, halign='center', border=True, uma=True)
+        put(r + 4, c + 7, no, c + 10, fmt='n', bold=True, halign='center', border=True, uma=True, det=C('NO', 'TODOS', 'Clientes no segmento', no))
+        put(r + 4, c + 11, no / (no + fora), c + 14, fmt='p', bold=True, halign='center', border=True, uma=True, det=C('NO', 'TODOS', 'Clientes no segmento', no))
     else:
         put(r + 4, c + 7, 'sem segmento', c + 14, bold=True, halign='center', border=True, uma=True)
     for i, (t, v) in enumerate(zip(['Ativos', 'Perdendo', 'A trabalhar'], arr)):
         put(r + 5 + i, c, ' ' + t, c + 6, border=True, uma=True)
-        put(r + 5 + i, c + 7, v / base if base else '—', c + 14, fmt='p' if base else None, bold=True, halign='center', border=True, uma=True)
+        put(r + 5 + i, c + 7, v / base if base else '—', c + 14, fmt='p' if base else None, bold=True, halign='center', border=True, uma=True,
+            det=C('NO' if no else 'TODOS', 'APT'[i], t + (' no segmento' if no else ''), v) if base else None)
     extra = dict(fill=OURO, font=OURO_T) if pot else dict(font=CINZA)
     put(r + 8, c, ' Potencial', c + 6, border=True, uma=True, **extra)
     put(r + 8, c + 7, pot if pot else 'sem lista', c + 14, fmt='n' if pot else None, bold=True, halign='center', border=True, uma=True,
-        link=f"P|{p['id']}" if pot else None, **extra)
+        det=dict(t='P', q=p['id'], segs=';'.join(p['potencial']), rot='Potencial (listas de mercado)', n=pot) if pot else None, **extra)
     ops.append(dict(box=[r, c, r + 8, c + 14]))
     return r + 8
 def caixas(ids, r):
@@ -133,11 +136,15 @@ def banner(r, sp, eq):
     put(r, C0, f"{sp['nome']} – {sp['perfil'].upper()}", CF, size=12, bold=True, fill=BLUE, font=WHITE, halign='center')
     cel = [('Pessoas', len(eq)), ('Clientes', sp['total']), ('No segmento', qp(no, no + fora))] + \
           [(t, qp(v, no)) for t, v in zip(['Ativos', 'Perdendo', 'A trabalhar'], sp['no'])] + [('Potencial', pot)]
+    DET = {'Pessoas': dict(t='E', q=sp['id'], rot='Pessoas da equipe', n=len(eq)), 'Clientes': dict(t='C', q=sp['id'], s='TODOS', st='TODOS', rot='Clientes', n=sp['total']),
+           'No segmento': dict(t='C', q=sp['id'], s='NO', st='TODOS', rot='Clientes no segmento', n=no),
+           'Potencial': dict(t='P', q=sp['id'], segs=';'.join(sp['potencial']), rot='Potencial (listas de mercado)', n=pot)}
+    for i, t in enumerate(['Ativos', 'Perdendo', 'A trabalhar']): DET[t] = dict(t='C', q=sp['id'], s='NO', st='APT'[i], rot=t + ' no segmento', n=sp['no'][i])
     for (x1, x2), (t, v) in zip(partes(C0, NC, 7), cel):
         extra = dict(fill=OURO, font=OURO_T) if t == 'Potencial' else {}
         put(r + 1, x1, t, x2, bold=True, fill=extra.get('fill', LIGHT), font=extra.get('font', DARK), halign='center', border=True, wrap=True)
         put(r + 2, x1, v, x2, fmt='n' if isinstance(v, int) else None, size=10, bold=True, halign='center', border=True, uma=True,
-            link=f"P|{sp['id']}" if t == 'Potencial' and v else None, **extra)
+            det=DET[t] if v else None, **extra)
     ops.append(dict(box=[r, C0, r + 2, CF]))
     r += 3
     ops.append(dict(vline=[C0 + NC // 2 - 1, r, r])); alt(r, 12)
@@ -183,9 +190,14 @@ def t1_linha(r, k):
     vals = [p['total'], q(no, tot), q(fora, tot)] + [q(p['no'][i], no) for i in range(3)] + [q(p['fora'][i], fora) for i in range(3)]
     pot = sum(p['potencial'].values())
     vals.append(pot if pot else '—')
+    C = lambda s, st, rot, n: dict(t='C', q=k, s=s, st=st, rot=rot, n=n)
+    STS = ['Ativos', 'Perdendo', 'A trabalhar']
+    DETS = [C('TODOS', 'TODOS', 'Clientes', p['total']), C('NO', 'TODOS', 'Clientes no segmento', no), C('FORA', 'TODOS', 'Clientes fora do segmento', fora)]
+    DETS += [C('NO', 'APT'[i], t + ' no segmento', p['no'][i]) for i, t in enumerate(STS)]
+    DETS += [C('FORA', 'APT'[i], t + ' fora do segmento', p['fora'][i]) for i, t in enumerate(STS)]
+    DETS += [dict(t='P', q=k, segs=';'.join(p['potencial']), rot='Potencial (listas de mercado)', n=pot)]
     for i, ((c1, c2), v) in enumerate(zip(T1[1:], vals)):
-        lk = f'P|{k}' if i == len(vals) - 1 and pot else None  # numero de potencial -> lista na aba DETALHE
-        put(r, c1, v, c2, fmt='n' if isinstance(v, int) else None, halign='center', link=lk, **f)
+        put(r, c1, v, c2, fmt='n' if isinstance(v, int) else None, halign='center', det=DETS[i] if v != '—' else None, **f)
     return r + 1
 semseg = [P[k] for k in [DIR] + SUP if P[k]['no_total'] + P[k]['fora_total'] < P[k]['total']]
 quem = ' e '.join(('na diretoria' if not p['sup'] else 'no supervisor ' + p['nome'].title()) for p in semseg)
@@ -213,9 +225,9 @@ for seg, b in POT.items():
     put(r, 2, nomeseg(seg), 11, bold=True, **f); put(r, 12, f" {b['aba']} ({b['col']})", 23, **f)
     for (c1, c2), k in zip(T2[2:9], [None, 'ATIVO', 'INATIVO', 'INATIVANDO', 'LEAD NO CRM', 'NÃO É CLIENTE', 'A TRABALHAR']):
         v = b['total'] if k is None else st.get(k, 0)
-        put(r, c1, v, c2, fmt='n', halign='center', link=f"S|{seg}|{k or 'TOTAL'}" if v else None, **f)
+        put(r, c1, v, c2, fmt='n', halign='center', det=dict(t='S', segs=seg, st=k or 'TOTAL', rot=f"{nomeseg(seg)} – {(k or 'total na lista').lower()}", n=v) if v else None, **f)
     put(r, 60, b['potencial'], 64, fmt='n', halign='center', bold=True, fill=OURO, font=OURO_T,
-        link=f"S|{seg}|POTENCIAL" if b['potencial'] else None, **f)
+        det=dict(t='S', segs=seg, st='POTENCIAL', rot=f'{nomeseg(seg)} – potencial (tudo que não é ATIVO)', n=b['potencial']) if b['potencial'] else None, **f)
     r += 1
 alt(r, 6); r += 1
 put(r, C0, 'POTENCIAL = linhas da lista do segmento com STATUS AUTOPEL diferente de ATIVO. O potencial é do segmento: quem divide o segmento divide as mesmas '
