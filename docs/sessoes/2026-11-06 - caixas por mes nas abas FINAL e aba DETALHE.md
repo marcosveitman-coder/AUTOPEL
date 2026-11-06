@@ -190,8 +190,11 @@ Conferência final contra o .xlsx de partida:
 - 21 dinâmicas, 9 caches e nomes definidos iguais;
 - testes depois de salvar: clientes de uma vendedora 778 em 1 s; potencial 461; total de farmácias 91.191 em 4 s.
 
-O `MAPA MERCADO.xlsx` antigo (50 MB, com a DETALHE fixa) continua na pasta: **perguntar ao usuário** se pode apagar.
-O backup está no scratchpad.
+**Nomes finais** (decisão do usuário, que não quis apagar o antigo; só renomear):
+- `MAPA MERCADO.xlsx` → **`MAPA MERCADO (MARCOS).xlsx`**: a versão anterior, com a DETALHE fixa e os links;
+- `MAPA MERCADO.xlsm` → **`MAPA MERCADO V2.xlsm`**: a versão de trabalho, com a macro.
+
+Conteúdo idêntico antes e depois da troca de nome (SHA-256). A macro não depende do nome do arquivo.
 
 **Como usar** (explicado ao usuário):
 - ao abrir o .xlsm, clicar em "Habilitar Conteúdo";

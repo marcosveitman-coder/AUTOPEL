@@ -109,7 +109,7 @@ da Verdana, fixa a altura de cada linha e para com erro se alguma folha passar d
 
 ## Duplo clique nos números da "ORGANOGRAMA impressao" (macro, 06/11/2026)
 
-O MAPA MERCADO passou a ser **.xlsm**. Com duplo clique em qualquer número da "ORGANOGRAMA impressao" (311 números:
+O MAPA MERCADO passou a ser **.xlsm**: `COMERCIAL (NOVO)\MAPA MERCADO V2.xlsm`. Com duplo clique em qualquer número da "ORGANOGRAMA impressao" (311 números:
 carteira, potencial, tabela por segmento e pessoas da equipe), a macro cria a aba **DETALHE** com a lista daquele
 número: RAZÃO SOCIAL, NOME FANTASIA, Nº DE LOJAS e CNPJ, mais as colunas de apoio.
 

@@ -308,7 +308,7 @@ Armadilhas reais já vistas:
   Não regravar pelo `org_layout.py`: para mudar números, usar `org_potencial.py` + `org_potencial.ps1`, que trocam só as
   células de potencial e inserem as linhas novas da tabela de potencial (05/11);
 - potencial desde 05/11: também POSTOS E CONVENIENCIAS, ESTACIONAMENTOS e PET SHOP (coluna W das abas FINAL novas);
-- **duplo clique nos números da impressão** (06/11): o MAPA virou **MAPA MERCADO.xlsm**. A macro (`organograma/vba_*.txt`)
+- **duplo clique nos números da impressão** (06/11): o MAPA virou **MAPA MERCADO V2.xlsm**. A macro (`organograma/vba_*.txt`)
   monta a aba DETALHE na hora, e nenhuma lista fica guardada no arquivo. Detalhes no LEIA-ME da pasta:
   - carteira pelo CSV do dia do TOTVS;
   - potencial pelas abas;
@@ -426,10 +426,11 @@ Armadilhas reais já vistas:
 
 - **Sempre** fazer backup no scratchpad antes. Confirmar que o arquivo **não está aberto no Excel** (abrir `r+b`).
   Se estiver, pedir para fechar.
-- **O MAPA MERCADO é .xlsm desde 06/11/2026** (macro do duplo clique na ORGANOGRAMA impressao):
-  - a gravação pelo XML (`gravar_coluna_xml.py`) e pelo Excel (COM) funciona igual;
-  - nunca salvar pelo openpyxl: perderia a macro, as dinâmicas e o resto;
-  - o `.xlsx` antigo pode ainda estar na pasta: trabalhar no `.xlsm`.
+- **O MAPA MERCADO de trabalho é `COMERCIAL (NOVO)\MAPA MERCADO V2.xlsm` desde 06/11/2026** (macro do duplo clique na
+  ORGANOGRAMA impressao; nomes escolhidos pelo usuário):
+  - o .xlsx anterior virou `MAPA MERCADO (MARCOS).xlsx` (com a DETALHE fixa e os links de 06/11). Não gravar nele;
+  - a gravação pelo XML (`gravar_coluna_xml.py`) e pelo Excel (COM) funciona igual no .xlsm;
+  - nunca salvar pelo openpyxl: perderia a macro, as dinâmicas e o resto.
 - Gravar **só** as colunas pedidas. Depois conferir célula a célula que as outras colunas e abas ficaram iguais.
 - Pasta com **tabela dinâmica, gráfico ou segmentação** (ex.: MAPA MERCADO): **não salvar pelo openpyxl**. Gravar
   direto no XML da aba com `scripts cruzamento/avulsos/gravar_coluna_xml.py` e conferir que só a parte daquela aba mudou.
