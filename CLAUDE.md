@@ -296,8 +296,9 @@ Armadilhas reais já vistas:
   segmento: não somar entre pessoas;
 - gravada pelo Excel (COM) numa cópia. Conferir as outras abas célula a célula; nos nomes definidos só entra a área de
   impressão.
-- **o usuário mexeu à mão na aba ORGANOGRAMA** (anotação em Z71, blocos movidos): não regravar pelo `org_layout.py`. Em
-  05/11 só a impressão foi atualizada;
+- **a aba ORGANOGRAMA do arquivo tem um layout anterior ao do `org_layout.py`** (resumo e legenda depois das caixas).
+  Não regravar pelo `org_layout.py`: para mudar números, usar `org_potencial.py` + `org_potencial.ps1`, que trocam só as
+  células de potencial e inserem as linhas novas da tabela de potencial (05/11);
 - potencial desde 05/11: também POSTOS E CONVENIENCIAS, ESTACIONAMENTOS e PET SHOP (coluna W das abas FINAL novas);
 - a aba **"ORGANOGRAMA impressao"** tem as mesmas informações em 7 folhas A4 paisagem a 100% (a 7ª, segmentos ×
   responsáveis, desde 05/11):

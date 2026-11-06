@@ -42,11 +42,10 @@ traz:
 
 A aba "resumo" traz as regras. A planilha fica fora do git, porque tem nomes e CNPJs.
 
-A aba **ORGANOGRAMA** (não a de impressão) **não foi regravada**. Ela tem mudanças manuais do usuário:
-- a anotação "POTENCIAL" em Z71;
-- os blocos "Resumo das equipes" e "Legenda" em outra posição.
-
-Regravá-la pelo `org_layout.py` apagaria essas mudanças. Por isso, os números de potencial dela continuam os de 04/11.
+A aba **ORGANOGRAMA** (não a de impressão) **não foi regravada**. O layout dela é anterior ao do `org_layout.py` (resumo
+e legenda em outra posição), e regravar mudaria a aba inteira. Os números de potencial dela foram atualizados depois, só
+nas células, na 2ª parte, a pedido do usuário. Na 1ª parte, chamei Z71 de "anotação do usuário" por engano: é o
+cabeçalho POTENCIAL da tabela de carteira.
 
 ## Regras usadas
 
@@ -167,8 +166,6 @@ largura é gravada numa faixa única.
 
 ## Pendências
 
-- **ORGANOGRAMA** (sem "impressao"): os números de potencial continuam os de 04/11. Para atualizar sem perder as mudanças
-  manuais, é preciso trocar só as células de potencial e inserir as 3 linhas novas na tabela. Perguntar ao usuário.
 - **OUTROS FINAL** fica fora do potencial do organograma: mistura beleza, óticas e serviços e não corresponde a um
   segmento do CRM.
 - Possível duplicidade no ESTACIONAMENTO FINAL: o cadastro da Autopel põe a empresa de uma linha no grupo de outra rede
@@ -180,6 +177,34 @@ largura é gravada numa faixa única.
 - "Cadastrado sem nota" é INATIVO, não "não é cliente": era assim que o usuário classificava no CRM.
 - O endereço de célula escrito como texto (ORIGEM "Alessandra Dayan: BA7") anda quando se insere coluna. Antes de inserir,
   procurar referências em texto, não só em fórmulas.
-- Antes de regravar uma aba gerada por script, comparar com o que o script produziria: o usuário pode ter mexido nela.
+- Antes de regravar uma aba gerada por script, comparar com o que o script produziria: ela pode ter outro layout (versão
+  antiga ou mudança do usuário). Nesse caso, trocar só as células que mudam.
 - O PORTE estimado pelo nº de lojas precisa de média por tipo de negócio: a média da ABF dava A para minimercado autônomo
   e para franquia de locação.
+
+## 2ª parte: potencial da aba ORGANOGRAMA (só as células)
+
+**Pedido:** "sim, atualize": atualizar os números de potencial da ORGANOGRAMA sem regravar a aba.
+
+**Entrega** (`MAPA MERCADO.xlsx`, aba ORGANOGRAMA), 35 células trocadas:
+- 9 caixas "Potencial: N oportunidades";
+- 9 linhas da coluna Y (OPORTUNID.) da carteira;
+- 16 números da tabela "2. POTENCIAL POR SEGMENTO" (Alimentação, Rede de Lojas, Construção);
+- a nota "Fonte".
+
+A tabela ganhou 3 linhas depois de Drogarias (Postos e Conveniências, Estacionamentos, Pet Shop), com o formato da
+linha de cima e quebra de texto para o nome longo da aba. Tudo abaixo desceu 3 linhas, e a área de impressão foi até a
+linha 130.
+
+**Números:** diretoria e supervisor da equipe maior 91.552; equipe menor 91.031. Os números de cada pessoa são os mesmos
+da ORGANOGRAMA impressao.
+
+**Conferência:**
+- as outras abas estão iguais célula a célula;
+- dinâmicas e caches continuam iguais;
+- nos nomes definidos, só a área de impressão mudou;
+- na ORGANOGRAMA, as 725 células estão no lugar esperado (velha → nova, com as trocas), sem diferença nem célula a mais;
+- a imagem da tabela foi conferida.
+
+**Scripts:** `organograma/org_potencial.py` (gera as trocas lendo a aba atual) e `organograma/org_potencial.ps1`
+(grava pelo Excel).

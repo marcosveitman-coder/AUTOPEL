@@ -29,8 +29,16 @@ Monta a aba **ORGANOGRAMA**, o "constante organograma":
   Os outros segmentos ainda não têm lista de mercado e aparecem sem potencial. A OUTROS FINAL mistura beleza, óticas e
   serviços e não corresponde a um segmento do CRM.
 
-**A aba ORGANOGRAMA foi editada à mão pelo usuário** (anotação em Z71, blocos de resumo e legenda em outra posição).
-Não regravar a aba com o `org_layout.py` sem perguntar. Em 05/11 só a "ORGANOGRAMA impressao" foi atualizada.
+**A aba ORGANOGRAMA do arquivo tem um layout anterior ao do `org_layout.py`** (resumo das equipes e legenda depois das
+caixas, não ao lado). Não regravar a aba com o `org_layout.py` sem perguntar. Para atualizar os números de potencial:
+1. `python ../org_dados.py "<MAPA>"` (na pasta `dados`);
+2. `python ../org_potencial.py "<MAPA>"`:
+   - lê a aba como está e gera `org_potencial.json`;
+   - a caixa é ligada à pessoa pelo nome acima dela, e a linha da carteira pelo nome na coluna B;
+   - segmento novo vira linha nova da tabela "2. POTENCIAL POR SEGMENTO";
+3. `powershell -File ../org_potencial.ps1 -Arquivo "<cópia>"`: troca as células e insere as linhas novas com o formato
+   da última linha da tabela;
+4. conferir com `org_confere.py` (outras abas) e célula a célula na própria aba (linhas abaixo da tabela descem).
 
 ## Ordem
 
