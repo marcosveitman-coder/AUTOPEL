@@ -78,3 +78,16 @@ A conta está certa, mas depende de hipóteses que os números de hoje põem à 
 
 ## Lições
 - Conferir PontoPedido × MedContr com `round` do Python dá falso alarme (arredonda 80,5 para 80). Usar |E − 2I| ≤ 1.
+
+---
+
+## 09/11: as abas usam a projeção AT–AY?
+Só leitura, no arquivo salvo em 09/11 às 9h54.
+- **PLANO de AÇAO, colunas L–Q:** sim.
+  - A dinâmica da faixa B7:Q506 usa os campos Compra mês vigente / próximo / subsequente (QTD e R$) da cache da Table1.
+  - Ela tem o filtro "AUX plano de açao (comprar)" = sim, ou seja, só os SKUs em ruptura ou com Comprar > 0. Os SKUs
+    que só precisam de compra nos meses seguintes ficam de fora.
+  - Somas: R$ 2,96 / 5,58 / 6,27 mi, iguais à Table1 com o mesmo filtro.
+- **Tabela da aba dinamicas (AC21:AJ30, que lê AC4:AJ13):** sim.
+  - Novembro, dezembro e janeiro em R$ = `SOMASES` nas colunas AU, AW e AY da Table1 por "Comprador 2", com todos os
+    SKUs: R$ 2,96 / 7,77 / 12,50 mi.
