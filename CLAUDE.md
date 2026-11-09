@@ -57,6 +57,7 @@ Bases Claude/                       (fora do git: fat *.xlsx, supermercados*.xls
         ├── kraft_heinz/            prospecção de um grupo: Receita por razão social + linhas de uma raiz nas bases
         ├── mapa_final/             abas FINAL do MAPA (alimentação, lojas, construção, postos, pet, estacionamento) + LEIA-ME.md
         ├── organograma/            aba ORGANOGRAMA do MAPA MERCADO (equipe, segmentos, carteira do CRM, potencial) + LEIA-ME.md
+        ├── pesquisa_cliente/       "pesquisa completa" de um cliente (Receita, IE, TOTVS, bases, empresas ligadas) + LEIA-ME.md
         └── midia/                  ver fotos e vídeos sem ffmpeg/Pillow (folha de contato, servidor com Range)
 ```
 
@@ -65,6 +66,7 @@ Fontes de dados fora desta pasta (só leitura):
   Estado, E-mail NF-e, Segmento…). Fica numa pasta compartilhada de relatórios TOTVS.
 - `Ultimo faturamento - SQL.csv` (nesta pasta): por cliente, a última nota e o vendedor (código + nome).
   É a fonte da tradução **código → nome do vendedor**.
+- Na pasta de relatórios TOTVS (`CSV\`) também ficam `FAT - SQL.csv` (só a semana corrente) e `Pedidos abertos - SQL.csv`.
 - Planilhas de trabalho do usuário: OneDrive `Planejamento comercial_AUTOPEL\2026\COMERCIAL (NOVO)\` e `Downloads\`.
 
 ---
@@ -122,6 +124,13 @@ Fontes de dados fora desta pasta (só leitura):
 - Scripts em `scripts cruzamento/avulsos/farmacias/` (pipeline completo da base de farmácias).
 - **Consulta pontual de CNPJ:** BrasilAPI `https://brasilapi.com.br/api/cnpj/v1/<14 dígitos>`. Usar via `curl`, porque o
   urllib do Python leva 403.
+- **Inscrição estadual** (SINTEGRA): CNPJ.ws `https://publica.cnpj.ws/cnpj/<14 dígitos>`, via `curl -A "Mozilla/5.0"`.
+- **Empresas de um sócio:** a cópia local não tem o arquivo de sócios. Usar sites de QSA (advdinamico.com.br,
+  consultasocio.com) e conferir cada CNPJ na BrasilAPI.
+- **E-mail da Receita** é declarado pela empresa e pode ser de domínio inexistente. Conferir em
+  `https://rdap.registro.br/domain/<domínio>` (404 = não registrado).
+- **Pesquisa completa de um cliente:** roteiro em `avulsos/pesquisa_cliente/LEIA-ME.md`. Instagram e Facebook não abrem
+  nesta rede (curl 000; erro de certificado no navegador embutido) e o LinkedIn devolve 999: só os trechos dos buscadores.
 - **CNPJ vindo de base de terceiros** (ex.: Neoway): validar o dígito verificador. Cerca de 28% vieram corrompidos;
   a razão social costuma estar certa e serve para corrigir.
 
