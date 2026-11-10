@@ -315,7 +315,7 @@ Armadilhas reais já vistas:
   impressão.
 - **a aba ORGANOGRAMA do arquivo tem um layout anterior ao do `org_layout.py`** (resumo e legenda depois das caixas).
   Não regravar pelo `org_layout.py`: para mudar números, usar `org_potencial.py` + `org_potencial.ps1`, que trocam só as
-  células de potencial e inserem as linhas novas da tabela de potencial (05/11);
+  células de potencial e de carteira (desde 10/11) e inserem as linhas novas da tabela de potencial (05/11);
 - potencial desde 05/11: também POSTOS E CONVENIENCIAS, ESTACIONAMENTOS e PET SHOP (coluna W das abas FINAL novas);
 - **duplo clique nos números da impressão** (06/11): o MAPA virou **MAPA MERCADO V2.xlsm**. A macro (`organograma/vba_*.txt`)
   monta a aba DETALHE na hora, e nenhuma lista fica guardada no arquivo. Detalhes no LEIA-ME da pasta:

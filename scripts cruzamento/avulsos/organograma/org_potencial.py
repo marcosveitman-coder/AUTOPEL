@@ -1,4 +1,4 @@
-"""Atualiza SO o potencial da aba ORGANOGRAMA, sem regravar a aba (05/11/2026).
+"""Atualiza SO o potencial e (desde 10/11/2026) a carteira da aba ORGANOGRAMA, sem regravar a aba (05/11/2026).
 A ORGANOGRAMA do arquivo tem um layout anterior ao do org_layout.py atual (resumo e legenda em outra posicao): regravar
 pelo org_layout.py mudaria a aba inteira. Este script le a aba como esta e gera as trocas:
   - caixas: texto "Potencial: N oportunidades" (a pessoa e o nome mais proximo acima, na mesma coluna);
@@ -14,7 +14,9 @@ D = json.load(open('org_dados.json', encoding='utf8'))
 ACENTO = {'ALIMENTACAO': 'Alimentação', 'CONSTRUCAO': 'Construção', 'POSTOS E CONVENIENCIAS': 'Postos e Conveniências',
           'DROGARIAS': 'Drogarias', 'REDE DE LOJAS': 'Rede de Lojas', 'ESTACIONAMENTOS': 'Estacionamentos', 'PET SHOP': 'Pet Shop'}
 br = lambda n: f'{n:,}'.replace(',', '.')
-FONTE = ('Fonte: telas do CRM (Segmentos & Vendedores e carteira de cada pessoa), recebidas em 04/11/2026; potencial: abas ALIMENTACAO, '
+pc = lambda a, b: f'{100 * a / b:.1f}%'.replace('.', ',') if b else '—'
+FONTE = ('Fonte: ' + D.get('fonte_crm', 'telas do CRM (Segmentos & Vendedores e carteira de cada pessoa), recebidas em 04/11/2026') +
+         '; potencial: abas ALIMENTACAO, '
          'REDE DE LOJAS, CONSTRUÇÃO, POSTOS GAS & CONVENIENCIA, ESTACIONAMENTO e PET SHOP FINAL (coluna W, STATUS AUTOPEL de 05/11/2026) e '
          '"FARMACIA VF" (coluna P) deste arquivo.')
 
@@ -35,6 +37,63 @@ def celulas(xlsx, aba):
         val = ss[int(v.group(1))] if 't="s"' in attr and v else (html.unescape(t.group(1)) if t else (v.group(1) if v else ''))
         out[(int(row), ci(col))] = val
     return out
+
+
+def carteira(C, trocas):
+    """Numeros de carteira (10/11/2026), com os mesmos textos e contas do org_layout.py: linhas "Clientes:" e a de baixo
+    das caixas, o RESUMO DAS EQUIPES e a tabela "1. CARTEIRA DE CADA PESSOA" (H..X) e a nota logo abaixo dela."""
+    P = {p['nome']: p for p in D['pessoas']}
+    def troca(r, c, novo, quem):
+        antes = C.get((r, c))
+        if isinstance(novo, str):
+            igual = str(antes) == novo
+        else:
+            try: igual = abs(float(antes) - novo) < 1e-9
+            except (TypeError, ValueError): igual = False
+        if not igual: trocas.append(dict(ref=f'{L(c)}{r}', valor=novo, antes=antes, quem=quem))
+    # caixas
+    for (r, c), v in sorted(C.items()):
+        if not str(v).startswith('Clientes: '): continue
+        dono = next((C[(rr, c)].strip() for rr in range(r - 1, max(0, r - 6), -1) if str(C.get((rr, c), '')).strip() in P), None)
+        assert dono, ('caixa sem nome acima', L(c) + str(r))
+        p = P[dono]; no, fora = p['no_total'], p['fora_total']
+        l4 = f"Clientes: {br(p['total'])}  |  no segmento {br(no)} ({pc(no, no + fora)})" if no + fora else f"Clientes: {br(p['total'])}  |  sem segmento definido"
+        l5 = f"No segmento: ativos {pc(p['no'][0], no)} · perdendo {pc(p['no'][1], no)} · a trabalhar {pc(p['no'][2], no)}" if no else \
+             f"Ativos {br(p['ativos'])} · perdendo {br(p['perdendo'])} · a trabalhar {br(p['atrab'])}"
+        troca(r, c, l4, dono); troca(r + 1, c, l5, dono)
+    # resumo das equipes (pessoas = linha que ja esta la)
+    tit = [r for (r, c), v in C.items() if str(v).startswith('RESUMO DAS EQUIPES')]
+    assert len(tit) == 1
+    r0, c0 = next((r, c) for (r, c), v in C.items() if r == tit[0] + 1 and str(v).strip() == 'EQUIPE')
+    cab = {str(v).strip(): c for (r, c), v in C.items() if r == r0}
+    r = r0 + 1
+    while str(C.get((r, c0), '')).startswith('Equipe '):
+        nome = next(n for n in P if 'Equipe ' + n.title() == C[(r, c0)].strip())
+        p = P[nome]; no, fora = p['no_total'], p['fora_total']
+        for k, x in [('CLIENTES', p['total']), ('% NO SEGM.', no / (no + fora)), ('ATIVOS', p['no'][0]), ('% ATIVOS', p['no'][0] / no),
+                     ('PERDENDO', p['no'][1]), ('% PERD.', p['no'][1] / no), ('A TRAB.', p['no'][2]), ('% A TRAB.', p['no'][2] / no)]:
+            troca(r, cab[k], x, 'resumo ' + nome)
+        r += 1
+    # tabela 1: colunas H (8) a X (24), como no org_layout.py
+    tit = [r for (r, c), v in C.items() if str(v).startswith('1. CARTEIRA DE CADA PESSOA')]
+    assert len(tit) == 1
+    r = tit[0] + 3
+    assert C.get((r - 1, 8)) == 'CLIENTES' and C.get((r - 1, 24)) == '% A TRAB.'
+    while str(C.get((r, 2), '')).strip() in P:
+        p = P[C[(r, 2)].strip()]; no, fora = p['no_total'], p['fora_total']; tot = no + fora
+        vals = [(8, p['total']), (9, no), (10, no / tot if tot else None), (11, fora), (12, fora / tot if tot else None)]
+        for base, arr, n in [(13, p['no'], no), (19, p['fora'], fora)]:
+            for i in range(3):
+                vals += [(base + 2 * i, arr[i]), (base + 2 * i + 1, arr[i] / n if n else None)]
+        for c, x in vals: troca(r, c, x if x is not None else '—', p['nome'])
+        r += 1
+    # nota logo abaixo da tabela
+    if str(C.get((r, 2), '')).startswith('CLIENTES = '):
+        sup = [p for p in D['pessoas'] if p['perfil'] in ('Supervisor', 'Supervisora')]
+        semseg = [p for p in D['pessoas'] if (not p['sup'] or p in sup) and p['no_total'] + p['fora_total'] < p['total']]
+        quem = ' e '.join(('na diretoria' if not p['sup'] else 'no supervisor ' + p['nome'].title()) for p in semseg)
+        troca(r, 2, f'CLIENTES = ativos + perdendo + a trabalhar (cartões do CRM). {quem[0].upper() + quem[1:]} há clientes sem segmento definido: '
+                    'por isso NO + FORA pode ser menor que CLIENTES. Os supervisores mostram a visão do CRM de cada um.', 'nota')
 
 
 def main(mapa):
@@ -91,8 +150,9 @@ def main(mapa):
                     trocas.append(dict(ref=f'{L(c)}{rr}', valor=x, antes=C.get((rr, c)), quem=v['SEGMENTO']))
         else:
             novas.append([dict(col=cab[k], valor=x) for k, x in v.items()])
+    carteira(C, trocas)
     # nota da fonte
-    fonte = [(r, c) for (r, c), v in C.items() if str(v).startswith('Fonte: telas do CRM')]
+    fonte = [(r, c) for (r, c), v in C.items() if str(v).startswith('Fonte: ') and 'potencial: abas' in str(v)]
     assert len(fonte) == 1
     if C[fonte[0]] != FONTE: trocas.append(dict(ref=f'{L(fonte[0][1])}{fonte[0][0]}', valor=FONTE, antes=C[fonte[0]], quem='fonte'))
     json.dump(dict(trocas=trocas, apos_linha=ultima, novas=novas), open('org_potencial.json', 'w', encoding='utf8'), ensure_ascii=False, indent=0)

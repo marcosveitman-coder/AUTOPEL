@@ -84,10 +84,27 @@ FANTASIA e CNPJ). O `org_xlsm.py` agora troca só a macro num .xlsm que já exis
   - nos nomes definidos, só mudou a área de impressão (até a linha 171).
 - Imagens das folhas 1, 3 e 6 conferidas.
 
+## 2ª parte: carteira na aba ORGANOGRAMA
+
+O usuário pediu para atualizar também a aba ORGANOGRAMA (a que não é de impressão).
+- O `org_potencial.py` passou a trocar também os números de carteira, com os mesmos textos e contas do `org_layout.py`:
+  - as 2 linhas de carteira de cada caixa;
+  - o RESUMO DAS EQUIPES;
+  - a tabela "1. CARTEIRA DE CADA PESSOA" (H–X);
+  - a nota abaixo dela, que agora cita só a diretoria com clientes sem segmento;
+  - a fonte.
+- Foram 292 células, gravadas pelo `org_potencial.ps1` numa cópia.
+- **Conferência:**
+  - rodar de novo dá 0 trocas;
+  - todas as outras abas e as células não trocadas estão iguais;
+  - as 22 dinâmicas são as mesmas: o Excel só renumerou arquivos e 2 estilos (dxfId);
+  - os nomes definidos estão iguais;
+  - a macro foi testada em 5 números, com duplo clique, fechar e reabrir.
+- A venda interna agora mostra "no segmento 5 (27,8%)", porque o arquivo do CRM dá aderência a 5 clientes dela. A caixa
+  continua dizendo "Sem segmento no CRM", porque a pessoa não tem segmento cadastrado.
+
 ## Pendências
 
-- A aba **ORGANOGRAMA** (não a de impressão) continua com a carteira de 04/11. Para atualizar, adaptar o
-  `org_potencial.py` para os números de carteira. Perguntar ao usuário.
 - O duplo clique nos números de carteira lista os clientes pelo TOTVS do dia. O número do organograma é do arquivo do CRM
   (10/11), e a DETALHE mostra os dois.
 
