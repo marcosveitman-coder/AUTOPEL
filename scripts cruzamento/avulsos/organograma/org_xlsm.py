@@ -1,7 +1,7 @@
 """Grava o MAPA MERCADO como .xlsm com a macro do duplo clique (06/11/2026).
 Monta o projeto VBA a partir de vba_ThisWorkbook.txt e vba_DetalheMod.txt (../vba_projeto.py: MS-OVBA + MS-CFB, sem o
 Excel), confere lendo de volta e poe no pacote: tipo macro do workbook, relacao, Override e codeName "ThisWorkbook".
-Uso: python org_xlsm.py "<entrada.xlsx>" "<saida.xlsm>" """
+Uso: python org_xlsm.py "<entrada.xlsx ou .xlsm>" "<saida.xlsm>" (.xlsm: troca so a macro) """
 import os, sys
 AQUI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(AQUI, '..'))
@@ -22,5 +22,8 @@ if __name__ == '__main__':
     m = modulos()
     b = vp.projeto_vba(m)
     print('projeto VBA:', len(b), 'bytes |', vp.confere(b, m))
-    vp.xlsm(sys.argv[1], sys.argv[2], b)
+    if sys.argv[1].lower().endswith('.xlsm'):
+        vp.troca_vba(sys.argv[1], sys.argv[2], b)     # arquivo que ja tem macro: troca so o projeto VBA
+    else:
+        vp.xlsm(sys.argv[1], sys.argv[2], b)
     print('gravado:', sys.argv[2], os.path.getsize(sys.argv[2]), 'bytes')

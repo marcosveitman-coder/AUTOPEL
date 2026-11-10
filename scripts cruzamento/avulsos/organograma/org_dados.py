@@ -1,8 +1,8 @@
 """Dados da aba ORGANOGRAMA ("constante organograma") do MAPA MERCADO.
-Estrutura e segmentos: telas do CRM (Segmentos & Vendedores). Carteira de cada pessoa: telas "carteira ..." do CRM
+Estrutura e segmentos: telas do CRM (Segmentos & Vendedores). Carteira de cada pessoa: exportacao do CRM (org_carteira.py)
 (ativos <= 290 dias, perdendo 291-365, a trabalhar > 365 ou sem compra; no segmento x fora do segmento).
 Potencial: linhas das abas ALIMENTACAO/REDE DE LOJAS/CONSTRUCAO/POSTOS/ESTACIONAMENTO/PET SHOP FINAL (coluna W) e "FARMACIA VF" (coluna P)
-com STATUS AUTOPEL diferente de ATIVO. Uso: python org_dados.py <MAPA.xlsx>  ->  org_dados.json (le equipe.json: pessoas, perfis, segmentos e carteira)"""
+com STATUS AUTOPEL diferente de ATIVO. Ale Dayan: abas "(TOP 50)". Uso: python org_dados.py <MAPA.xlsx>  ->  org_dados.json (le equipe.json: pessoas, perfis, segmentos e carteira)"""
 import sys, json, collections, openpyxl
 MAPA = sys.argv[1]
 import os
@@ -23,6 +23,25 @@ for seg, (aba, col, h) in BASE.items():
     assert str(rows[0][0]).strip().upper() == 'STATUS AUTOPEL', (aba, rows[0][0])
     c = collections.Counter(str(r[0]).strip().upper() for r in rows[1:] if r[0] not in (None, ''))
     POT[seg] = {'aba': aba.strip('"'), 'col': col, 'total': sum(c.values()), 'status': dict(c), 'potencial': sum(v for k, v in c.items() if k != 'ATIVO')}
+# 10/11/2026: listas TOP 50 da Ale Dayan (abas "<SEGMENTO> (TOP 50)", cabecalho com EMPRESA e STATUS AUTOPEL), na ordem do usuario.
+# A trabalhar = tudo que nao e ATIVO (inativo + nao e cliente), como no potencial.
+ORDEM_ALE = [('SUPERMERCADO', 'Supermercado'), ('SERVIÇOS & FRANQUIAS', 'Serviços e franquias'), ('REDE LOJAS', 'Rede de lojas'),
+             ('POSTO GASOLINA', 'Posto de gasolina'), ('OTICA', 'Ótica'), ('CONSTRUÇÃO', 'Construção'), ('ESTACIONAMENTO', 'Estacionamento'),
+             ('DROGARIA', 'Drogaria'), ('CONVENIENCIA', 'Conveniência'), ('BELEZA', 'Beleza'), ('ALIMENTAÇÃO', 'Alimentação')]
+abas = {' '.join(n.split()).upper(): n for n in wb.sheetnames}
+ALE = []
+for base, nome in ORDEM_ALE:
+    aba = abas.get(f'{base} (TOP 50)')
+    if not aba:
+        print('ATENÇÃO: aba não achada:', base, '(TOP 50)'); continue
+    rows = list(wb[aba].iter_rows(values_only=True))
+    hi = next(i for i, r in enumerate(rows[:12]) if any(str(x or '').strip().upper() == 'STATUS AUTOPEL' for x in r))
+    h = [str(x or '').strip().upper() for x in rows[hi]]
+    js = h.index('STATUS AUTOPEL')
+    st = [str(r[js]).strip().upper() for r in rows[hi + 1:] if len(r) > js and r[js] not in (None, '')]
+    c = collections.Counter(st)
+    ALE.append(dict(chave='TOP50 ' + base, nome=nome, aba=aba, col=openpyxl.utils.get_column_letter(js + 1), linha=hi + 1,
+                    total=len(st), ativo=c.get('ATIVO', 0), atrab=len(st) - c.get('ATIVO', 0), status=dict(c)))
 wb.close()
 out = []
 for k, nome, perfil, sup, segs in PES:
@@ -40,6 +59,7 @@ segpes = collections.OrderedDict()
 for o in out:
     for s in o['segmentos']:
         segpes.setdefault(s.lstrip('*'), []).append(('★ ' if s.startswith('*') else '') + o['nome'])
-json.dump(dict(pessoas=out, potencial=POT, segmentos=segpes, sem_responsavel=EQ['segmentos_sem_responsavel']), open('org_dados.json', 'w', encoding='utf8'), ensure_ascii=False, indent=1)
+json.dump(dict(pessoas=out, potencial=POT, segmentos=segpes, sem_responsavel=EQ['segmentos_sem_responsavel'], ale=ALE, fonte_crm=EQ['_fonte']), open('org_dados.json', 'w', encoding='utf8'), ensure_ascii=False, indent=1)
 for o in out: print(o['id'], o['total'], o['no_total'], o['fora_total'], o['potencial'])
 print(json.dumps(POT, ensure_ascii=False))
+for a in ALE: print('ALE', a['nome'], a['total'], 'ativos', a['ativo'], 'a trabalhar', a['atrab'], '|', a['aba'], a['col'], a['linha'])

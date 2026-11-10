@@ -159,3 +159,18 @@ automático do OneDrive apagaria a lista enquanto ela é lida.
 **Se o arquivo já é .xlsm:**
 - para trocar só a macro, partir de uma cópia **.xlsx** do arquivo e refazer o passo 6;
 - para trocar só a configuração, os passos 3–4 bastam, rodados direto no .xlsm.
+
+## Carteira pelo arquivo do CRM e quadro da Ale Dayan (10/11/2026)
+
+**Carteira:** com o arquivo exportado do CRM (`carteira-AAAA-MM-DD-HHMMSS.xlsx`), rodar na pasta `dados`:
+`AUTOPEL_ULTFAT_CSV=<CSV do dia> python ../org_carteira.py "<carteira.xlsx>"`.
+- Conta um cliente por vendedor + código do TOTVS, com o melhor status entre as lojas e a aderência mais frequente.
+- Supervisão = soma da equipe; diretoria = tudo menos a carteira "INATIVOS".
+- Atualiza o `equipe.json` e guarda a versão anterior com a data no nome.
+- Depois, seguir a ordem de sempre: `org_dados` → `org_impressao` → `org_detalhe.py` → `org_detalhe.ps1` →
+  `org_grava.ps1` → `org_xlsm.py` (com o .xlsm, troca só a macro) → testes.
+
+**Ale Dayan:**
+- o `org_dados.py` lê as 11 abas "(TOP 50)" (clientes, ativos, a trabalhar);
+- o `org_impressao.py` desenha o quadro embaixo de cada equipe e na folha de potencial;
+- os números são clicáveis (tipo S, aba TOP 50 na CONFIG DETALHE).

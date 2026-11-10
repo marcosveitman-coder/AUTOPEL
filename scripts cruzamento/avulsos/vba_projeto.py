@@ -379,6 +379,16 @@ def xlsm(xlsx, saida, vba_bin, nome_doc='ThisWorkbook'):
         zo.writestr('xl/vbaProject.bin', vba_bin, compress_type=zipfile.ZIP_DEFLATED)
 
 
+
+def troca_vba(xlsm_ent, saida, vba_bin):
+    """troca so o xl/vbaProject.bin de um .xlsm que ja tem macro (o resto do pacote e copiado como esta)"""
+    zi = zipfile.ZipFile(xlsm_ent)
+    assert 'xl/vbaProject.bin' in zi.namelist()
+    with zipfile.ZipFile(saida, 'w', zipfile.ZIP_DEFLATED) as zo:
+        for info in zi.infolist():
+            d = vba_bin if info.filename == 'xl/vbaProject.bin' else zi.read(info.filename)
+            zo.writestr(info, d, compress_type=zipfile.ZIP_DEFLATED)
+
 if __name__ == '__main__':
     # autoteste: compressao ida e volta e um projeto pequeno
     import os

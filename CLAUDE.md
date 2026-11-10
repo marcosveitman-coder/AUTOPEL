@@ -323,6 +323,15 @@ Armadilhas reais já vistas:
   - potencial pelas abas;
   - significado de cada número na aba oculta CONFIG DETALHE;
   - a DETALHE é apagada ao abrir e ao fechar, sem marcar o arquivo como alterado.
+- **Carteira pelo arquivo do CRM** (10/11/2026; `org_carteira.py`):
+  - entrada: `carteira-AAAA-MM-DD-HHMMSS.xlsx` baixado do CRM, uma linha por loja (Vendedor, Status, Aderência);
+  - contar por vendedor + código de cliente do TOTVS (pelo CNPJ). Supervisão = soma da equipe; diretoria = tudo menos
+    a carteira "INATIVOS";
+  - o nome do vendedor no CRM é o **nome reduzido** do TOTVS (coluna "Nome Reduzid" do Ultimo faturamento).
+- **Quadro ALE DAYAN** (10/11): as 11 abas "<SEGMENTO> (TOP 50)" (cabeçalho na linha 3; EMPRESA e STATUS AUTOPEL):
+  - clientes, ativos e a trabalhar (= inativo + não é cliente);
+  - embaixo de cada equipe e na folha de potencial;
+  - as abas são achadas pelo nome com os espaços normalizados.
 - **Carteira do CRM = TOTVS:**
   - um cliente por **vendedor + código de cliente**; status pela nota mais recente das lojas do código (ativo ≤ 290 dias,
     perdendo ≤ 365);

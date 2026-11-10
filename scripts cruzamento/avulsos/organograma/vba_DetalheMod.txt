@@ -415,34 +415,37 @@ Private Sub Listas(ByVal segs As String, ByVal st As String, ByRef dados As Vari
         hr(q) = CLng(Val(Txt(Cfg.Cells(rs, 5).Value2)))
         For c = 1 To ws(q).Cells(hr(q), ws(q).Columns.Count).End(xlToLeft).Column
             h = UCase$(Txt(ws(q).Cells(hr(q), c).Value2))
-            If h = "RAZÃO SOCIAL" And cR(q) = 0 Then cR(q) = c
+            ' abas FINAL e FARMACIA VF: RAZAO SOCIAL, NOME FANTASIA, No DE LOJAS, CNPJ; abas TOP 50 (Ale Dayan): EMPRESA e LOJAS
+            If (h = "RAZÃO SOCIAL" Or h = "EMPRESA") And cR(q) = 0 Then cR(q) = c
             If h = "NOME FANTASIA" And cF(q) = 0 Then cF(q) = c
-            If Left$(h, 11) = "Nº DE LOJAS" And cL(q) = 0 Then cL(q) = c
+            If (Left$(h, 11) = "Nº DE LOJAS" Or h = "LOJAS") And cL(q) = 0 Then cL(q) = c
             If h = "CNPJ" And cC(q) = 0 Then cC(q) = c
         Next c
-        If cR(q) = 0 Or cF(q) = 0 Or cL(q) = 0 Or cC(q) = 0 Then Err.Raise 5, , "colunas não achadas na aba " & ws(q).Name
+        If cR(q) = 0 Or cL(q) = 0 Then Err.Raise 5, , "colunas não achadas na aba " & ws(q).Name
         ult(q) = ws(q).Cells(ws(q).Rows.Count, cS(q)).End(xlUp).Row
         If ult(q) > hr(q) Then total = total + ult(q) - hr(q)
         abas = abas & IIf(abas = "", "", ", ") & ws(q).Name
     Next q
 
-    cab = Array("RAZÃO SOCIAL", "NOME FANTASIA", "Nº DE LOJAS", "CNPJ", "SEGMENTO", "STATUS AUTOPEL", "ORIGEM (ABA E LINHA)")
+    cab = Array("RAZÃO SOCIAL / EMPRESA", "NOME FANTASIA", "Nº DE LOJAS", "CNPJ", "SEGMENTO", "STATUS AUTOPEL", "ORIGEM (ABA E LINHA)")
     If total > 0 Then ReDim d(1 To total, 1 To 7)
     For q = 1 To nq
         If ult(q) > hr(q) Then
             vS = Coluna(ws(q), cS(q), hr(q) + 1, ult(q))
             vR = Coluna(ws(q), cR(q), hr(q) + 1, ult(q))
-            vF = Coluna(ws(q), cF(q), hr(q) + 1, ult(q))
+            If cF(q) > 0 Then vF = Coluna(ws(q), cF(q), hr(q) + 1, ult(q))
             vL = Coluna(ws(q), cL(q), hr(q) + 1, ult(q))
-            vC = Coluna(ws(q), cC(q), hr(q) + 1, ult(q))
+            If cC(q) > 0 Then vC = Coluna(ws(q), cC(q), hr(q) + 1, ult(q))
             For i = 1 To ult(q) - hr(q)
                 s = UCase$(Txt(vS(i, 1)))
                 If s <> "" Then
                     If st = "TOTAL" Or (st = "POTENCIAL" And s <> "ATIVO") Or s = st Then
                         m = m + 1
-                        d(m, 1) = Txt(vR(i, 1)): d(m, 2) = Txt(vF(i, 1))
+                        d(m, 1) = Txt(vR(i, 1))
+                        If cF(q) > 0 Then d(m, 2) = Txt(vF(i, 1))
                         If IsNumeric(vL(i, 1)) And Not IsEmpty(vL(i, 1)) Then d(m, 3) = vL(i, 1)
-                        d(m, 4) = FormataCnpj(vC(i, 1)): d(m, 5) = nomeSeg(q): d(m, 6) = s
+                        If cC(q) > 0 Then d(m, 4) = FormataCnpj(vC(i, 1))
+                        d(m, 5) = nomeSeg(q): d(m, 6) = s
                         d(m, 7) = ws(q).Name & " – linha " & (hr(q) + i)
                     End If
                 End If

@@ -88,6 +88,8 @@ def main(mapa):
         hr = next(i + 1 for i, r in enumerate(rows) if len(r) > j and str(r[j] or '').strip().upper() == 'STATUS AUTOPEL')
         linhas.append([seg, ACENTO.get(seg, seg.title()), aba, b['col'], str(hr)])
     wb.close()
+    for a in D.get('ale', []):   # listas TOP 50 da Ale Dayan (10/11/2026)
+        linhas.append([a['chave'], 'Ale Dayan – ' + a['nome'] + ' (TOP 50)', a['aba'], a['col'], str(a['linha'])])
     # celulas clicaveis
     P = {p['id']: p for p in EQ['pessoas']}
     linhas += [[], ['CELULAS'], ['CELULA', 'TIPO', 'QUEM', 'SEGMENTO', 'STATUS', 'ROTULO', 'NUMERO']]

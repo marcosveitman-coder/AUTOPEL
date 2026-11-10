@@ -149,6 +149,34 @@ def banner(r, sp, eq):
     r += 3
     ops.append(dict(vline=[C0 + NC // 2 - 1, r, r])); alt(r, 12)
     return r + 1
+ALE = D.get('ale', [])
+ROT_ALE = {'TOTAL': 'clientes na lista', 'ATIVO': 'ativos', 'POTENCIAL': 'a trabalhar (tudo que não é ativo)'}
+def ale_dayan(r, texto):
+    """Quadro da Ale Dayan (10/11/2026): listas TOP 50 por segmento, em duas metades lado a lado (6 + 5 segmentos).
+    Colunas: segmento, clientes na lista, ativos e a trabalhar (= inativo + nao e cliente). Numeros clicaveis (tipo S)."""
+    if not ALE:
+        return r
+    alt(r, 10); r += 1
+    r = faixa(r, texto)
+    COLS = [(0, 12, 'Segmento (aba TOP 50)'), (13, 18, 'Clientes'), (19, 24, 'Ativos'), (25, 30, 'A trabalhar')]
+    meio = (len(ALE) + 1) // 2
+    for base in (C0, C0 + 32):
+        for a, b, tx in COLS:
+            extra = dict(fill=OURO, font=OURO_T) if tx == 'A trabalhar' else dict(fill=LIGHT, font=DARK)
+            put(r, base + a, tx, base + b, halign='center', border=True, wrap=True, **extra)
+    r += 1
+    for i in range(meio):
+        for base, k in ((C0, i), (C0 + 32, meio + i)):
+            if k >= len(ALE):
+                continue
+            a = ALE[k]
+            put(r, base, a['nome'], base + 12, bold=True, indent=1, border=True)
+            for (x1, x2, _), (v, st) in zip(COLS[1:], [(a['total'], 'TOTAL'), (a['ativo'], 'ATIVO'), (a['atrab'], 'POTENCIAL')]):
+                extra = dict(fill=OURO, font=OURO_T, bold=True) if st == 'POTENCIAL' else {}
+                put(r, base + x1, v, base + x2, fmt='n', halign='center', border=True, uma=True,
+                    det=dict(t='S', segs=a['chave'], st=st, rot=f"ALE DAYAN – {a['nome']} (TOP 50) – {ROT_ALE[st]}", n=v) if v else None, **extra)
+        r += 1
+    return r
 def rotulo(ids):
     return 'VENDEDORAS' if all(P[k]['perfil'] == 'Vendedora' for k in ids) else 'VENDEDORES E VENDA INTERNA' if any(P[k]['perfil'] == 'Venda interna' for k in ids) else 'VENDEDORES'
 quebras, folhas_ini = [], []
@@ -170,6 +198,8 @@ for s in SUP:
         r = banner(r, sp, eq)
         r = faixa(r, f"{rot} ({len(ids)})"); alt(r, 8); r += 1
         r = caixas(ids, r)
+        if n == len(grupos) - 1:   # 10/11/2026: quadro da Ale Dayan embaixo de cada equipe
+            r = ale_dayan(r, 'ALE DAYAN – CLIENTES DAS LISTAS TOP 50 POR SEGMENTO: ATIVOS E A TRABALHAR')
         r = legenda(r)
 # ---------- carteira de cada pessoa: uma folha por equipe
 T1 = [(2, 14)] + [(15 + 5 * i, 19 + 5 * i) for i in range(9)] + [(60, 64)]
@@ -232,6 +262,10 @@ for seg, b in POT.items():
 alt(r, 6); r += 1
 put(r, C0, 'POTENCIAL = linhas da lista do segmento com STATUS AUTOPEL diferente de ATIVO. O potencial é do segmento: quem divide o segmento divide as mesmas '
            'oportunidades (não somar entre pessoas). Segmentos sem lista de mercado nestas abas aparecem sem potencial.', CF, wrap=True); r += 1
+r = ale_dayan(r, 'ALE DAYAN – LISTAS TOP 50 POR SEGMENTO (ABAS "TOP 50" DESTE ARQUIVO)')
+if ALE:
+    put(r, C0, 'TOP 50 = as maiores redes de cada segmento na pesquisa da Ale Dayan (abas "(TOP 50)"). Ativo = STATUS AUTOPEL ATIVO; '
+               'a trabalhar = inativo + não é cliente.', CF, wrap=True); r += 1
 alt(r, 12); r += 1
 # 05/11/2026: com POSTOS, ESTACIONAMENTO e PET SHOP no potencial, a folha 6 passou da pagina -> segmentos x responsaveis na folha 7
 r = nova_folha(r)
@@ -249,8 +283,8 @@ SEM = D['sem_responsavel']
 put(r, 2, 'Sem responsável', 15, bold=True, indent=1, border=True, font=CINZA); put(r, 16, len(SEM), 21, fmt='n', halign='center', border=True, font=CINZA)
 put(r, 22, ', '.join(nomeseg(s) for s in SEM), 64, indent=1, wrap=True, border=True, font=CINZA); r += 1
 alt(r, 6); r += 1
-put(r, C0, 'Fonte: telas do CRM (Segmentos & Vendedores e carteira de cada pessoa), recebidas em 04/11/2026; potencial: abas ALIMENTACAO, REDE DE LOJAS, CONSTRUÇÃO, POST'
-           'OS GAS & CONVENIENCIA, ESTACIONAMENTO e PET SHOP FINAL (coluna W, STATUS AUTOPEL de 05/11/2026) e "FARMACIA VF" (coluna P) deste arquivo.', CF, wrap=True)
+put(r, C0, 'Fonte: ' + D.get('fonte_crm', 'telas do CRM') + '; potencial: abas ALIMENTACAO, REDE DE LOJAS, CONSTRUÇÃO, POSTOS GAS & '
+           'CONVENIENCIA, ESTACIONAMENTO e PET SHOP FINAL (coluna W, STATUS AUTOPEL) e "FARMACIA VF" (coluna P); Ale Dayan: abas "(TOP 50)" deste arquivo.', CF, wrap=True)
 ultima = r
 for o in ops: o.setdefault('wrap', True)
 ops += [dict(rowh=[k, v]) for k, v in sorted(H.items())]
