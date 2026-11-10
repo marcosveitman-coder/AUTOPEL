@@ -328,9 +328,11 @@ Armadilhas reais já vistas:
   - contar por vendedor + código de cliente do TOTVS (pelo CNPJ). Supervisão = soma da equipe; diretoria = tudo menos
     a carteira "INATIVOS";
   - o nome do vendedor no CRM é o **nome reduzido** do TOTVS (coluna "Nome Reduzid" do Ultimo faturamento).
-- **Quadro ALE DAYAN** (10/11): as 11 abas "<SEGMENTO> (TOP 50)" (cabeçalho na linha 3; EMPRESA e STATUS AUTOPEL):
-  - clientes, ativos e a trabalhar (= inativo + não é cliente);
-  - embaixo de cada equipe e na folha de potencial;
+- **Linha "Ale Dayan" nas caixas** (10/11; o usuário recusou os quadros separados): as 11 abas "<SEGMENTO> (TOP 50)"
+  (cabeçalho na linha 3; EMPRESA e STATUS AUTOPEL):
+  - em cada caixa de vendedor, venda interna e representante, 3 números: ativos (verde), inativos (amarelo) e não é
+    cliente (cinza), somando as listas dos segmentos da pessoa (mapa `ALE_SEG` no `org_impressao.py`; Cosméticos = Beleza);
+  - a legenda fica só na última folha de cada equipe, por falta de espaço;
   - as abas são achadas pelo nome com os espaços normalizados.
 - **Carteira do CRM = TOTVS:**
   - um cliente por **vendedor + código de cliente**; status pela nota mais recente das lojas do código (ativo ≤ 290 dias,

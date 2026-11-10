@@ -172,8 +172,10 @@ automático do OneDrive apagaria a lista enquanto ela é lida.
 
 **Ale Dayan:**
 - o `org_dados.py` lê as 11 abas "(TOP 50)" (clientes, ativos, a trabalhar);
-- o `org_impressao.py` desenha o quadro embaixo de cada equipe e na folha de potencial;
-- os números são clicáveis (tipo S, aba TOP 50 na CONFIG DETALHE).
+- o `org_impressao.py` põe uma linha "Ale Dayan" no fim de cada caixa de vendedor, venda interna e representante
+  (ativos, inativos, não é cliente), com as listas dos segmentos da pessoa (`ALE_SEG`). Os quadros separados da 1ª
+  versão foram recusados pelo usuário e saíram;
+- os números são clicáveis (tipo S, abas TOP 50 na CONFIG DETALHE; várias listas separadas por ";").
 
 **Aba ORGANOGRAMA (não a de impressão):** `org_potencial.py` → `org_potencial.ps1` troca também a carteira (caixas,
 resumo das equipes, tabela 1, nota e fonte), desde 10/11. Rodar de novo na cópia gravada deve dar 0 trocas.

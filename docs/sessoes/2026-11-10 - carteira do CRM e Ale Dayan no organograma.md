@@ -103,6 +103,35 @@ O usuário pediu para atualizar também a aba ORGANOGRAMA (a que não é de impr
 - A venda interna agora mostra "no segmento 5 (27,8%)", porque o arquivo do CRM dá aderência a 5 clientes dela. A caixa
   continua dizendo "Sem segmento no CRM", porque a pessoa não tem segmento cadastrado.
 
+## 3ª parte: linha Ale Dayan dentro das caixas (substitui os quadros)
+
+O usuário não gostou dos quadros e mandou uma foto do formato que queria: **uma linha "Ale Dayan" no fim de cada caixa**
+de vendedor(a), venda interna e representante.
+- Os quadros da 1ª parte saíram (embaixo das equipes e na folha 6).
+- A linha mostra **3 números** (decisão do usuário): ativos (verde), inativos (amarelo) e não é cliente (cinza). São
+  as listas TOP 50 dos segmentos da pessoa, somadas.
+- **Segmento do CRM → aba TOP 50:**
+
+  | Segmento do CRM | Aba TOP 50 |
+  |---|---|
+  | Supermercadista | Supermercado |
+  | Alimentação | Alimentação |
+  | Drogarias | Drogaria |
+  | Rede de Lojas | Rede Lojas |
+  | Postos e Conveniências | Posto Gasolina + Conveniência |
+  | Construção | Construção |
+  | Estacionamentos | Estacionamento |
+  | Cosméticos | Beleza (decisão do usuário) |
+
+  Ótica e Serviços & Franquias não têm responsável. Sem lista = "sem lista".
+- A folha 2 (1ª parte da equipe maior) não cabia: 601 pt. Agora a legenda (com as cores da Ale Dayan) fica só na
+  última folha de cada equipe, e as folhas têm [419, 502, 406, 321, 536, 324, 387] pt.
+- **Conferência:**
+  - 354 números clicáveis; a macro deu os 354 iguais ao esperado, com duplo clique, fechar e reabrir;
+  - só a ORGANOGRAMA impressao e a CONFIG DETALHE mudaram;
+  - dinâmicas e caches iguais; nos nomes definidos, só a área de impressão (até a linha 145).
+- O `org_dados.py` ainda lê as abas TOP 50 (`ale` no json). A função dos quadros foi apagada do `org_impressao.py`.
+
 ## Pendências
 
 - O duplo clique nos números de carteira lista os clientes pelo TOTVS do dia. O número do organograma é do arquivo do CRM

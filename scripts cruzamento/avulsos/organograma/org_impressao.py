@@ -78,6 +78,20 @@ SUP = [p['id'] for p in D['pessoas'] if p['sup'] == DIR]
 MEMB = {s: sorted([p['id'] for p in D['pessoas'] if p['sup'] == s], key=lambda k: -P[k]['total']) for s in SUP}
 SUP.sort(key=lambda s: len(MEMB[s]))            # mesma ordem da aba ORGANOGRAMA (equipe menor primeiro)
 def sup_txt(p): return p['perfil'].lower()
+# ---------- Ale Dayan (10/11/2026): segmento do CRM -> abas "(TOP 50)" (chave do org_dados.json: 'TOP50 ' + nome da aba)
+ALE_K = {a['chave']: a for a in D.get('ale', [])}
+ALE_SEG = {'SUPERMERCADISTA': ['SUPERMERCADO'], 'ALIMENTACAO': ['ALIMENTAÇÃO'], 'DROGARIAS': ['DROGARIA'], 'REDE DE LOJAS': ['REDE LOJAS'],
+           'POSTOS E CONVENIENCIAS': ['POSTO GASOLINA', 'CONVENIENCIA'], 'CONSTRUCAO': ['CONSTRUÇÃO'], 'ESTACIONAMENTOS': ['ESTACIONAMENTO'],
+           'COSMETICOS': ['BELEZA']}   # Cosmeticos = Beleza (decisao do usuario, 10/11)
+ALE_ST = [('ATIVO', 'ativos', GREEN), ('INATIVO', 'inativos', OURO), ('NÃO É CLIENTE', 'não é cliente', GRAY)]
+PERFIS_ALE = ('Vendedora', 'Vendedor', 'Venda interna', 'Representante')
+def ale_da_pessoa(p):
+    out = []
+    for s in p['segmentos']:
+        for aba in ALE_SEG.get(s.lstrip('*'), []):
+            k = 'TOP50 ' + aba
+            if k in ALE_K and k not in out: out.append(k)
+    return out
 # ---------- caixas
 def card(p, r, c):
     fill, font = COR[p['perfil']]
@@ -104,8 +118,22 @@ def card(p, r, c):
     put(r + 8, c, ' Potencial', c + 6, border=True, uma=True, **extra)
     put(r + 8, c + 7, pot if pot else 'sem lista', c + 14, fmt='n' if pot else None, bold=True, halign='center', border=True, uma=True,
         det=dict(t='P', q=p['id'], segs=';'.join(p['potencial']), rot='Potencial (listas de mercado)', n=pot) if pot else None, **extra)
-    ops.append(dict(box=[r, c, r + 8, c + 14]))
-    return r + 8
+    if p['perfil'] not in PERFIS_ALE:
+        ops.append(dict(box=[r, c, r + 8, c + 14]))
+        return r + 8
+    # 10/11/2026: linha Ale Dayan = listas TOP 50 dos segmentos da pessoa (ativos, inativos, nao e cliente; cores na legenda)
+    ch = ale_da_pessoa(p)
+    put(r + 9, c, ' Ale Dayan', c + 5, border=True, uma=True, **(dict() if ch else dict(font=CINZA)))
+    if ch:
+        nomes = ', '.join(ALE_K[k]['nome'] for k in ch)
+        for (x1, x2), (st, rot, fl) in zip(partes(c + 6, 9, 3), ALE_ST):
+            v = sum(ALE_K[k]['status'].get(st, 0) for k in ch)
+            put(r + 9, x1, v, x2, fmt='n', bold=True, halign='center', border=True, uma=True, fill=fl, font=DARK,
+                det=dict(t='S', segs=';'.join(ch), st=st, rot=f"{p['nome']} – Ale Dayan TOP 50 ({nomes}) – {rot}", n=v) if v else None)
+    else:
+        put(r + 9, c + 6, 'sem lista', c + 14, bold=True, halign='center', border=True, uma=True, font=CINZA)
+    ops.append(dict(box=[r, c, r + 9, c + 14]))
+    return r + 9
 def caixas(ids, r):
     for i in range(0, len(ids), 4):
         lin = ids[i:i + 4]; larg = 15 * len(lin) + 1 * (len(lin) - 1); start = C0 + (NC - larg) // 2
@@ -130,7 +158,11 @@ def legenda(r):
         CF, halign='center', wrap=True)
     put(r + 2, C0, 'Percentuais: sobre os clientes no segmento (sem segmento: carteira toda) · Potencial: lista do segmento com status ≠ ATIVO',
         CF, halign='center', wrap=True)
-    return r + 3
+    # 10/11/2026: cores da linha Ale Dayan das caixas
+    ale = [('Ale Dayan (TOP 50 do segmento):', None)] + [(rot.capitalize(), fl) for _, rot, fl in ALE_ST]
+    for (x1, x2), (tx, fl) in zip(partes(C0, NC, 4), ale):
+        put(r + 3, x1, tx, x2, bold=True, halign='center', **(dict(fill=fl, font=DARK, border=True) if fl else {}))
+    return r + 4
 def banner(r, sp, eq):
     no, fora = sp['no_total'], sp['fora_total']; pot = sum(sp['potencial'].values())
     put(r, C0, f"{sp['nome']} – {sp['perfil'].upper()}", CF, size=12, bold=True, fill=BLUE, font=WHITE, halign='center')
@@ -149,34 +181,6 @@ def banner(r, sp, eq):
     r += 3
     ops.append(dict(vline=[C0 + NC // 2 - 1, r, r])); alt(r, 12)
     return r + 1
-ALE = D.get('ale', [])
-ROT_ALE = {'TOTAL': 'clientes na lista', 'ATIVO': 'ativos', 'POTENCIAL': 'a trabalhar (tudo que não é ativo)'}
-def ale_dayan(r, texto):
-    """Quadro da Ale Dayan (10/11/2026): listas TOP 50 por segmento, em duas metades lado a lado (6 + 5 segmentos).
-    Colunas: segmento, clientes na lista, ativos e a trabalhar (= inativo + nao e cliente). Numeros clicaveis (tipo S)."""
-    if not ALE:
-        return r
-    alt(r, 10); r += 1
-    r = faixa(r, texto)
-    COLS = [(0, 12, 'Segmento (aba TOP 50)'), (13, 18, 'Clientes'), (19, 24, 'Ativos'), (25, 30, 'A trabalhar')]
-    meio = (len(ALE) + 1) // 2
-    for base in (C0, C0 + 32):
-        for a, b, tx in COLS:
-            extra = dict(fill=OURO, font=OURO_T) if tx == 'A trabalhar' else dict(fill=LIGHT, font=DARK)
-            put(r, base + a, tx, base + b, halign='center', border=True, wrap=True, **extra)
-    r += 1
-    for i in range(meio):
-        for base, k in ((C0, i), (C0 + 32, meio + i)):
-            if k >= len(ALE):
-                continue
-            a = ALE[k]
-            put(r, base, a['nome'], base + 12, bold=True, indent=1, border=True)
-            for (x1, x2, _), (v, st) in zip(COLS[1:], [(a['total'], 'TOTAL'), (a['ativo'], 'ATIVO'), (a['atrab'], 'POTENCIAL')]):
-                extra = dict(fill=OURO, font=OURO_T, bold=True) if st == 'POTENCIAL' else {}
-                put(r, base + x1, v, base + x2, fmt='n', halign='center', border=True, uma=True,
-                    det=dict(t='S', segs=a['chave'], st=st, rot=f"ALE DAYAN – {a['nome']} (TOP 50) – {ROT_ALE[st]}", n=v) if v else None, **extra)
-        r += 1
-    return r
 def rotulo(ids):
     return 'VENDEDORAS' if all(P[k]['perfil'] == 'Vendedora' for k in ids) else 'VENDEDORES E VENDA INTERNA' if any(P[k]['perfil'] == 'Venda interna' for k in ids) else 'VENDEDORES'
 quebras, folhas_ini = [], []
@@ -198,9 +202,8 @@ for s in SUP:
         r = banner(r, sp, eq)
         r = faixa(r, f"{rot} ({len(ids)})"); alt(r, 8); r += 1
         r = caixas(ids, r)
-        if n == len(grupos) - 1:   # 10/11/2026: quadro da Ale Dayan embaixo de cada equipe
-            r = ale_dayan(r, 'ALE DAYAN – CLIENTES DAS LISTAS TOP 50 POR SEGMENTO: ATIVOS E A TRABALHAR')
-        r = legenda(r)
+        if n == len(grupos) - 1:   # 10/11/2026: legenda so na ultima folha da equipe (a linha Ale Dayan nao cabia com ela)
+            r = legenda(r)
 # ---------- carteira de cada pessoa: uma folha por equipe
 T1 = [(2, 14)] + [(15 + 5 * i, 19 + 5 * i) for i in range(9)] + [(60, 64)]
 def t1_cab(r):
@@ -262,10 +265,6 @@ for seg, b in POT.items():
 alt(r, 6); r += 1
 put(r, C0, 'POTENCIAL = linhas da lista do segmento com STATUS AUTOPEL diferente de ATIVO. O potencial é do segmento: quem divide o segmento divide as mesmas '
            'oportunidades (não somar entre pessoas). Segmentos sem lista de mercado nestas abas aparecem sem potencial.', CF, wrap=True); r += 1
-r = ale_dayan(r, 'ALE DAYAN – LISTAS TOP 50 POR SEGMENTO (ABAS "TOP 50" DESTE ARQUIVO)')
-if ALE:
-    put(r, C0, 'TOP 50 = as maiores redes de cada segmento na pesquisa da Ale Dayan (abas "(TOP 50)"). Ativo = STATUS AUTOPEL ATIVO; '
-               'a trabalhar = inativo + não é cliente.', CF, wrap=True); r += 1
 alt(r, 12); r += 1
 # 05/11/2026: com POSTOS, ESTACIONAMENTO e PET SHOP no potencial, a folha 6 passou da pagina -> segmentos x responsaveis na folha 7
 r = nova_folha(r)
