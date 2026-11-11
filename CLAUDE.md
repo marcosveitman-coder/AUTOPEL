@@ -421,6 +421,14 @@ Armadilhas reais já vistas:
 
 ---
 
+## ✅ ISO de compras (auditoria, desde 10/11/2026)
+
+- Contexto da reunião de abertura em `docs/sessoes/2026-11-10 - ISO compras (transcricao da reuniao).md`: homologação de
+  fornecedores (insumos e supply), controle de validade, riscos/oportunidades (MGR/MGO, 5W2H), manual de fornecedor,
+  FSC em dezembro e ISO em dezembro/janeiro.
+- **Transcrever áudio de reunião:** `avulsos/midia/transcreve.py` (faster-whisper `small`, local, ~1,3× o tempo real).
+  Salvar a transcrição **fora** de `Bases Claude` (é `.txt` e entraria no git). Se o PC desligar, retomar com `--inicio`.
+
 ## 🎞️ Fotos, vídeos e apresentações (29/10/2026)
 
 - Aqui não há ffmpeg, Pillow, OpenCV nem python-pptx.
