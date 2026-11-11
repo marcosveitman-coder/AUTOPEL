@@ -334,6 +334,13 @@ Armadilhas reais já vistas:
     cliente (cinza), somando as listas dos segmentos da pessoa (mapa `ALE_SEG` no `org_impressao.py`; Cosméticos = Beleza);
   - a legenda fica só na última folha de cada equipe, por falta de espaço;
   - as abas são achadas pelo nome com os espaços normalizados.
+- **Divisão de segmentos por equipe** (11/11; `org_divisao.py` + `dados/divisao_<SUP>.json`, local):
+  - troca nome, perfil e segmentos de quem está na lista e cria os vendedores novos com carteira zero;
+  - quem não está na lista (venda interna, representantes) e a outra equipe ficam como estão;
+  - "REDE SMART" é grupo de clientes do CRM (supermercados), não segmento, e não tem lista de potencial;
+  - o "no segmento" continua sendo a Aderência do CRM (decisão do usuário);
+  - com caixas novas, a aba ORGANOGRAMA é regravada inteira pelo `org_layout.py` (e não pelo `org_potencial.py`);
+  - a impressão tem no máximo 8 caixas e 13 linhas de carteira por folha: hoje são **8 folhas**.
 - **Carteira do CRM = TOTVS:**
   - um cliente por **vendedor + código de cliente**; status pela nota mais recente das lojas do código (ativo ≤ 290 dias,
     perdendo ≤ 365);
@@ -349,7 +356,7 @@ Armadilhas reais já vistas:
   - **largura real da Verdana** (`verdana10.txt`, de `mede_verdana.ps1`) com 10% de folga. O script para se uma palavra
     não couber na célula;
   - a impressora daqui só imprime ~757 pt de largura. A aba tem 740 pt (colunas de 16 px e folgas de 5 px). Conferir
-    `PageSetup.Pages.Count` = 7 e `VPageBreaks.Count` = 0 pelo COM.
+    `PageSetup.Pages.Count` (8 desde 11/11) e `VPageBreaks.Count` = 0 pelo COM.
 
 ---
 

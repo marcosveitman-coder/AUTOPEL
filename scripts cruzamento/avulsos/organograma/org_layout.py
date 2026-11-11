@@ -14,9 +14,9 @@ def put(r, c, v, c2=None, **f):
 def br(n): return f'{n:,}'.replace(',', '.')
 def pc(a, b): return f'{100 * a / b:.1f}%'.replace('.', ',') if b else '—'
 ACENTO = {'ALIMENTACAO': 'Alimentação', 'CONSTRUCAO': 'Construção', 'CORPORATIVO SAUDE': 'Corporativo Saúde', 'POSTOS E CONVENIENCIAS': 'Postos e Conveniências',
-          'COSMETICOS': 'Cosméticos', 'LOGISTICA': 'Logística', 'ORGAO PUBLICO': 'Órgão Público', 'PEDAGIO': 'Pedágio', 'AUTOMOTIVO PEÇAS E LOCADORAS': 'Automotivo, Peças e Locadoras',
+          'LOGISTICA': 'Logística', 'ORGAO PUBLICO': 'Órgão Público', 'PEDAGIO': 'Pedágio', 'AUTOMOTIVO PEÇAS E LOCADORAS': 'Automotivo, Peças e Locadoras',
           'REDE DE LOJAS': 'Rede de Lojas', 'E-COMMERCE': 'E-commerce', 'FABRICANTES DE EQUIPAMENTOS': 'Fabricantes de Equipamentos', 'AUTOVIAÇÃO': 'Autoviação',
-          'CORPORATIVO EDUCACIONAL': 'Corporativo Educacional'}
+          'CORPORATIVO EDUCACIONAL': 'Corporativo Educacional', 'REDE SMART': 'Rede Smart (grupos)', 'COSMETICOS': 'Cosméticos e Perfumaria'}
 def nomeseg(s):
     s = s.lstrip('*'); return ACENTO.get(s, s.title().replace(' E ', ' e ').replace(' De ', ' de '))
 def card(p, r, c):
@@ -25,7 +25,7 @@ def card(p, r, c):
     no, fora = p['no_total'], p['fora_total']
     pot = sum(p['potencial'].values())
     potxt = ('Potencial: ' + br(pot) + ' oportunidades') if pot else 'Potencial: sem base nas abas de mercado'
-    l4 = f"Clientes: {br(p['total'])}  |  no segmento {br(no)} ({pc(no, no + fora)})" if no + fora else f"Clientes: {br(p['total'])}  |  sem segmento definido"
+    l4 = f"Clientes: {br(p['total'])}  |  no segmento {br(no)} ({pc(no, no + fora)})" if no + fora else f"Clientes: {br(p['total'])}  |  sem segmento definido" if p['total'] else "Vendedor novo: ainda sem carteira"
     l5 = f"No segmento: ativos {pc(p['no'][0], no)} · perdendo {pc(p['no'][1], no)} · a trabalhar {pc(p['no'][2], no)}" if no else \
          f"Ativos {br(p['ativos'])} · perdendo {br(p['perdendo'])} · a trabalhar {br(p['atrab'])}"
     linhas = [(p['nome'], dict(bold=True, size=11, fill=fill, font=font, h=20)), (p['perfil'].upper(), dict(italic=True, size=8, fill=fill, font=font, h=14)),
@@ -148,6 +148,6 @@ for seg, ps in segs + [(s, []) for s in SEM]:
     f = dict(size=8, border=True)
     put(r, 2, nomeseg(seg), 6, bold=True, **f); put(r, 7, len(ps), 7, fmt='n', halign='center', **f)
     put(r, 8, ', '.join(ps) if ps else 'sem responsável', 25, font=(128, 128, 128) if not ps else None, **f); r += 1
-put(r, 2, 'Fonte: telas do CRM (Segmentos & Vendedores e carteira de cada pessoa), recebidas em 04/11/2026; potencial: abas ALIMENTACAO, REDE DE LOJAS, CONSTRUÇÃO, POSTOS GAS & CONVENIENCIA, ESTACIONAMENTO e PET SHOP FINAL (coluna W, STATUS AUTOPEL de 05/11/2026) e "FARMACIA VF" (coluna P) deste arquivo.', 25, size=8, italic=True, h=15)
+put(r, 2, 'Fonte: ' + D.get('fonte_crm', 'telas do CRM') + '; potencial: abas ALIMENTACAO, REDE DE LOJAS, CONSTRUÇÃO, POSTOS GAS & CONVENIENCIA, ESTACIONAMENTO e PET SHOP FINAL (coluna W, STATUS AUTOPEL de 05/11/2026) e "FARMACIA VF" (coluna P) deste arquivo.', 25, size=8, italic=True, h=15)
 json.dump(dict(ops=ops, ultima=r), open('org_layout.json', 'w', encoding='utf8'), ensure_ascii=False)
 print('operacoes', len(ops), 'ultima linha', r)

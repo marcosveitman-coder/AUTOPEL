@@ -179,3 +179,18 @@ automático do OneDrive apagaria a lista enquanto ela é lida.
 
 **Aba ORGANOGRAMA (não a de impressão):** `org_potencial.py` → `org_potencial.ps1` troca também a carteira (caixas,
 resumo das equipes, tabela 1, nota e fonte), desde 10/11. Rodar de novo na cópia gravada deve dar 0 trocas.
+
+## Nova divisão de segmentos de uma equipe (11/11/2026)
+
+1. Montar `dados/divisao_<SUP>.json` (local): supervisor, data e, para cada pessoa da lista, id, nome, perfil e
+   segmentos. Usar as chaves do CRM; "REDE SMART" vale como segmento sem lista.
+2. Na pasta `dados`: `python ../org_divisao.py divisao_<SUP>.json`.
+   - Atualiza o `equipe.json`, cria os vendedores novos com carteira zero e guarda a versão anterior.
+   - Pôr os novos no `detalhe_vendedores.json` (escopo VEND, sem nome no TOTVS).
+3. `org_dados.py` → `org_layout.py` → `org_impressao.py` → `org_detalhe.py`.
+4. Numa cópia: `org_detalhe.ps1` → `org_grava.ps1 -Layout org_layout.json` (aba ORGANOGRAMA inteira) →
+   `org_grava.ps1 -Layout org_impressao.json`.
+5. Conferir com `org_confere.py`, `org_png.ps1` e `org_detalhe_teste.ps1` + `org_detalhe_esperado.py`.
+
+A impressão divide as caixas em folhas de até 8 (2 linhas) e a tabela da carteira em folhas de até 13 linhas. A legenda
+entra onde couber; nas outras folhas, entra só a linha de cores da Ale Dayan.

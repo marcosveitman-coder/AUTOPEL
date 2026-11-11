@@ -7,11 +7,12 @@ assert wa.sheetnames == wb.sheetnames, 'ordem/nome das abas mudou'
 dif = 0
 for n in wa.sheetnames:
     if n == ABA: continue
+    antes = dif   # 11/11/2026: "dif" por aba (o contador e do arquivo todo)
     for i, (ra, rb) in enumerate(zip(wa[n].iter_rows(values_only=True), wb[n].iter_rows(values_only=True))):
         if tuple(x for x in ra) != tuple(x for x in rb):
             ra2 = list(ra) + [None] * max(0, len(rb) - len(ra)); rb2 = list(rb) + [None] * max(0, len(ra) - len(rb))
             if ra2 != rb2: dif += 1; print('DIF', n, i + 1) if dif < 20 else None
-    print('ok' if not dif else 'dif', n, flush=True)
+    print('ok' if dif == antes else 'dif', n, flush=True)
 print('diferencas', dif)
 za, zb = zipfile.ZipFile(A), zipfile.ZipFile(B)
 for pat in [r'xl/pivotTables/.*\.xml$', r'xl/pivotCache/pivotCacheDefinition.*\.xml$', r'xl/charts/.*\.xml$', r'xl/slicers?/.*\.xml$']:
