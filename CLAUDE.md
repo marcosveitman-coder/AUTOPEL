@@ -423,8 +423,8 @@ Armadilhas reais já vistas:
   - detalhes na sessão `2026-10-26 - metodologia CLAUDE…`, 3ª parte.
 - **Aba ATLxKALUNGxML** (13/11/2026; `avulsos/compras/kalunga/`): SKUs da Geral com família MACRO/MICRO e EAN da
   Kalunga. `cruza_kalunga.py` (vínculos já pesquisados > código do fabricante > texto) → `grava_atl.py` (XML da aba).
-  A aba `kalunga_ean` tem o nome com acento quebrado (UTF-8 lido como latin-1). A família pelo site
-  (`familias_site.py`) ainda não foi baixada: falta autorização.
+  A aba `kalunga_ean` tem o nome com acento quebrado (UTF-8 lido como latin-1). Família: a do produto Kalunga no site
+  (`familias_site.py`, ~50 min, json fora do git) > a do produto parecido > a da descrição.
 - **Revisar a projeção de 3 meses com os números do dia** (só leitura): `avulsos/compras/revisa_projecao.py`. Mostra
   divergências, Comprado vencido ou sem data, rupturas que o Comprado já cobre e cenários (sessão de 05/11).
 - Script: `avulsos/compras/revisa_relatorio_revenda.ps1` (+ `confere_revenda.py`). Sessão: `docs/sessoes/2026-10-23 -

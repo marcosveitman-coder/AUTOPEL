@@ -73,7 +73,7 @@ No "Relatorio Revenda atualizado.xlsx" (COMPRAS):
     nas 4.251 linhas.
 
 ## Pendente
-- **Família pelo próprio site:** `familias_site.py` baixa, pelo mapa do site e pela API das páginas de família
+- ~~Família pelo próprio site~~ (feito na 2ª parte): `familias_site.py` baixa, pelo mapa do site e pela API das páginas de família
   (`/api/obterProdutosDepartamento/<posição>`), a lista de produtos de cada família. Com isso, o SKU que tem produto
   Kalunga herda a família do site, em vez da regra de texto.
   - A API foi testada (15 produtos por página).
@@ -87,3 +87,25 @@ No "Relatorio Revenda atualizado.xlsx" (COMPRAS):
   cortar "LACRES" em "LACR".
 - **Desempate em busca por nota:** percorrer um `set` de strings muda de ordem a cada execução (hash aleatório). Ordenar
   antes, para o resultado ser reproduzível.
+
+---
+
+## 2ª parte: família pelo site da Kalunga (autorizada pelo usuário)
+- **Download (`familias_site.py`):**
+  - 1.279 entradas do mapa do site, contando as famílias repetidas em mais de uma MACRO;
+  - 12.971 produtos com família, sem nenhum erro e nenhuma família vazia;
+  - levou cerca de 50 minutos, com pausa de 0,4 s entre as consultas.
+  - O json ficou no scratchpad, fora do git.
+- **Família no cruzamento, em ordem:**
+  1. a do produto Kalunga achado (EXATO ou SIMILAR), segundo o site: 668 SKUs;
+  2. sem produto equivalente, a do produto Kalunga mais parecido, com o mesmo substantivo e nota ≥ 0,40: 377 SKUs;
+  3. senão, pela descrição: 2.249 SKUs.
+- **Resultado:** família em 3.294 dos 4.251 SKUs (77%; eram 3.250). Sem família: 957. A coluna K diz de onde veio
+  cada família.
+- **Gravação (regravada às 11h56):**
+  - o original não tinha mudado desde as 11h29;
+  - só a sheet39 mudou em relação ao arquivo das 11h06;
+  - A–D batem com a Geral e E–J com o cruzamento nas 4.251 linhas;
+  - abre no Excel com 45 abas e 67 dinâmicas.
+- **Erros vistos por amostra no "produto parecido":** "COPO DE VIDRO" → copos plásticos; "ÁLCOOL LÍQUIDO" → álcool em
+  gel. Conferir filtrando a coluna K.

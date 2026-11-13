@@ -16,7 +16,8 @@ Regras:
    - Texto: o 1º substantivo da descrição Autopel tem de estar no nome Kalunga; nota = cosseno das palavras pesadas
      pela raridade; os números da descrição (medidas, gramatura, quantidade) têm de bater; a mesma marca soma.
    - Vínculo: "EXATO" (mesmo código ou mesma marca e nota alta), "SIMILAR" (nota média, números iguais) ou vazio.
-2. Família: a do produto Kalunga achado (se houver o json do site); senão, pela descrição: a família MICRO cujo 1º
+2. Família: a do produto Kalunga achado no site (familias_site.json); sem produto, a do produto Kalunga mais parecido
+   (mesmo substantivo, nota >= PARECIDO); senão, pela descrição: a família MICRO cujo 1º
    substantivo está na descrição e com mais palavras em comum. Nome de família repetido em várias MACRO: vale a
    ordem de PRIORIDADE abaixo.
 Saída: cruzamento.tsv (uma linha por SKU, na ordem da Geral) e resumo na tela.
@@ -32,6 +33,7 @@ import unicodedata
 
 import openpyxl
 
+PARECIDO = 0.40     # nota mínima do produto Kalunga parecido para herdar só a família
 PRIORIDADE = ['Cartuchos', 'Impressoras', 'Papéis', 'Envelopes', 'Escrita', 'Escritório', 'Organização', 'Embalagens',
               'Higiene', 'Coffee', 'Cuidados Pessoais', 'Elétrica', 'Automação Comercial', 'Informática', 'Eletrônicos',
               'Mídias', 'Rede', 'Móveis', 'Apresentação', 'Artes', 'Escolar', 'Notebooks', 'Smartphones', 'Gamers',
@@ -287,6 +289,7 @@ def main(arq, saida, site=None):
         t = palavras(desc)
         mA = marca_norm(marca)
         achado, tipo, fonte, sc = None, '', '', 0.0
+        parecido = None
         if cod_s in pesq and pesq[cod_s][0] in kal:
             achado, tipo, fonte = pesq[cod_s]
             sc = 1.0
@@ -332,6 +335,8 @@ def main(arq, saida, site=None):
                 if s > best[0]:
                     best = (s, pid, ok)
             sc, pid, nums_ok = best
+            if pid and sc >= PARECIDO:
+                parecido = pid
             if pid:
                 mesma = mA and mA == marca_norm(kal[pid]['marca'])
                 if sc >= 0.75 and mesma and nums_ok:
@@ -348,6 +353,10 @@ def main(arq, saida, site=None):
                 if not micro:
                     macro, micro, s2 = familia(ktok[achado])
                 ff = 'descrição' if micro else ''
+        elif parecido and parecido in site_fam:
+            # sem produto equivalente, mas com um parecido (mesmo tipo de produto): herda a família dele no site
+            macro, micro = site_fam[parecido]
+            ff = 'site Kalunga (produto parecido)'
         else:
             macro, micro, s2 = familia(t)
             ff = 'descrição' if micro else ''
