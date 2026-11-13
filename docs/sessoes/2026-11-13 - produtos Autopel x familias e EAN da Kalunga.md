@@ -102,7 +102,7 @@ No "Relatorio Revenda atualizado.xlsx" (COMPRAS):
   3. senão, pela descrição: 2.249 SKUs.
 - **Resultado:** família em 3.294 dos 4.251 SKUs (77%; eram 3.250). Sem família: 957. A coluna K diz de onde veio
   cada família.
-- **Gravação (regravada às 11h56):**
+- **Gravação (regravada às 15h33):**
   - o original não tinha mudado desde as 11h29;
   - só a sheet39 mudou em relação ao arquivo das 11h06;
   - A–D batem com a Geral e E–J com o cruzamento nas 4.251 linhas;
