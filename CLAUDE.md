@@ -270,6 +270,14 @@ Armadilhas reais já vistas:
   - corte regional "top N com X+": ao excluir uma candidata, entra outra. Buscar na Receita todas as candidatas acima do
     corte mínimo de uma vez (`q16`), e não só as N primeiras.
 
+**STATUS AUTOPEL refeito em 16/11/2026** (`avulsos/status_autopel/`; o de 05/11 errou redes grandes):
+- **a compra de qualquer cliente ligado à rede conta**: franqueado, associada, distribuidor da rede, cliente no grupo com o
+  nome da rede, comprador de produto personalizado (nome da rede logo depois da medida, ex. "80X40M <REDE>");
+- todos os caminhos juntos (CNPJ, códigos/grupos do IRTT, razão, associadas da FARMACIA VF, `grupos_redes.json`, grupo
+  do cliente, nome, e-mail, produto). As travas contra falso vínculo estão no `motor.py`;
+- **revisar à mão toda rede cujo status depende só de nome/e-mail/produto e toda rede que perdeu o ATIVO**
+  (`revisa.py`) antes de entregar; planilha de conferência para o usuário aprovar antes de gravar (`conferencia.py`).
+
 **Caixas por mês nas abas FINAL** (06/11/2026; `mapa_final/caixas_final.ps1`):
 - desde 06/11, as 7 abas FINAL têm **o cabeçalho na linha 6**, como a FARMACIA VF;
 - nas linhas 1–4 fica a tabela a/b/c/d (17/12/7/4, copiada da FARMACIA VF W1:X4): a letra na W (OUTROS: Y) e o valor na
