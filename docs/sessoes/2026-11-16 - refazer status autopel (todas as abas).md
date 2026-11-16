@@ -110,7 +110,16 @@ conferir e gravar, com as propostas da aba LEIA.
 - o código de cliente do IRTT cobre todas as lojas do código (um CD que atende duas redes). Para rede ATIVA, a prova
   mostrada é a mais específica entre as compras dos últimos 360 dias (`ORDEM_PROVA`).
 
-## Observação para o usuário
+## 3ª parte: exceções de caixas da FARMACIA VF reaplicadas (pedido do usuário)
 
-O total de caixas da FARMACIA VF já estava em 1.092.584 antes de hoje. Pelo CLAUDE.md, com as exceções das redes ele
-seria 667.594: alguém arrastou a fórmula de novo. Não foi mexido; perguntar se quer reaplicar as exceções.
+- O total estava em 1.092.584 desde antes de hoje (fórmula arrastada de novo em algum momento).
+- Os 112 valores de lojas sem contagem dupla saíram do `MAPA MERCADO (MARCOS).xlsx` (06/11), que ainda os tinha. O
+  `vf_wx_23.json` de 23/10 não existia mais.
+- As linhas foram ligadas por posição + rede + nome + CNPJ, e as 112 estão nas mesmas linhas.
+- `resumos/vf_excecoes.ps1` agora recebe a coluna no spec (`"col": "V"`, porque I e J saíram).
+- **Total: 667.594**, igual ao de 23/10. As duas dinâmicas de resumo da FARMACIA VF foram atualizadas e as larguras
+  devolvidas.
+- Conferência: só mudaram as 112 fórmulas da coluna V; as outras abas estão iguais. O resumo fecha (409.759 + 61.640 +
+  196.195). Macro, 22 dinâmicas e 10 caches presentes.
+- Lição: guardar o spec das exceções no repositório local (`resumos/dados`, fora do git). Se a fórmula for arrastada de
+  novo, os valores estão no `MAPA MERCADO (MARCOS).xlsx`.

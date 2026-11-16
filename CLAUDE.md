@@ -219,7 +219,8 @@ Armadilhas reais já vistas:
 - o cabeçalho está na linha 6, e as linhas 1–4 têm os parâmetros de caixas por porte (desde 16/11, U1:V4 = a 17, b 12, c 7, d 4;
   antes W1:X4);
 - a X é `=SE(W="A";$X$1;…)*H`, mas nas 112 linhas de rede/associação o `*H` é trocado pelo nº de lojas sem contagem
-  dupla (decisão do usuário; `resumos/vf_excecoes.ps1`). Total 667.594. Se o usuário arrastar a fórmula de novo, as
+  dupla (decisão do usuário; `resumos/vf_excecoes.ps1`, coluna V desde 16/11, valores no `MAPA MERCADO (MARCOS).xlsx`).
+  Total 667.594 (reaplicado em 16/11). Se o usuário arrastar a fórmula de novo, as
   exceções somem e o total vai para 1.092.584: perguntar antes de reaplicar;
 - a aba "I.R.T.T.__Por bandeira (FINAL)" tem a F como fórmula de status, a AG com o vendedor do CLIENTES e a AH com a
   UF sede; os resumos dela estão em "I.R.T. T. resumo".
