@@ -1,5 +1,5 @@
 """Extrai um arquivo "faturamento AAAA*.xlsx" do TOTVS (16/11/2026) para um pickle enxuto.
-Lê as colunas pelo nome do cabeçalho (linha 1). Guarda uma linha por cliente+loja+produto, com a nota mais recente
+Lê as colunas pelo nome do cabeçalho (linha 1, ou a 1ª linha que tem EMISSAO). Guarda uma linha por cliente+loja+produto, com a nota mais recente
 (data, vendedor, valor) e os dados do cliente: CNPJ, grupo (GRP_CLI), razão (CLIENTE), UF, município e segmento, além
 da descrição do produto.
 Uso: python extrai_fat.py "<faturamento.xlsx>" "<saida.pkl>" """
@@ -27,6 +27,8 @@ def main(arq, saida):
     for ws in wb.worksheets:
         it = ws.iter_rows(values_only=True)
         cab = [str(x or '').strip() for x in next(it)]
+        while 'EMISSAO' not in cab:      # 'faturamento 2026 (ago_ontem)' tem uma linha de título antes do cabeçalho
+            cab = [str(x or '').strip() for x in next(it)]
         idx = {c: cab.index(c) for c in COLS if c in cab}
         falta = [c for c in COLS if c not in idx]
         assert not falta or falta == ['MUNICIPIO'], (arq, ws.title, falta)

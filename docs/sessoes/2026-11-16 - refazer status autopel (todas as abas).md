@@ -1,4 +1,4 @@
-# 16/11/2026 – Refazer o STATUS AUTOPEL de todas as abas do MAPA MERCADO V2 (EM ANDAMENTO)
+# 16/11/2026 – Refazer o STATUS AUTOPEL de todas as abas do MAPA MERCADO V2
 
 ## Contexto
 
@@ -56,11 +56,61 @@ Falsos vínculos achados e as regras que os barram:
   franqueadas: a trava vale só para CNPJ de outras REDES;
 - `\b` dentro de heredoc do bash virou caractere de controle no .py: escrever os patches com a ferramenta de arquivo.
 
-## Pendente (aguardando o usuário revisar a conferência)
+## 2ª parte: gravação (autorizada pelo usuário)
 
-1. Aprovação dos status (o usuário vai revisar a aba REDES).
-2. FARMACIA VF: proposta de manter só a H (considerado) e apagar I e J; as dinâmicas não usam I nem J.
-3. FARMACIA VF coluna P: proposta de trocar ATIVO / A TRABALHAR por ATIVO / INATIVO / NÃO É CLIENTE.
-4. Abas FINAL: proposta de 3 colunas depois da X (última compra, vendedor do cadastro, como foi achado).
-5. Depois: gravar (XML/COM numa cópia), atualizar as dinâmicas (Alessandra Dayan VF, IRTT resumo, FARMACIA VF RESUMO),
-   regerar a ORGANOGRAMA impressao (potencial e linha Ale Dayan), conferir as outras abas célula a célula e testar a macro.
+O usuário pôs na pasta o `faturamento 2026 (ago_ontem).xlsx`, de 03/08 a 15/11/2026. Ele tem uma linha de título antes
+do cabeçalho, e o `extrai_fat.py` agora acha o cabeçalho pela palavra EMISSAO. Com esse arquivo só mudaram 7 linhas,
+porque o ultimo fat já trazia a nota mais recente; o ganho foi no caminho por produto. O usuário autorizou corrigir,
+conferir e gravar, com as propostas da aba LEIA.
+
+**Gravado no `MAPA MERCADO V2.xlsm`** (`prepara_gravacao.py` → `grava_status.ps1`, numa cópia):
+- **6 abas FINAL:** STATUS AUTOPEL (W) e 3 colunas novas: Y "ÚLTIMA COMPRA AUTOPEL", Z "VENDEDOR (CADASTRO)" e
+  AA "COMO FOI ACHADO", com o formato da W;
+- **Alessandra Dayan** (11 tabelas), **Alessandra Dayan VF** e as **11 (TOP 50)**: STATUS AUTOPEL;
+- **IRTT por bandeira:** Atende?, Status, Última compra, Como casou, VENDEDOR CARTEIRA e VENDEDOR (CLIENTES). F e H são
+  fórmulas e se recalcularam;
+- **FARMACIA VF:**
+  - data, status (agora ATIVO / INATIVO / NÃO É CLIENTE), como foi achado, cliente e vendedor;
+  - **colunas I e J apagadas**: fica só a H "Nº DE LOJAS (CONSIDERADO)";
+  - o status foi da P para a **N**, e a fórmula de caixas passou a `...U...$V$1...*H`;
+- **dinâmicas atualizadas:** só as 5 abas que usam as abas gravadas. As larguras foram devolvidas pelo `devolve_layout.py`;
+- **ORGANOGRAMA e ORGANOGRAMA impressao:** regeradas. O `org_dados.py` agora acha a coluna STATUS AUTOPEL pelo
+  cabeçalho.
+
+**Conferência:**
+- `confere_gravacao.py`: 466.570 células gravadas, **0 erradas**; as outras abas estão iguais célula a célula;
+- FARMACIA VF: o total de caixas é o mesmo antes e depois (1.092.584);
+- as dinâmicas batem com os dados. A da Alessandra Dayan VF tem filtro STATUS RECEITA = ATIVA, e com ele os 11 segmentos
+  batem;
+- as TOP 50 estão iguais à VF;
+- 22 dinâmicas e 10 caches; nos nomes definidos, só o filtro da FARMACIA VF (A6:X6 → A6:V6);
+- macro: 357 de 357 números iguais ao esperado, com duplo clique, fechar e reabrir.
+
+**Resultado** (ATIVO / INATIVO / NÃO É CLIENTE):
+
+| Aba | Ativo | Inativo | Não é cliente |
+|---|---|---|---|
+| Alimentação | 53 | 54 | 261 |
+| Rede de lojas | 57 | 102 | 167 |
+| Construção | 17 | 36 | 197 |
+| Pet | 10 | 5 | 95 |
+| Estacionamento | 33 | 38 | 62 |
+| Postos | 43 | 50 | 117 |
+| Alessandra | 174 | 131 | 245 |
+| IRTT | 268 | 210 | 92 |
+| Redes da FARMACIA VF | 147 | 94 | 143 |
+
+839 linhas mudaram.
+
+**Armadilhas desta parte:**
+- a aba IRTT estava com **filtro ligado**: gravar a coluna em bloco pulou as linhas ocultas e deslocou valores (achado na
+  conferência). Nas abas com `FilterMode`, gravar célula por célula;
+- o código de vendedor "000000" virou número 0: vendedor só número → vendedor da nota;
+- o `--exceto` do `devolve_layout.py` compara o nome como está no XML: `&quot;FARMACIA VF&quot;`;
+- o código de cliente do IRTT cobre todas as lojas do código (um CD que atende duas redes). Para rede ATIVA, a prova
+  mostrada é a mais específica entre as compras dos últimos 360 dias (`ORDEM_PROVA`).
+
+## Observação para o usuário
+
+O total de caixas da FARMACIA VF já estava em 1.092.584 antes de hoje. Pelo CLAUDE.md, com as exceções das redes ele
+seria 667.594: alguém arrastou a fórmula de novo. Não foi mexido; perguntar se quer reaplicar as exceções.

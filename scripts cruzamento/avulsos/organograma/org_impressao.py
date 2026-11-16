@@ -303,7 +303,7 @@ put(r, 2, 'Sem responsável', 15, bold=True, indent=1, border=True, font=CINZA);
 put(r, 22, ', '.join(nomeseg(s) for s in SEM), 64, indent=1, wrap=True, border=True, font=CINZA); r += 1
 alt(r, 6); r += 1
 put(r, C0, 'Fonte: ' + D.get('fonte_crm', 'telas do CRM') + '; potencial: abas ALIMENTACAO, REDE DE LOJAS, CONSTRUÇÃO, POSTOS GAS & '
-           'CONVENIENCIA, ESTACIONAMENTO e PET SHOP FINAL (coluna W, STATUS AUTOPEL) e "FARMACIA VF" (coluna P); Ale Dayan: abas "(TOP 50)" deste arquivo.', CF, wrap=True)
+           'CONVENIENCIA, ESTACIONAMENTO e PET SHOP FINAL (coluna W, STATUS AUTOPEL de 16/11/2026) e "FARMACIA VF" (coluna N); Ale Dayan: abas "(TOP 50)" deste arquivo.', CF, wrap=True)
 ultima = r
 for o in ops: o.setdefault('wrap', True)
 ops += [dict(rowh=[k, v]) for k, v in sorted(H.items())]

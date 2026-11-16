@@ -15,7 +15,8 @@ Status: ATIVO = última compra há menos de 360 dias; INATIVO = comprou antes ou
 import re, unicodedata, collections as C, datetime as dt
 
 ORDEM = ['CNPJ', 'CODIGO', 'RAZAO', 'ASSOCIADA', 'GRUPO MAPA', 'GRUPO ERP', 'GRUPO', 'EXATO', 'NOME', 'EMAIL', 'PRODUTO']
-NAO_PESSOA = ('INATIVOS', 'CLIENTE SEM COMPRA', 'RD', 'REPRESENTANTE', 'AUTOPEL - VENDA ENCERRADA', 'VENDA ENCERRADA', 'E-COMMERCE')
+ORDEM_PROVA = ['CNPJ', 'RAZAO', 'ASSOCIADA', 'GRUPO MAPA', 'GRUPO ERP', 'GRUPO', 'EXATO', 'CODIGO', 'NOME', 'EMAIL', 'PRODUTO']
+NAO_PESSOA =('INATIVOS', 'CLIENTE SEM COMPRA', 'RD', 'REPRESENTANTE', 'AUTOPEL - VENDA ENCERRADA', 'VENDA ENCERRADA', 'E-COMMERCE')
 TIPO = set('''POSTO POSTOS LOJA LOJAS REDE REDES GRUPO DROGARIA DROGARIAS FARMACIA FARMACIAS SUPERMERCADO SUPERMERCADOS
 ATACADO ATACADISTA ATACAREJO HIPERMERCADO HIPERMERCADOS ESTACIONAMENTO ESTACIONAMENTOS ACADEMIA ACADEMIAS OTICA OTICAS
 RESTAURANTE RESTAURANTES COMERCIO COMERCIAL INDUSTRIA DISTRIBUIDORA FRANQUIA FRANQUIAS FRANCHISING SA LTDA ME EPP EIRELI
@@ -272,8 +273,9 @@ class Motor:
     def vendedor(self, k):
         c = self.cli[k]
         v = self.vend.get(c['vend_cad'], c['vend_cad'])
-        if not v or any(v.upper().startswith(x) for x in NAO_PESSOA):
-            return (c['vend_fat'] or v or '').strip(), 'vendedor da nota'
+        if not v or v.strip().isdigit() or any(v.upper().startswith(x) for x in NAO_PESSOA):   # '000000' = sem vendedor
+            nota = (c['vend_fat'] or '').strip()
+            return (nota or (v if v and not v.strip().isdigit() else 'SEM VENDEDOR NO CADASTRO')).strip(), 'vendedor da nota'
         return v.strip(), 'cadastro'
 
     def resultado(self, vinc):
@@ -285,6 +287,10 @@ class Motor:
             return dict(status='INATIVO', data=None, vendedor=self.vendedor(k)[0], via=vinc[0][0], prova=vinc[0][3] + ' (cadastro sem nota)',
                         cliente=f"{k[0]}/{k[1]} {self.cli[k]['nome']}", n=len({v[1] for v in vinc}))
         cam, k, d, prova = max(com, key=lambda v: (v[2], -ORDEM.index(v[0])))
+        if d > self.lim:
+            # ATIVO: mostra a prova mais específica entre as compras dos últimos 360 dias (código de cliente do IRTT cobre
+            # todas as lojas do código: o CD que atende duas redes não deve aparecer como prova da outra rede)
+            cam, k, d, prova = min([v for v in com if v[2] > self.lim], key=lambda v: (ORDEM_PROVA.index(v[0]), -v[2].toordinal()))
         vd, fonte = self.vendedor(k)
         return dict(status='ATIVO' if d > self.lim else 'INATIVO', data=d, vendedor=vd, vend_fonte=fonte, via=cam, prova=prova,
                     cliente=f"{k[0]}/{k[1]} {self.cli[k]['nome']}", uf=self.cli[k]['uf'], seg=self.cli[k]['seg'],

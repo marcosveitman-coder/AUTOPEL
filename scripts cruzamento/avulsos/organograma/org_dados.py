@@ -18,7 +18,10 @@ BASE = {'ALIMENTACAO': ('ALIMENTACAO FINAL', 'W', 6), 'REDE DE LOJAS': ('REDE DE
 wb = openpyxl.load_workbook(MAPA, read_only=True)
 POT = {}
 for seg, (aba, col, h) in BASE.items():
-    ci = openpyxl.utils.column_index_from_string(col)
+    # 16/11/2026: a coluna STATUS AUTOPEL e achada pelo cabecalho (na FARMACIA VF ela foi de P para N quando I e J sairam)
+    cab = [str(x or '').strip().upper() for x in next(wb[aba].iter_rows(min_row=h, max_row=h, values_only=True))]
+    ci = cab.index('STATUS AUTOPEL') + 1
+    col = openpyxl.utils.get_column_letter(ci)
     rows = list(wb[aba].iter_rows(min_row=h, min_col=ci, max_col=ci, values_only=True))
     assert str(rows[0][0]).strip().upper() == 'STATUS AUTOPEL', (aba, rows[0][0])
     c = collections.Counter(str(r[0]).strip().upper() for r in rows[1:] if r[0] not in (None, ''))

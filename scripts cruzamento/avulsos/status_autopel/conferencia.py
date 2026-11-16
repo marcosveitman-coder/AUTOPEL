@@ -42,7 +42,7 @@ def main():
     txt = [
         f'CONFERÊNCIA DO STATUS AUTOPEL – {HOJE:%d/%m/%Y} (para aprovar antes de gravar no MAPA MERCADO V2)',
         '',
-        'FONTES (pasta Downloads\\12.11.2026): faturamento 2020 a 2026 (até 31/07/2026), ultimo fat.xlsx (última nota de cada',
+        'FONTES (pasta Downloads\\12.11.2026): faturamento 2020 a 2026 (até 15/11/2026), ultimo fat.xlsx (última nota de cada',
         'cliente, até 12/11/2026), CADASTRO DE CLIENTES.RLT (vendedor do cadastro) e CADASTRO DE PRODUTO.',
         '',
         'REGRA DE STATUS: ATIVO = última compra há menos de 360 dias (contados de hoje); INATIVO = comprou antes disso ou só',

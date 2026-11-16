@@ -216,7 +216,8 @@ Armadilhas reais já vistas:
 - a aba "TAB DIN. SUPERMERCADOS final" (do usuário) usa esta aba: atualizar as tabelas dela depois de mexer.
 
 **Aba "FARMACIA VF"** (23/10/2026):
-- o cabeçalho está na linha 6, e as linhas 1–4 têm os parâmetros de caixas por porte (W1:X4 = a 17, b 12, c 7, d 4);
+- o cabeçalho está na linha 6, e as linhas 1–4 têm os parâmetros de caixas por porte (desde 16/11, U1:V4 = a 17, b 12, c 7, d 4;
+  antes W1:X4);
 - a X é `=SE(W="A";$X$1;…)*H`, mas nas 112 linhas de rede/associação o `*H` é trocado pelo nº de lojas sem contagem
   dupla (decisão do usuário; `resumos/vf_excecoes.ps1`). Total 667.594. Se o usuário arrastar a fórmula de novo, as
   exceções somem e o total vai para 1.092.584: perguntar antes de reaplicar;
@@ -277,6 +278,11 @@ Armadilhas reais já vistas:
   do cliente, nome, e-mail, produto). As travas contra falso vínculo estão no `motor.py`;
 - **revisar à mão toda rede cujo status depende só de nome/e-mail/produto e toda rede que perdeu o ATIVO**
   (`revisa.py`) antes de entregar; planilha de conferência para o usuário aprovar antes de gravar (`conferencia.py`).
+- gravação (16/11): `prepara_gravacao.py` → `grava_status.ps1` (cópia, Excel) → `confere_gravacao.py`. **Aba com filtro
+  ligado (IRTT): gravar célula por célula** (em bloco, o Excel pula as linhas ocultas e desloca tudo);
+- **layout novo:** as 6 abas FINAL têm Y "ÚLTIMA COMPRA AUTOPEL", Z "VENDEDOR (CADASTRO)" e AA "COMO FOI ACHADO";
+  **FARMACIA VF sem as colunas I e J** (fica a H, considerado); o STATUS AUTOPEL dela está na **N**, com
+  ATIVO / INATIVO / NÃO É CLIENTE; a fórmula de caixas usa U e V1:V4. Os scripts acham as colunas pelo cabeçalho.
 
 **Caixas por mês nas abas FINAL** (06/11/2026; `mapa_final/caixas_final.ps1`):
 - desde 06/11, as 7 abas FINAL têm **o cabeçalho na linha 6**, como a FARMACIA VF;
