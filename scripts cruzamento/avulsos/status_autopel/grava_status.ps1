@@ -1,5 +1,5 @@
 ﻿# Grava o STATUS AUTOPEL (16/11/2026) numa COPIA do MAPA MERCADO V2 pelo Excel (COM), a partir do gravar.tsv do
-# prepara_gravacao.py (aba, coluna, linha, tipo s/d/h, valor):
+# prepara_gravacao.py (aba, coluna, linha, tipo s/d/h/n, valor):
 #  1. valores por coluna em bloco (Range.Value2 com a matriz da coluna); datas como data (dd/mm/aaaa);
 #  2. cabecalhos novos das abas FINAL (tipo h): copia o formato da coluna STATUS AUTOPEL (W) e poe o titulo;
 #  3. "FARMACIA VF": apaga as colunas I e J (no de lojas Receita e pesquisa; fica a H, considerado);
@@ -47,7 +47,8 @@ try {
                 if ($d[1] -eq 'd') {
                     if ($d[2]) { $cel.Value2 = [DateTime]::ParseExact($d[2], 'yyyy-MM-dd', $null).ToOADate(); $cel.NumberFormatLocal = 'dd/mm/aaaa' }
                     else { $cel.Value2 = $null }
-                } else { $cel.Value2 = $(if ($d[2]) { [string]$d[2] } else { $null }) }
+                } elseif ($d[1] -eq 'n') { $cel.Value2 = [double]::Parse($d[2], [Globalization.CultureInfo]::InvariantCulture) }
+                else { $cel.Value2 = $(if ($d[2]) { [string]$d[2] } else { $null }) }
             }
             $n += $dados.Count
             continue
@@ -63,7 +64,8 @@ try {
             if ($d[1] -eq 'd') {
                 $temData = $true
                 $vals[$i, $base] = $(if ($d[2]) { [DateTime]::ParseExact($d[2], 'yyyy-MM-dd', $null).ToOADate() } else { $null })
-            } else { $vals[$i, $base] = $(if ($d[2]) { [string]$d[2] } else { $null }) }
+            } elseif ($d[1] -eq 'n') { $vals[$i, $base] = [double]::Parse($d[2], [Globalization.CultureInfo]::InvariantCulture) }   # tipo n: numero
+            else { $vals[$i, $base] = $(if ($d[2]) { [string]$d[2] } else { $null }) }
         }
         if ($r1 -eq $r2) { $rng.Value2 = $vals[0, 0] } else { $rng.Value2 = $vals }
         if ($temData) { $rng.NumberFormatLocal = 'dd/mm/aaaa' }

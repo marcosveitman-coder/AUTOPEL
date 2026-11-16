@@ -282,6 +282,20 @@ Armadilhas reais já vistas:
   outra raiz = homônimo; código de operador logístico só nas lojas com o nome da rede). Ligação curada da Alessandra:
   nome igual ou palavra própria, nunca "PARK"/"POSTO". Vínculos e exclusões manuais e marcas que **não herdam** a compra
   de outra marca do grupo (decisão do usuário) em `status_autopel/dados/manuais.json` (local);
+- **revisão final (16/11, 3ª rodada):**
+  - a "última compra" é a **compra mais recente** entre os vínculos (cliente e vendedor dela);
+  - loja sem segmento (endereço de entrega "E001") herda o segmento das outras lojas do código;
+  - estacionamento e posto exigem a mesma UF nos vínculos fracos;
+  - nome genérico revisado à mão só vale por vínculo forte (`so_fortes` no `manuais.json`);
+  - **marca não herda de outra marca do grupo** (decisão do usuário): no cluster com várias marcas, cada marca das abas
+    FINAL/IRTT é avaliada só com as linhas dela e a linha do grupo (Alessandra/TOP 50) fica com o grupo. A FARMACIA VF não
+    se separa (rede herda das associadas). Marcas do mesmo CNPJ ficam juntas;
+  - regra 9 em todos os grupos do IRTT (exceções conferidas em `grupos_ok`). Código que o IRTT repete em várias bandeiras
+    (distribuidor ou holding do grupo) só vale com o nome ou o CNPJ da bandeira no cliente;
+  - conferir com `revisao_fontes.py` (vendedor = CADASTRO DE CLIENTES.RLT; data contra o ultimo fat);
+- **resumos com texto fixo** ("FARMACIA VF RESUMO", "… port A e B", "I.R.T. T. resumo") não acompanham a dinâmica:
+  depois de mudar status, reescrever os números do texto (`grava_status.ps1` aceita o tipo `n`, número). **Não renomear o
+  título da coluna AG da IRTT**: uma cache de dinâmica usa o campo;
 - **revisar à mão toda rede cujo status depende só de nome/e-mail/produto e toda rede que perdeu o ATIVO**
   (`revisa.py`) antes de entregar; planilha de conferência para o usuário aprovar antes de gravar (`conferencia.py`).
 - gravação (16/11): `prepara_gravacao.py` → `grava_status.ps1` (cópia, Excel) → `confere_gravacao.py`. **Aba com filtro

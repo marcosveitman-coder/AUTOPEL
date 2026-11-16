@@ -224,5 +224,20 @@ conferir e gravar, com as propostas da aba LEIA.
   é avaliada só com as linhas dela; a linha do grupo fica com o grupo); regra 9 em todos os grupos do IRTT (exceções em
   `grupos_ok`); código que o IRTT repete em várias marcas só vale com o nome da marca.
 - Gravado (só as 623 células que mudaram), conferido célula a célula (0 erradas, nada mais mudou), organograma regerado.
-- **Pendente:** teste da macro do duplo clique (org_detalhe_teste + esperado), conferência das dinâmicas/resumos e do
-  organograma contra as abas, CLAUDE.md.
+- O pendente desta parte foi feito na 7ª parte.
+
+## 7ª parte: fecho da revisão final
+
+- **Macro do duplo clique:** 390 de 390 números iguais ao recálculo, com salvar e reabrir.
+- **Dinâmicas:** todas batem com os dados. FARMACIA VF: 825 ATIVO / 1.343 INATIVO / 89.023 NÃO É CLIENTE, caixas
+  191.996 + 61.675 + 413.923 = 667.594; portes A e B: 35 / 22 / 19, 172.462 + 44.421 + 4.773 = 221.656; IRTT: 232 ativas
+  e 338 a trabalhar (coluna F = coluna E); Alessandra Dayan VF: os 11 segmentos iguais (151 / 124 / 232).
+- **Organograma:** potencial (redes, PDV, caixas) dos 7 segmentos igual ao recálculo direto das abas.
+- **Varredura:** nenhuma célula de erro (#REF!, #N/D…) nas abas do pedido. Os 3 exemplos da reclamação inicial estão ATIVO
+  com data recente. A coluna de data é data de verdade.
+- **Achado:** os textos fixos do topo de "FARMACIA VF RESUMO", "… port A e B" e "I.R.T. T. resumo" ainda eram de 23/10
+  (contagens antigas, colunas O/P e X1:X4). Foram reescritos com os números de hoje (35 células, `grava_status.ps1` com o
+  tipo novo `n` = número), e também uma linha da R_E_S_U_M_O sobre o STATUS AUTOPEL. Conferido célula a célula; nada mais
+  mudou. O título da coluna AG da IRTT ("VENDEDOR (CLIENTES 20.10.26)") ficou: uma cache de dinâmica usa o campo, e
+  renomear tiraria o campo da tabela. O texto do resumo avisa que os dados são de 16/11.
+- **Lição:** resumo com texto fixo não se atualiza com a dinâmica. Depois de mudar status, reescrever os números do texto.
