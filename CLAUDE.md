@@ -277,12 +277,17 @@ Armadilhas reais já vistas:
   nome da rede, comprador de produto personalizado (nome da rede logo depois da medida, ex. "80X40M <REDE>");
 - todos os caminhos juntos (CNPJ, códigos/grupos do IRTT, razão, associadas da FARMACIA VF, `grupos_redes.json`, grupo
   do cliente, nome, e-mail, produto). As travas contra falso vínculo estão no `motor.py`;
+- **validação com o CRM (16/11, 2ª rodada):** `crm_compara.py` compara com o arquivo do CRM. Travas novas no `motor.py`
+  (grupo igual respeita CNPJ de outra rede, ramo, segmento e UF; nome curto igual e posto só na mesma UF; razão igual com
+  outra raiz = homônimo; código de operador logístico só nas lojas com o nome da rede). Ligação curada da Alessandra:
+  nome igual ou palavra própria, nunca "PARK"/"POSTO". Vínculos e exclusões manuais e marcas que **não herdam** a compra
+  de outra marca do grupo (decisão do usuário) em `status_autopel/dados/manuais.json` (local);
 - **revisar à mão toda rede cujo status depende só de nome/e-mail/produto e toda rede que perdeu o ATIVO**
   (`revisa.py`) antes de entregar; planilha de conferência para o usuário aprovar antes de gravar (`conferencia.py`).
 - gravação (16/11): `prepara_gravacao.py` → `grava_status.ps1` (cópia, Excel) → `confere_gravacao.py`. **Aba com filtro
   ligado (IRTT): gravar célula por célula** (em bloco, o Excel pula as linhas ocultas e desloca tudo);
 - **layout novo:** as 6 abas FINAL têm Y "ÚLTIMA COMPRA AUTOPEL", Z "VENDEDOR (CADASTRO)" e AA "COMO FOI ACHADO";
-  **FARMACIA VF sem as colunas I e J** (fica a H, considerado); o STATUS AUTOPEL dela está na **N**, com
+  **FARMACIA VF sem as colunas I e J** (fica a H, considerado; todo script lê a aba pelo cabeçalho); o STATUS AUTOPEL dela está na **N**, com
   ATIVO / INATIVO / NÃO É CLIENTE; a fórmula de caixas usa U e V1:V4. Os scripts acham as colunas pelo cabeçalho.
 
 **Caixas por mês nas abas FINAL** (06/11/2026; `mapa_final/caixas_final.ps1`):

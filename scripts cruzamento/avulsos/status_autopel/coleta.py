@@ -106,16 +106,23 @@ def main(mapa, saida):
             E.append(ent('SUPERMERCADOS (reuniao)', i, nomes_da_rede(r[iN]), [r[iC]], [r[iR]],
                          extra=dict(nome=s(r[iN]), seg='SUPERMERCADO', uf=s(r[iU]), apoio=True)))
     # ---- FARMACIA VF (cabeçalho na linha 6)
-    rows = wb['"FARMACIA VF"'].iter_rows(min_row=7, values_only=True)
+    # 16/11/2026: colunas pelo cabeçalho. Depois que as colunas I e J saíram, os índices fixos liam a SITUAÇÃO NA RECEITA
+    # ("ATIVA") como UF, e a trava de UF das farmácias deixava de valer.
+    ws = wb['"FARMACIA VF"']
+    cab = [norm(s(x)) for x in next(ws.iter_rows(min_row=6, max_row=6, values_only=True))]
+    col = lambda nome: cab.index(norm(nome))
+    iR, iT, iF, iZ, iC = col('REDE / ASSOCIAÇÃO'), col('TIPO'), col('NOME FANTASIA'), col('RAZÃO SOCIAL'), col('CNPJ')
+    iU, iS, iD = col('UF SEDE'), col('STATUS AUTOPEL'), col('DATA ÚLTIMA COMPRA')
+    rows = ws.iter_rows(min_row=7, values_only=True)
     for i, r in enumerate(rows, start=7):
-        if not r or (not s(r[4]) and not s(r[5]) and not s(r[1])): continue
-        tipo = s(r[2])
+        if not r or (not s(r[iF]) and not s(r[iZ]) and not s(r[iR])): continue
+        tipo = s(r[iT])
         if tipo == 'Farmácia':
-            E.append(ent('"FARMACIA VF"', i, [], [r[6]], extra=dict(nome=s(r[4]) or s(r[5]), tipo=tipo, rede=s(r[1]), uf=s(r[10]),
-                                                                       status_antes=s(r[15]), data_antes=r[14], so_cnpj=True)))
+            E.append(ent('"FARMACIA VF"', i, [], [r[iC]], extra=dict(nome=s(r[iF]) or s(r[iZ]), tipo=tipo, rede=s(r[iR]), uf=s(r[iU]),
+                                                                        status_antes=s(r[iS]), data_antes=r[iD], so_cnpj=True)))
         else:
-            E.append(ent('"FARMACIA VF"', i, nomes_da_rede(r[1], r[4]), [r[6]], [r[5]],
-                         extra=dict(nome=s(r[1]) or s(r[4]), tipo=tipo, uf=s(r[10]), status_antes=s(r[15]), data_antes=r[14])))
+            E.append(ent('"FARMACIA VF"', i, nomes_da_rede(r[iR], r[iF]), [r[iC]], [r[iZ]],
+                         extra=dict(nome=s(r[iR]) or s(r[iF]), tipo=tipo, uf=s(r[iU]), status_antes=s(r[iS]), data_antes=r[iD])))
     wb.close()
     # ---- clusters: a mesma rede em abas diferentes, para ter UM status. Trava (16/11): só no mesmo segmento, e nunca
     # duas linhas com CNPJs diferentes (Farmácia Rosário x Rosário da D1000; Center Park x Center Castilho).
@@ -158,18 +165,31 @@ def main(mapa, saida):
             if e['aba'] in ('Alessandra Dayan', 'Alessandra Dayan VF') or e['aba'] in TOP50: ale[norm(e['extra']['nome'])].append(n)
         ligados = 0
         idx.update({(e['aba'], e['linha']): n for n, e in enumerate(E)})
+        # 16/11/2026 (conferência com o CRM): a palavra em comum tem de ser própria do nome. Com "PARK", "POSTO", "SORVETES"
+        # a linha N (vizinha, 5 acima) também batia, e a rede herdava a compra da vizinha. Palavra de tipo não conta;
+        # fica a linha (N ou N+5) com o nome igual ou, senão, com mais palavras próprias em comum.
+        VAZIAS = {'DE', 'DA', 'DO', 'DOS', 'DAS', 'E', 'LOJAS', 'LOJA', 'REDE', 'GRUPO', 'POSTO', 'POSTOS', 'AUTO', 'PARK',
+                  'PARKING', 'ESTACIONAMENTO', 'ESTACIONAMENTOS', 'SORVETES', 'MATERIAIS', 'CONSTRUCAO', 'SUPERMERCADO',
+                  'CONVENIENCIA', 'PET', 'SHOP', 'CENTER', 'CASA', 'EXPRESS', 'COMERCIO', 'BRASIL'}
+        def proprias(aba, txt):
+            return {w for w in norm(txt).split() if w not in VAZIAS and len(w) > 1}
         for x in json.load(open(arq, encoding='utf8')):
             ns = ale.get(norm(x['nome']), [])
             for o in x.get('onde', []):
                 m = re.match(r'(.+?) linha (\d+) \((.*)\)$', o)
                 if not m or not ns: continue
-                aba_o, lin, nome_o = m.group(1), int(m.group(2)), set(norm(m.group(3)).split())
-                for dl in (0, 5):
+                aba_o, lin, nome_o = m.group(1), int(m.group(2)), m.group(3)
+                po = proprias(aba_o, nome_o)
+                melhor = None
+                for dl in ((0, 5) if aba_o.endswith('FINAL') else (0,)):     # só as abas FINAL andaram 5 linhas
                     alvo = idx.get((aba_o, lin + dl))
-                    if alvo is not None and set(norm(E[alvo]['extra']['nome']).split()) & nome_o - {'DE', 'DA', 'DO', 'E', 'LOJAS', 'REDE'}:
-                        for a2 in ns: junta(a2, alvo, forca=True)     # ligação curada em 05/11 (ex.: Clamed + Preço Popular)
-                        ligados += 1
-                        break
+                    if alvo is None: continue
+                    nm = E[alvo]['extra']['nome']
+                    q = 100 if norm(nm) == norm(nome_o) else len(proprias(aba_o, nm) & po)
+                    if q and (melhor is None or q > melhor[0]): melhor = (q, alvo)
+                if melhor:
+                    for a2 in ns: junta(a2, melhor[1], forca=True)     # ligação curada em 05/11 (ex.: Clamed + Preço Popular)
+                    ligados += 1
         print('cruzamento Alessandra de 05/11:', ligados, 'ligações')
     # a mesma marca em segmentos diferentes (Kopenhagen em ALIMENTAÇÃO e no IRTT; Bob's em ALIMENTAÇÃO e LOJAS): junta pelo
     # nome igual, a não ser que os dois lados tenham CNPJs e eles não se cruzem (Pague Menos drogaria x supermercado)

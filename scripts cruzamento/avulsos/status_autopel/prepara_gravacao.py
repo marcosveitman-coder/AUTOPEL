@@ -58,8 +58,13 @@ def confere(aba, ws_rows, col_nome, i):
 for aba in FINAIS:
     ws = wb[aba]
     h, cols, ncol = cabecalho(ws, ['NOME FANTASIA', 'STATUS AUTOPEL', 'Total de caixas'])
-    nova = [L(ncol + 1), L(ncol + 2), L(ncol + 3)]
-    for c, t in zip(nova, ['ÚLTIMA COMPRA AUTOPEL', 'VENDEDOR (CADASTRO)', 'COMO FOI ACHADO']): put(aba, c, h, 'h', t)
+    NOVAS = ['ÚLTIMA COMPRA AUTOPEL', 'VENDEDOR (CADASTRO)', 'COMO FOI ACHADO']
+    cab_txt = [s(x) for x in next(ws.iter_rows(min_row=h, max_row=h, values_only=True))]
+    if all(t in cab_txt for t in NOVAS):      # 2ª gravação em diante: as colunas já existem
+        nova = [L(cab_txt.index(t) + 1) for t in NOVAS]
+    else:
+        nova = [L(ncol + 1), L(ncol + 2), L(ncol + 3)]
+        for c, t in zip(nova, NOVAS): put(aba, c, h, 'h', t)
     linhas = {r: s(v) for r, (v,) in enumerate(ws.iter_rows(min_row=1, min_col=2, max_col=2, values_only=True), 1)}
     for i in por_aba[aba]:
         e, r = E[i], R[i]
@@ -106,7 +111,8 @@ for i in por_aba[aba]:
 aba = '"FARMACIA VF"'
 ws = wb[aba]
 h, cols, _ = cabecalho(ws, ['NOME FANTASIA', 'DATA ÚLTIMA COMPRA', 'STATUS AUTOPEL', 'COMO FOI ACHADO', 'CLIENTE ENCONTRADO', 'VENDEDOR'])
-assert (cols['STATUS AUTOPEL'], cols['DATA ÚLTIMA COMPRA']) == ('P', 'O'), cols     # colunas antes de apagar I e J
+# 16/11: antes de apagar I e J eram O/P; depois, M/N. O grava_status.ps1 só apaga I:J se ainda forem as de Receita/pesquisa.
+assert (cols['STATUS AUTOPEL'], cols['DATA ÚLTIMA COMPRA']) in (('P', 'O'), ('N', 'M')), cols
 for i in por_aba[aba]:
     e, r = E[i], R[i]; st = r['status']
     put(aba, cols['DATA ÚLTIMA COMPRA'], e['linha'], 'd', r['data'])

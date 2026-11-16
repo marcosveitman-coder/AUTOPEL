@@ -1,4 +1,4 @@
-# Grava o STATUS AUTOPEL (16/11/2026) numa COPIA do MAPA MERCADO V2 pelo Excel (COM), a partir do gravar.tsv do
+﻿# Grava o STATUS AUTOPEL (16/11/2026) numa COPIA do MAPA MERCADO V2 pelo Excel (COM), a partir do gravar.tsv do
 # prepara_gravacao.py (aba, coluna, linha, tipo s/d/h, valor):
 #  1. valores por coluna em bloco (Range.Value2 com a matriz da coluna); datas como data (dd/mm/aaaa);
 #  2. cabecalhos novos das abas FINAL (tipo h): copia o formato da coluna STATUS AUTOPEL (W) e poe o titulo;
@@ -81,8 +81,9 @@ try {
     # FARMACIA VF: so a coluna H de lojas (apaga I = Receita e J = pesquisa)
     $wf = $wb.Worksheets.Item('"FARMACIA VF"')
     $hI = [string]$wf.Range("I6").Value2; $hJ = [string]$wf.Range("J6").Value2
-    if (-not ($hI -like '*RECEITA*' -and $hJ -like '*PESQUISA*')) { throw "FARMACIA VF: I6/J6 nao sao as colunas esperadas: $hI | $hJ" }
-    $null = $wf.Range("I:J").EntireColumn.Delete()
+    # 2a gravacao em diante (I e J ja apagadas): nao apaga nada
+    $apagou = $false
+    if ($hI -like '*RECEITA*' -and $hJ -like '*PESQUISA*') { $null = $wf.Range("I:J").EntireColumn.Delete(); $apagou = $true }
     $xl.Calculation = -4105   # automatico
     $xl.Calculate()
     foreach ($nome in @('Alessandra Dayan VF', 'TAB DIN. I.R.T.T.', 'I.R.T. T. resumo', '"FARMACIA VF RESUMO"', '"FARMACIA VF RESUMO" port A e B')) {
@@ -91,7 +92,7 @@ try {
     }
     $wb.Save()
     $wb.Close($false)
-    Write-Output ("celulas gravadas: {0} | colunas I:J da FARMACIA VF apagadas ({1} | {2}) | dinamicas atualizadas" -f $n, $hI, $hJ)
+    Write-Output ("celulas gravadas: {0} | I:J da FARMACIA VF apagadas agora: {1} ({2} | {3}) | dinamicas atualizadas" -f $n, $apagou, $hI, $hJ)
 }
 finally {
     $xl.Quit()

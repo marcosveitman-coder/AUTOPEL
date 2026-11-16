@@ -17,7 +17,7 @@ HOJE = dt.date.fromisoformat(sys.argv[2]) if len(sys.argv) > 2 else dt.date.toda
 
 
 # vínculos manuais que nenhuma regra acha: nome de busca -> nomes a mais (dados/manuais.json, local)
-from motor import ALIAS_MANUAL
+from motor import ALIAS_MANUAL, RAIZES_ERRADAS, CLIENTES_MANUAIS, EXCLUSOES, UFS, FAM_EXTRA, TIPO, SEPARAR
 
 
 class Proibidas:
@@ -73,21 +73,36 @@ def main():
     cl = C.defaultdict(list)
     for n, e in enumerate(E):
         if not e['extra'].get('so_cnpj'): cl[e['cluster']].append(n)
+    # marca separada do grupo (duas marcas do mesmo dono, decisão do usuário): vira uma rede à parte, sem o CNPJ e a
+    # razão que divide com a outra marca. Só conta compra com o nome dela.
+    # As linhas da mesma marca em outras abas (ex.: a mesma marca na aba IRTT) entram juntas, pelo rótulo.
+    novo, tira, origem = C.defaultdict(list), {}, C.defaultdict(set)
+    for cid, ns in cl.items():
+        for n in ns:
+            lab = SEPARAR.get(norm(E[n]['extra'].get('nome', '')))
+            novo[('SEP', lab) if lab else (cid, None)].append(n)
+            if lab: origem[lab].add(cid)
+    for lab, cids in origem.items():
+        resto = [n for c in cids for n in novo.get((c, None), [])]
+        tira[('SEP', lab)] = ({r for n in resto for r in E[n]['raizes']}, {norm_legal(z) for n in resto for z in E[n]['razoes']})
+    cl = novo
     R = {}
     t0 = dt.datetime.now()
     for i, (cid, ns) in enumerate(cl.items()):
         es = [E[n] for n in ns]
         nomes = list(dict.fromkeys(x for e in es for x in e['nomes']))
         for x in list(nomes): nomes += [y for y in ALIAS_MANUAL.get(x, []) if y not in nomes]
-        raizes = sorted({r for e in es for r in e['raizes']})
-        razoes = list(dict.fromkeys(x for e in es for x in e['razoes']))
-        fams = sorted({e['fam'] for e in es})
+        erradas = set().union(*[RAIZES_ERRADAS.get(x, set()) for x in nomes]) if nomes else set()
+        t_r, t_z = tira.get(cid, (set(), set()))
+        raizes = sorted({r for e in es for r in e['raizes']} - erradas - t_r)    # ex.: CNPJ de outra empresa na aba IRTT
+        razoes = list(dict.fromkeys(x for e in es for x in e['razoes'] if norm_legal(x) not in t_z))
+        fams = sorted({e['fam'] for e in es} | {f for x in nomes for f in FAM_EXTRA.get(x, [])})
         principais = {e['nomes'][0] for e in es if e['nomes']}
         principais |= {y for x in nomes for y in ALIAS_MANUAL.get(x, [])}
         ufs = {u.strip() for e in es for u in str(e['extra'].get('uf', '')).replace(';', ',').split(',')}
         redes_farm = {norm(e['extra']['nome']) for e in es if e['aba'] == '"FARMACIA VF"'}
         r_assoc = set().union(*[assoc.get(x, set()) for x in redes_farm]) if redes_farm else set()
-        uf_sempre = set(fams) <= {'SUPER', 'DROG'}
+        uf_sempre = set(fams) <= {'SUPER', 'DROG', 'POSTO'}      # 16/11: posto também é rede regional (mesmo nome em outra UF)
         v = M.vinculos(nomes, raizes, razoes, Proibidas(todas, set(raizes) | r_assoc), fam=fams, principais=principais,
                        ambiguos=ambiguos, ufs=ufs, uf_sempre=uf_sempre, manuais={y for x in nomes for y in ALIAS_MANUAL.get(x, [])})
         for r in sorted(r_assoc):
@@ -100,9 +115,18 @@ def main():
             if c['raiz'] and c['raiz'] in raizes: return True
             txt = ' '.join((c['_nome'], c['_fant'], c['_grp']))
             return any(n in txt or n.replace(' ', '') in txt.replace(' ', '') for n in nomes if len(n.replace(' ', '')) >= 4)
+        for x in set(nomes) | {norm(e['extra'].get('nome', '')) for e in es}:
+            for ck in CLIENTES_MANUAIS.get(x, []):
+                k = tuple(ck.split('/'))
+                if k in cli: v.append(('NOME', k, cli[k]['ult'], 'vínculo conferido à mão (CRM, 16/11)'))
         for e in es:
             for cod in e['codigos']:      # códigos e grupos da aba IRTT já foram validados (regra 9) quando a aba foi feita
-                for k in por_cod.get(cod, []): v.append(('CODIGO', k, cli[k]['ult'], f'código {cod} (aba IRTT)'))
+                ks = por_cod.get(cod, [])
+                # código de operador logístico com lojas de várias redes (uma loja por rede atendida): só as lojas com o
+                # nome da rede. Sem isso uma rede herdava a nota de outra rede atendida pelo mesmo código.
+                gs = {cli[k]['_grp'] for k in ks if cli[k]['_grp'] and cli[k]['_grp'] not in GRUPO_GENERICO}
+                if len(gs) > 1: ks = [k for k in ks if tem_relacao(k)]
+                for k in ks: v.append(('CODIGO', k, cli[k]['ult'], f'código {cod} (aba IRTT)'))
             for g in e['grupos']:
                 gn = norm(g)
                 if gn in GRUPO_GENERICO or len(por_grp.get(gn, ())) > 2000: continue    # 'CLIENTES DIVERSOS' não é grupo de rede
@@ -112,6 +136,11 @@ def main():
             if nome_cheio and (not e['nomes'] or len(nome_cheio.replace(' ', '')) <= 5):
                 for k in exato.get(nome_cheio, ()):
                     sg = norm(cli[k]['seg'])
+                    # 16/11: rede regional (supermercado, farmácia, posto, construção, estacionamento) ou nome com palavra de
+                    # tipo ('POSTO CENTRAL', 'CASA DAS TINTAS'): só na mesma UF. Marca nacional curta vale em qualquer UF.
+                    regional = set(fams) & {'SUPER', 'DROG', 'POSTO', 'CONSTR', 'ESTAC'} or set(nome_cheio.split()) & TIPO
+                    if regional and ufs & UFS and cli[k]['uf'] and cli[k]['uf'] not in ufs: continue
+                    if (nome_cheio, k[0]) in EXCLUSOES: continue
                     if not sg or any(sg in COMPAT.get(f, set()) for f in fams):
                         v.append(('EXATO', k, cli[k]['ult'], f"fantasia/grupo igual '{nome_cheio}'"))
         res = M.resultado(v)

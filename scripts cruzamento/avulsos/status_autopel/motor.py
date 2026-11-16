@@ -98,6 +98,10 @@ _ARQ = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), 'dados', 'man
 _MAN = _json.load(open(_ARQ, encoding='utf8')) if _os.path.exists(_ARQ) else {}
 EXCLUSOES = {tuple(x) for x in _MAN.get('exclusoes', [])}
 ALIAS_MANUAL = _MAN.get('alias', {})
+RAIZES_ERRADAS = {k: set(v) for k, v in _MAN.get('raizes_erradas', {}).items()}   # nome da rede -> raízes que não são dela
+CLIENTES_MANUAIS = _MAN.get('clientes', {})
+FAM_EXTRA = _MAN.get('familias_extra', {})
+SEPARAR = _MAN.get('separar', {})      # marca que NÃO herda a compra da outra marca do grupo (decisão do usuário, 16/11)        # nome da rede -> famílias a mais (ex.: restaurante de estrada que também é posto)        # nome da rede -> ['codigo/loja', ...] confirmados na conferência
 GRUPO_GENERICO = {'CLIENTES DIVERSOS', 'DIVERSOS', 'CLIENTES', 'CONSUMIDOR FINAL'}
 PROVEDOR = {x.upper() for x in 'terra uol bol gmail hotmail yahoo outlook live msn ig globo globomail r7 zipmail icloud'.split()}
 TIPO_FAM = {}   # 1ª palavra do nome do cliente -> ramos em que ela cabe
@@ -131,11 +135,12 @@ def comeca(txt, w):
     return False
 
 
+REGIAO = {'SUL', 'NORTE', 'LESTE', 'OESTE', 'CENTRO', 'NORDESTE', 'SUDESTE', 'CAPITAL', 'INTERIOR', 'MATRIZ', 'FILIAL', 'BR'}
 def so_regiao(txt, w):
-    """Depois do nome só vem UF ou palavra curta: 'SMART ES', 'MC DONALDS SP'."""
+    """Depois do nome só vem UF ou região: 'SMART ES', 'MC DONALDS SP' ('X BOI' não é a rede X)."""
     t = txt.split(); cp = ''.join(w)
     for n in range(1, len(t) + 1):
-        if ''.join(t[:n]) == cp: return all(x in UFS or len(x) <= 3 for x in t[n:])
+        if ''.join(t[:n]) == cp: return all(x in UFS or x in REGIAO or x.isdigit() for x in t[n:])
     return False
 
 
@@ -207,7 +212,7 @@ class Motor:
         def outro_ramo(c):
             # 'SUPERMERCADO OPCAO' não é a loja Opção: a 1ª palavra do nome é o tipo de outro ramo
             if norm(c['seg']) in DISTRIB: return False     # distribuidor/atacadista que compra para a rede
-            for txt, todas in ((c['_fant'], True), (c['_nome'], False)):
+            for txt, todas in ((c['_fant'], True), (c['_nome'], False), (c['_grp'], True)):
                 ws = norm_legal(txt).split() if txt else []
                 for w0 in (ws if todas else ws[:1]):   # fantasia: qualquer palavra; razão: só a 1ª
                     if w0 in TIPO_FAM and fams and not (TIPO_FAM[w0] & fams): return True
@@ -226,7 +231,10 @@ class Motor:
         for rz in razoes:
             n = norm_legal(rz)
             if n:
-                for k in self.razao.get(n, []): add('RAZAO', k, self.cli[k]['ult'], f'razão {n}')
+                for k in self.razao.get(n, []):
+                    r_k = self.cli[k]['raiz']
+                    if raizes and r_k and r_k not in raizes: continue     # regra 7: mesma razão, outra raiz = homônimo
+                    add('RAZAO', k, self.cli[k]['ult'], f'razão {n}')
         for nome in nomes:
             if not valido(nome): continue
             w = nome.split(); cp = ''.join(w)
@@ -237,13 +245,18 @@ class Motor:
             for k in cand:
                 c = self.cli[k]
                 ng, nf, nn = c['_ng'], c['_nf'], c['_nn']
-                if ng and ng.replace(' ', '') == cp and len(cp) >= 7:
-                    add('GRUPO', k, c['ult'], f"grupo '{c['grp_desc']}'"); continue
                 if c['raiz'] and c['raiz'] in raizes_proibidas: continue
-                if ng and ng not in GRUPO_GENERICO and uf_ok(c, nome) and (ng.replace(' ', '') == cp or (comeca(ng, w) and (forte or so_regiao(ng, w)) and ok_seg(c))):
-                    add('GRUPO', k, c['ult'], f"grupo '{c['grp_desc']}'"); continue
                 if outro_ramo(c): continue
+                # 16/11 (conferência CRM): grupo de mercadinho com o nome de uma loja de construção não é a loja; grupo de
+                # outra UF com o nome de uma rede regional não é a rede. Grupo igual com 7+ letras vale em outra UF só se o nome não for de 2+ redes.
+                mesma_uf = bool(ufs) and c['uf'] in ufs
+                # nome secundário (cidade entre parênteses) só vale pelo grupo na mesma UF
+                if (princ or mesma_uf) and ng and ng.replace(' ', '') == cp and len(cp) >= 7 and (ok_seg(c) or mesma_uf) and uf_ok(c, nome):
+                    add('GRUPO', k, c['ult'], f"grupo '{c['grp_desc']}'"); continue
+                if (princ or mesma_uf) and ng and ng not in GRUPO_GENERICO and uf_ok(c, nome) and ok_seg(c) and (ng.replace(' ', '') == cp or (comeca(ng, w) and (forte or so_regiao(ng, w)))):
+                    add('GRUPO', k, c['ult'], f"grupo '{c['grp_desc']}'"); continue
                 if not ok_seg(c) or not uf_ok(c, nome): continue
+                if not c['seg'] and ufs and c['uf'] and c['uf'] not in ufs: continue      # cadastro sem segmento: só na mesma UF
                 if nf and nf.replace(' ', '') == cp:
                     add('NOME', k, c['ult'], f"fantasia '{c['fant']}'"); continue
                 if princ and ((nn and nn.replace(' ', '') == cp) or (forte and (comeca(nf, w) or (len(w) >= 2 and comeca(nn, w))))):

@@ -158,3 +158,57 @@ conferir e gravar, com as propostas da aba LEIA.
 | Alimentação | 315 | 32.355 | 374.717 |
 | Drogarias | 90.352 | 106.337 | 471.399 |
 | Diretoria (todos) | 91.436 | 198.746 | 1.664.516 |
+
+## 5ª parte: validação com o arquivo do CRM (pedido do usuário)
+
+- **Pedido:** usar o arquivo "MAPA MERCADO V2 - status CRM" (Downloads; uma aba por aba FINAL, com a coluna H STATUS CRM)
+  para corrigir qualquer divergência no MAPA V2, "o máximo criterioso possível", perguntando na dúvida.
+- **Comparação:** `status_autopel/crm_compara.py` (liga cada linha do CRM à linha da aba FINAL pelo nome; INATIVANDO do
+  CRM, 291–365 dias, é ATIVO pela nossa regra). Saída em `%TEMP%\status_1611\crm_div.txt` (tem nomes, fora do git).
+- **Antes:** 1.282 de 1.397 linhas iguais. **Depois:** 1.302 iguais; as 95 que sobram foram revistas uma a uma.
+- **Erros nossos achados e corrigidos no motor:**
+  1. ligação curada da Alessandra (`alessandra_cruzamento.json`, linha N ou N+5): bastava uma palavra em comum, e
+     "PARK", "POSTO", "SORVETES" faziam a linha vizinha (5 acima) bater. Estacionamentos e postos herdavam a compra
+     da rede de cima. Agora: nome igual vence; senão, mais palavras próprias em comum; N+5 só nas abas FINAL;
+  2. **FARMACIA VF lida por índice fixo** depois de apagar I e J: a UF vinha da SITUAÇÃO NA RECEITA ("ATIVA") e a trava
+     de UF das farmácias sumia. A `coleta.py` lê a aba pelo cabeçalho;
+  3. grupo do cliente igual ao nome (7+ letras) passava por cima de tudo. Agora respeita CNPJ de outra rede, outro
+     ramo (também pela 1ª palavra do grupo: "SUPERMERCADO X", "POSTO X"), segmento (ou mesma UF) e UF quando o nome é
+     de 2+ redes ou a rede é regional; nome secundário (cidade entre parênteses) só pelo grupo na mesma UF;
+  4. "nome curto igual" (EXATO): mesma UF para rede regional (supermercado, farmácia, posto, construção,
+     estacionamento) ou nome com palavra de tipo. Marca nacional curta vale em qualquer UF;
+  5. razão social igual com raiz diferente da linha = homônimo (regra 7);
+  6. código de operador logístico com lojas de várias redes: só as lojas com o nome da rede;
+  7. posto também exige a mesma UF nos vínculos fracos; cadastro sem segmento, só na mesma UF;
+  8. "nome + palavra curta" no grupo só vale se a palavra for UF ou região.
+- **O CRM achou certo e nós não** (4 casos): entraram como vínculo manual (`dados/manuais.json`, local: alias,
+  clientes por código/loja).
+- **O CRM errou** (a maioria das ~40 linhas em que ele achava compra): nome genérico ou de outra UF, grupo de
+  supermercado com nome de loja, produto de papelaria ("LÁPIS 12 CORES") e outra empresa com o mesmo nome.
+- **Decisões do usuário (16/11):**
+  - marca do mesmo grupo **não herda** a compra da outra marca (`manuais.json` → `separar`): fica só com o que tem o nome
+    dela; a linha do grupo inteiro (Alessandra/TOP 50) continua com a compra do grupo;
+  - operador de franquia com o nome da marca no cadastro **conta**;
+  - revendedor de papel colocado no grupo de uma rede **não conta**.
+- **Gravação:** `prepara_gravacao.py` → `grava_status.ps1` (cópia) → `confere_gravacao.py` → `devolve_layout.py` →
+  organograma (`org_dados` → `org_layout` → `org_impressao` → `org_detalhe` → `org_detalhe.ps1` → `org_grava` ×2).
+  Os 3 scripts de gravação agora servem para regravar: usam as colunas novas das FINAL se já existem e só apagam I:J
+  da FARMACIA VF se ainda forem as de Receita/pesquisa.
+- **Conferência:** 466.570 células, 0 erradas, nenhuma outra célula diferente; 22 dinâmicas, 10 caches, macro; no
+  organograma só mudaram ORGANOGRAMA, ORGANOGRAMA impressao e CONFIG DETALHE; macro 390 de 390; 9 folhas.
+- **Mudanças de status nas abas gravadas:** 175 linhas (52 ATIVO→INATIVO, 42 ATIVO→NÃO É CLIENTE, 63 INATIVO→NÃO É
+  CLIENTE, 10 NÃO É CLIENTE→INATIVO, 8 para ATIVO).
+
+| Potencial (redes / PDV / caixas) | Antes | Depois |
+|---|---|---|
+| Alimentação | 315 / 32.355 / 374.717 | 321 / 34.329 / 400.755 |
+| Rede de lojas | 269 / 29.020 / 414.099 | 272 / 29.145 / 415.559 |
+| Construção | 233 / 5.901 / 65.203 | 236 / 5.940 / 65.476 |
+| Drogarias | 90.352 / 106.337 / 471.399 | 90.365 / 106.804 / 475.598 |
+| Postos e conveniências | 167 / 23.025 / 324.753 | 175 / 30.026 / 441.984 |
+| Estacionamentos | 100 / 2.108 / 14.345 | 105 / 2.309 / 15.752 |
+| Pet shop | 100 / 1.685 / 11.844 | 104 / 1.710 / 11.944 |
+
+- **Lições:** depois de apagar coluna, conferir todo script que lê a aba por índice; ligação curada por linha precisa
+  de palavra própria do nome, não de palavra de tipo; comparar com uma fonte de fora (CRM) achou erros que a revisão
+  interna não achou.

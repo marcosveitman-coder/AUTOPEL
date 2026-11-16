@@ -16,14 +16,17 @@ for l in open(TSV, encoding='utf-8-sig'):
     a, c, r, t, v = l.rstrip('\r\n').split('\t'); esp[a][(int(r), ci(c))] = (t, v)
 wa = openpyxl.load_workbook(A, read_only=True); wb = openpyxl.load_workbook(B, read_only=True)
 assert wa.sheetnames == wb.sheetnames
-desloca = lambda c: c - 2 if c > 10 else c      # FARMACIA VF: I e J (9, 10) apagadas
+# FARMACIA VF: I e J (9, 10) apagadas na gravação, se a partida ainda as tinha (1ª gravação de 16/11)
+i6 = str(next(wa[FARM].iter_rows(min_row=6, max_row=6, min_col=9, max_col=9, values_only=True))[0] or '').upper()
+APAGA = 'RECEITA' in i6
+desloca = (lambda c: c - 2 if c > 10 else c) if APAGA else (lambda c: c)
 tot = C.Counter()
 for n in wa.sheetnames:
     ra = {(i, j): v for i, row in enumerate(wa[n].iter_rows(values_only=True), 1) for j, v in enumerate(row, 1) if v is not None}
     rb = {(i, j): v for i, row in enumerate(wb[n].iter_rows(values_only=True), 1) for j, v in enumerate(row, 1) if v is not None}
     e = esp.get(n, {})
     dif = gravadas_erradas = 0
-    if n == FARM:
+    if n == FARM and APAGA:
         ra = {(i, desloca(j)): v for (i, j), v in ra.items() if j not in (9, 10)}
         e = {(i, desloca(j)): tv for (i, j), tv in e.items()}
     for k in set(ra) | set(rb):
