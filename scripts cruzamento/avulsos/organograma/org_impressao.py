@@ -92,6 +92,13 @@ def ale_da_pessoa(p):
             k = 'TOP50 ' + aba
             if k in ALE_K and k not in out: out.append(k)
     return out
+ROT_POT = ['Potencial redes', 'Potencial PDV', 'Potencial nº de caixas']
+UNID_POT = ['redes', 'lojas (PDV)', 'caixas/mês']
+def potenciais(p):
+    return list(zip(ROT_POT, [sum(p['potencial'].values()), p['pot_pdv'], p['pot_caixas']]))
+def det_pot(p, i, v):
+    # os 3 números abrem a mesma lista (linhas com STATUS AUTOPEL <> ATIVO); a lista mostra lojas e caixas de cada linha
+    return dict(t='P', q=p['id'], segs=';'.join(p['potencial']), rot=ROT_POT[i] + ' (listas de mercado)', n=v, u=UNID_POT[i])
 # ---------- caixas
 def card(p, r, c):
     fill, font = COR[p['perfil']]
@@ -114,26 +121,28 @@ def card(p, r, c):
         put(r + 5 + i, c, ' ' + t, c + 6, border=True, uma=True)
         put(r + 5 + i, c + 7, v / base if base else '—', c + 14, fmt='p' if base else None, bold=True, halign='center', border=True, uma=True,
             det=C('NO' if no else 'TODOS', 'APT'[i], t + (' no segmento' if no else ''), v) if base else None)
+    # 16/11/2026: POTENCIAL REDES (linhas), POTENCIAL PDV (lojas) e POTENCIAL Nº DE CAIXAS, todos com STATUS AUTOPEL <> ATIVO
     extra = dict(fill=OURO, font=OURO_T) if pot else dict(font=CINZA)
-    put(r + 8, c, ' Potencial', c + 6, border=True, uma=True, **extra)
-    put(r + 8, c + 7, pot if pot else 'sem lista', c + 14, fmt='n' if pot else None, bold=True, halign='center', border=True, uma=True,
-        det=dict(t='P', q=p['id'], segs=';'.join(p['potencial']), rot='Potencial (listas de mercado)', n=pot) if pot else None, **extra)
+    for i, (rot, v) in enumerate(potenciais(p)):
+        put(r + 8 + i, c, ' ' + rot, c + 8, border=True, wrap=True, **extra)
+        put(r + 8 + i, c + 9, v if pot else ('sem lista' if i == 0 else '—'), c + 14, fmt='n' if pot else None, bold=True, halign='center',
+            border=True, uma=True, det=det_pot(p, i, v) if pot and v else None, **extra)
     if p['perfil'] not in PERFIS_ALE:
-        ops.append(dict(box=[r, c, r + 8, c + 14]))
-        return r + 8
+        ops.append(dict(box=[r, c, r + 10, c + 14]))
+        return r + 10
     # 10/11/2026: linha Ale Dayan = listas TOP 50 dos segmentos da pessoa (ativos, inativos, nao e cliente; cores na legenda)
     ch = ale_da_pessoa(p)
-    put(r + 9, c, ' Ale Dayan', c + 5, border=True, uma=True, **(dict() if ch else dict(font=CINZA)))
+    put(r + 11, c, ' Ale Dayan', c + 5, border=True, uma=True, **(dict() if ch else dict(font=CINZA)))
     if ch:
         nomes = ', '.join(ALE_K[k]['nome'] for k in ch)
         for (x1, x2), (st, rot, fl) in zip(partes(c + 6, 9, 3), ALE_ST):
             v = sum(ALE_K[k]['status'].get(st, 0) for k in ch)
-            put(r + 9, x1, v, x2, fmt='n', bold=True, halign='center', border=True, uma=True, fill=fl, font=DARK,
+            put(r + 11, x1, v, x2, fmt='n', bold=True, halign='center', border=True, uma=True, fill=fl, font=DARK,
                 det=dict(t='S', segs=';'.join(ch), st=st, rot=f"{p['nome']} – Ale Dayan TOP 50 ({nomes}) – {rot}", n=v) if v else None)
     else:
-        put(r + 9, c + 6, 'sem lista', c + 14, bold=True, halign='center', border=True, uma=True, font=CINZA)
-    ops.append(dict(box=[r, c, r + 9, c + 14]))
-    return r + 9
+        put(r + 11, c + 6, 'sem lista', c + 14, bold=True, halign='center', border=True, uma=True, font=CINZA)
+    ops.append(dict(box=[r, c, r + 11, c + 14]))
+    return r + 11
 def caixas(ids, r):
     for i in range(0, len(ids), 4):
         lin = ids[i:i + 4]; larg = 15 * len(lin) + 1 * (len(lin) - 1); start = C0 + (NC - larg) // 2
@@ -154,7 +163,7 @@ def legenda(r, curta=False):
     if curta:   # 11/11/2026: so as cores da linha Ale Dayan (folha sem lugar para a legenda inteira)
         legenda_ale(r); return r + 1
     chips = [('Supervisão', COR['Supervisor']), ('Vendedor(a)', COR['Vendedor']), ('Venda interna', COR['Venda interna']),
-             ('Representante', COR['Representante']), ('Potencial', (OURO, OURO_T))]
+             ('Representante', COR['Representante']), ('Potencial (redes, PDV, caixas)', (OURO, OURO_T))]
     for (x1, x2), (t, (fl, fo)) in zip(partes(C0, NC, 5), chips): put(r, x1, t, x2, bold=True, fill=fl, font=fo, halign='center', border=True)
     put(r + 1, C0, 'ATIVO = comprou há até 290 dias · PERDENDO = 291 a 365 dias · A TRABALHAR = mais de 365 dias ou sem compra · ★ = segmento principal',
         CF, halign='center', wrap=True)
@@ -171,18 +180,20 @@ def banner(r, sp, eq):
     no, fora = sp['no_total'], sp['fora_total']; pot = sum(sp['potencial'].values())
     put(r, C0, f"{sp['nome']} – {sp['perfil'].upper()}", CF, size=12, bold=True, fill=BLUE, font=WHITE, halign='center')
     cel = [('Pessoas', len(eq)), ('Clientes', sp['total']), ('No segmento', qp(no, no + fora))] + \
-          [(t, qp(v, no)) for t, v in zip(['Ativos', 'Perdendo', 'A trabalhar'], sp['no'])] + [('Potencial', pot)]
+          [(t, qp(v, no)) for t, v in zip(['Ativos', 'Perdendo', 'A trabalhar'], sp['no'])] + potenciais(sp)
     DET = {'Pessoas': dict(t='E', q=sp['id'], rot='Pessoas da equipe', n=len(eq)), 'Clientes': dict(t='C', q=sp['id'], s='TODOS', st='TODOS', rot='Clientes', n=sp['total']),
            'No segmento': dict(t='C', q=sp['id'], s='NO', st='TODOS', rot='Clientes no segmento', n=no),
-           'Potencial': dict(t='P', q=sp['id'], segs=';'.join(sp['potencial']), rot='Potencial (listas de mercado)', n=pot)}
+           **{rot: det_pot(sp, i, v) for i, (rot, v) in enumerate(potenciais(sp))}}
     for i, t in enumerate(['Ativos', 'Perdendo', 'A trabalhar']): DET[t] = dict(t='C', q=sp['id'], s='NO', st='APT'[i], rot=t + ' no segmento', n=sp['no'][i])
-    for (x1, x2), (t, v) in zip(partes(C0, NC, 7), cel):
-        extra = dict(fill=OURO, font=OURO_T) if t == 'Potencial' else {}
-        put(r + 1, x1, t, x2, bold=True, fill=extra.get('fill', LIGHT), font=extra.get('font', DARK), halign='center', border=True, wrap=True)
-        put(r + 2, x1, v, x2, fmt='n' if isinstance(v, int) else None, size=10, bold=True, halign='center', border=True, uma=True,
-            det=DET[t] if v else None, **extra)
-    ops.append(dict(box=[r, C0, r + 2, CF]))
-    r += 3
+    # 16/11/2026: 2 linhas (6 métricas da carteira; embaixo os 3 potenciais: redes, PDV e nº de caixas)
+    for lin, (cels, n) in enumerate([(cel[:6], 6), (cel[6:], 3)]):
+        for (x1, x2), (t, v) in zip(partes(C0, NC, n), cels):
+            extra = dict(fill=OURO, font=OURO_T) if t.startswith('Potencial') else {}
+            put(r + 1 + 2 * lin, x1, t, x2, bold=True, fill=extra.get('fill', LIGHT), font=extra.get('font', DARK), halign='center', border=True, wrap=True)
+            put(r + 2 + 2 * lin, x1, v, x2, fmt='n' if isinstance(v, int) else None, size=10, bold=True, halign='center', border=True, uma=True,
+                det=DET[t] if v else None, **extra)
+    ops.append(dict(box=[r, C0, r + 4, CF]))
+    r += 5
     ops.append(dict(vline=[C0 + NC // 2 - 1, r, r])); alt(r, 12)
     return r + 1
 def rotulo(ids):
@@ -194,97 +205,126 @@ def nova_folha(r):
 dp = P[DIR]
 r = 1
 # ---------- folhas das equipes (caixas)
+# 16/11/2026: as caixas ganharam 2 linhas (potencial PDV e caixas). Paginação pela altura real: cada linha de 4 caixas entra
+# na folha se couber; senão abre folha "(continuação)" com o título e a faixa do grupo. A faixa do supervisor só na 1ª folha.
+def foto(): return (len(ops), dict(H))
+def volta(f): del ops[f[0]:]; H.clear(); H.update(f[1])
+altura_folha = lambda ini, r: sum(H.get(x, 16) for x in range(ini, r))
 for s in SUP:
     sp = P[s]; eq = MEMB[s]
     vend = [k for k in eq if P[k]['perfil'] != 'Representante']; rep = [k for k in eq if P[k]['perfil'] == 'Representante']
-    # 11/11/2026: no maximo 2 linhas de caixas (8) por folha; a ultima sobra de vendedores (ate 4) divide a folha com os
-    # representantes (ate 4). A legenda entra em toda folha em que couber.
-    blocos = [(vend[i:i + 8], rotulo(vend[i:i + 8])) for i in range(0, len(vend), 8)]
-    folhas_eq = [[x] for x in blocos]
-    if rep:
-        if folhas_eq and len(folhas_eq[-1][0][0]) <= 4 and len(rep) <= 4: folhas_eq[-1].append((rep, 'REPRESENTANTES'))
-        else: folhas_eq.append([(rep, 'REPRESENTANTES')])
-    for n, blocs in enumerate(folhas_eq):
-        r = nova_folha(r); ini = r
-        parte = f" ({n + 1} de {len(folhas_eq)})" if len(folhas_eq) > 1 else ''
-        r = titulo(r, f"CONSTANTE ORGANOGRAMA – EQUIPE {sp['nome']}{parte}",
-                   f"{sup_txt(sp).capitalize()} {sp['nome'].title()} · responde à {dp['nome'].title()} (carteira de {br(dp['total'])} clientes no CRM)")
-        r = banner(r, sp, eq)
-        for j, (ids, rot) in enumerate(blocs):
-            if j: alt(r, 10); r += 1
-            r = faixa(r, f"{rot} ({len(ids)})"); alt(r, 8); r += 1
-            r = caixas(ids, r)
-        n_ops, H0 = len(ops), dict(H)
-        r2 = legenda(r)
-        if sum(H.get(x, 16) for x in range(ini, r2)) <= LIM: r = r2
-        else:   # nao coube: desfaz e poe so as cores da Ale Dayan
-            del ops[n_ops:]; H.clear(); H.update(H0)
-            r = legenda(r, curta=True)
+    blocos = [(vend, rotulo(vend))] + ([(rep, 'REPRESENTANTES')] if rep else [])
+    r = nova_folha(r); ini = r
+    r = titulo(r, f"CONSTANTE ORGANOGRAMA – EQUIPE {sp['nome']}",
+               f"{sup_txt(sp).capitalize()} {sp['nome'].title()} · responde à {dp['nome'].title()} (carteira de {br(dp['total'])} clientes no CRM)")
+    r = banner(r, sp, eq)
+    topo = False                          # True logo depois de abrir uma folha de continuação
+    for ids, rot in blocos:
+        for i_ in range(0, len(ids), 4):
+            lin = ids[i_:i_ + 4]
+            for tentativa in (1, 2):
+                f0, r0 = foto(), r
+                if i_ == 0 or topo:
+                    if not topo: alt(r, 10); r += 1
+                    r = faixa(r, f"{rot} ({len(ids)})" + (' – continuação' if i_ else '')); alt(r, 8); r += 1
+                elif not topo:
+                    alt(r, 10); r += 1
+                topo = False
+                r = caixas(lin, r)
+                if altura_folha(ini, r) <= LIM or tentativa == 2: break
+                volta(f0); r = r0
+                r = nova_folha(r); ini = r
+                r = titulo(r, f"CONSTANTE ORGANOGRAMA – EQUIPE {sp['nome']} (continuação)", None)
+                topo = True
+    for curta in (False, True):            # legenda inteira; senão só as cores da Ale Dayan; senão nenhuma
+        f0 = foto(); r2 = legenda(r, curta=curta)
+        if altura_folha(ini, r2) <= LIM: r = r2; break
+        volta(f0)
 # ---------- carteira de cada pessoa: uma folha por equipe
-T1 = [(2, 14)] + [(15 + 5 * i, 19 + 5 * i) for i in range(9)] + [(60, 64)]
+# 16/11/2026: os 3 potenciais numa coluna, um embaixo do outro (13 colunas não cabem com letra 10)
+def _t1():
+    # nome (8 colunas), 9 de carteira com 5 colunas normais cada (a coluna estreita de folga entra a mais) e o potencial no resto
+    out, c = [(2, 9)], 10
+    for _ in range(9):
+        n = 5 + sum(1 for g in GAPS if c <= g < c + 5)
+        out.append((c, c + n - 1)); c += n
+    return out + [(c, CF)]
+T1 = _t1()
 def t1_cab(r):
-    for c1, c2, t in [(2, 14, ''), (15, 29, 'CARTEIRA'), (30, 44, 'NO SEGMENTO'), (45, 59, 'FORA DO SEGMENTO'), (60, 64, '')]:
+    for c1, c2, t in [(2, T1[0][1], ''), (T1[1][0], T1[3][1], 'CARTEIRA'), (T1[4][0], T1[6][1], 'NO SEGMENTO'),
+                      (T1[7][0], T1[9][1], 'FORA DO SEGMENTO'), (T1[10][0], T1[10][1], 'POTENCIAL')]:
         put(r, c1, t, c2, bold=True, fill=BLUE, font=WHITE, halign='center', border=True)
     r += 1
     for (c1, c2), t in zip(T1, ['Nome e perfil', 'Clientes', 'No segmento', 'Fora do segmento', 'Ativos', 'Perdendo', 'A trabalhar',
-                                'Ativos', 'Perdendo', 'A trabalhar', 'Potencial']):
+                                'Ativos', 'Perdendo', 'A trabalhar', 'Redes / PDV / Nº de caixas']):
         put(r, c1, t, c2, bold=False, fill=LIGHT, font=DARK, halign='center', wrap=True, border=True)
     return r + 1
 def t1_linha(r, k):
     p = P[k]; no, fora = p['no_total'], p['fora_total']; tot = no + fora
     destaque = k in [DIR] + SUP
     f = dict(border=True, bold=destaque, fill=GRAY if destaque else None, wrap=True)
-    put(r, 2, p['nome'] + '\n' + p['perfil'], 13, indent=1, **f)
+    put(r, 2, p['nome'] + '\n' + p['perfil'], T1[0][1], indent=1, **f)
     q = lambda a, b: f'{br(a)}\n{pc(a, b)}' if b else '—'
     vals = [p['total'], q(no, tot), q(fora, tot)] + [q(p['no'][i], no) for i in range(3)] + [q(p['fora'][i], fora) for i in range(3)]
     pot = sum(p['potencial'].values())
-    vals.append(pot if pot else '—')
+    pv = [v for _, v in potenciais(p)]
+    vals.append(f'Redes {br(pv[0])}\nPDV {br(pv[1])}\nCaixas {br(pv[2])}' if pot else '—')
     C = lambda s, st, rot, n: dict(t='C', q=k, s=s, st=st, rot=rot, n=n) if n else None
     STS = ['Ativos', 'Perdendo', 'A trabalhar']
     DETS = [C('TODOS', 'TODOS', 'Clientes', p['total']), C('NO', 'TODOS', 'Clientes no segmento', no), C('FORA', 'TODOS', 'Clientes fora do segmento', fora)]
     DETS += [C('NO', 'APT'[i], t + ' no segmento', p['no'][i]) for i, t in enumerate(STS)]
     DETS += [C('FORA', 'APT'[i], t + ' fora do segmento', p['fora'][i]) for i, t in enumerate(STS)]
-    DETS += [dict(t='P', q=k, segs=';'.join(p['potencial']), rot='Potencial (listas de mercado)', n=pot)]
+    DETS += [det_pot(p, 0, pot)]
     for i, ((c1, c2), v) in enumerate(zip(T1[1:], vals)):
-        put(r, c1, v, c2, fmt='n' if isinstance(v, int) else None, halign='center', det=DETS[i] if v != '—' else None, **f)
+        ff = dict(f, fill=OURO, font=OURO_T) if i >= 9 and v != '—' else f
+        put(r, c1, v, c2, fmt='n' if isinstance(v, int) else None, halign='center', det=DETS[i] if v not in ('—', 0) else None, **ff)
     return r + 1
 semseg = [P[k] for k in [DIR] + SUP if P[k]['no_total'] + P[k]['fora_total'] < P[k]['total']]
 quem = ' e '.join(('na diretoria' if not p['sup'] else 'no supervisor ' + p['nome'].title()) for p in semseg)
 NOTA1 = (f'CLIENTES = ativos + perdendo + a trabalhar (CRM). {quem[0].upper() + quem[1:]} há clientes sem segmento: NO + FORA pode ser menor que CLIENTES. '
-         'Supervisão = visão do CRM de cada um (não é a soma da equipe). Potencial: soma dos segmentos (na supervisão, cada segmento da equipe uma vez).')
-MAX_T1 = 13   # 11/11/2026: linhas por folha na tabela da carteira (a equipe maior passou de 13 e vai para 2 folhas)
-T1_FOLHAS = []
+         'Supervisão = visão do CRM de cada um (não é a soma da equipe). Potencial (redes, PDV e caixas): soma dos segmentos, só linhas com STATUS AUTOPEL diferente de ATIVO (na supervisão, cada segmento da equipe uma vez).')
 for rot, ids in [('DIRETORIA E EQUIPE ' + P[SUP[0]]['nome'], [DIR, SUP[0]] + MEMB[SUP[0]])] + [('EQUIPE ' + P[s]['nome'], [s] + MEMB[s]) for s in SUP[1:]]:
-    pd_ = [ids[i:i + MAX_T1] for i in range(0, len(ids), MAX_T1)]
-    T1_FOLHAS += [(rot + (f' ({j + 1} de {len(pd_)})' if len(pd_) > 1 else ''), x) for j, x in enumerate(pd_)]
-for n, (rot, ids) in enumerate(T1_FOLHAS):
-    r = nova_folha(r)
-    r = titulo(r, 'CONSTANTE ORGANOGRAMA – CARTEIRA DE CADA PESSOA', None)
-    r = faixa(r, f'1. CARTEIRA DE CADA PESSOA – {rot}')
-    r = t1_cab(r)
-    for k in ids: r = t1_linha(r, k)
+    # 16/11/2026: linhas por folha pela altura real (sobra lugar para a nota no fim da equipe)
+    def abre(r, cont):
+        r = nova_folha(r); ini_ = r
+        r = titulo(r, 'CONSTANTE ORGANOGRAMA – CARTEIRA DE CADA PESSOA' + (' (continuação)' if cont else ''), None)
+        r = faixa(r, f'1. CARTEIRA DE CADA PESSOA – {rot}' + (' (continuação)' if cont else ''))
+        return t1_cab(r), ini_
+    r, ini = abre(r, False)
+    for n_, k in enumerate(ids):
+        f0, r0 = foto(), r
+        r = t1_linha(r, k)
+        reserva = 50 if n_ == len(ids) - 1 else 0
+        if altura_folha(ini, r) + reserva > LIM:
+            volta(f0); r = r0
+            r, ini = abre(r, True)
+            r = t1_linha(r, k)
     alt(r, 6); r += 1
     put(r, C0, NOTA1, CF, wrap=True); r += 1
 # ---------- potencial por segmento + segmentos x responsaveis
 r = nova_folha(r)
 r = titulo(r, 'CONSTANTE ORGANOGRAMA – POTENCIAL E SEGMENTOS', None)
 r = faixa(r, '2. POTENCIAL POR SEGMENTO – LISTAS DE MERCADO DESTE ARQUIVO')
-T2 = [(2, 11), (12, 23)] + [(24 + 5 * i, 28 + 5 * i) for i in range(3)] + [(39, 44)] + [(45 + 5 * i, 49 + 5 * i) for i in range(4)]
-for (c1, c2), t in zip(T2, ['Segmento', 'Aba (coluna do status)', 'Total na lista', 'Ativo', 'Inativo', 'Inativando', 'Lead no CRM', 'Não é cliente', 'A trabalhar', 'Potencial']):
+# 16/11/2026: saem Inativando / Lead no CRM / A trabalhar (status antigos, sempre 0); entram potencial PDV e nº de caixas
+T2 = [(2, 11), (12, 21), (22, 26), (27, 31), (32, 36), (37, 42), (43, 48), (49, 56), (57, 64)]
+for (c1, c2), t in zip(T2, ['Segmento', 'Aba (coluna do status)', 'Total na lista', 'Ativo', 'Inativo', 'Não é cliente',
+                            'Potencial redes', 'Potencial PDV', 'Potencial nº de caixas']):
     put(r, c1, t, c2, bold=False, fill=LIGHT, font=DARK, halign='center', wrap=True, border=True)
 r += 1
 for seg, b in POT.items():
     st = b['status']; f = dict(border=True)
-    put(r, 2, nomeseg(seg), 11, bold=True, **f); put(r, 12, f" {b['aba']} ({b['col']})", 23, **f)
-    for (c1, c2), k in zip(T2[2:9], [None, 'ATIVO', 'INATIVO', 'INATIVANDO', 'LEAD NO CRM', 'NÃO É CLIENTE', 'A TRABALHAR']):
+    put(r, 2, nomeseg(seg), 11, bold=True, **f); put(r, 12, f" {b['aba']} ({b['col']})", 21, **f)
+    for (c1, c2), k in zip(T2[2:6], [None, 'ATIVO', 'INATIVO', 'NÃO É CLIENTE']):
         v = b['total'] if k is None else st.get(k, 0)
         put(r, c1, v, c2, fmt='n', halign='center', det=dict(t='S', segs=seg, st=k or 'TOTAL', rot=f"{nomeseg(seg)} – {(k or 'total na lista').lower()}", n=v) if v else None, **f)
-    put(r, 60, b['potencial'], 64, fmt='n', halign='center', bold=True, fill=OURO, font=OURO_T,
-        det=dict(t='S', segs=seg, st='POTENCIAL', rot=f'{nomeseg(seg)} – potencial (tudo que não é ATIVO)', n=b['potencial']) if b['potencial'] else None, **f)
+    for (c1, c2), rot, v, u in zip(T2[6:], ROT_POT, [b['potencial'], b['pdv'], b['caixas']], UNID_POT):
+        put(r, c1, v, c2, fmt='n', halign='center', bold=True, fill=OURO, font=OURO_T,
+            det=dict(t='S', segs=seg, st='POTENCIAL', rot=f'{nomeseg(seg)} – {rot.lower()} (tudo que não é ATIVO)', n=v, u=u) if v else None, **f)
     r += 1
 alt(r, 6); r += 1
-put(r, C0, 'POTENCIAL = linhas da lista do segmento com STATUS AUTOPEL diferente de ATIVO. O potencial é do segmento: quem divide o segmento divide as mesmas '
-           'oportunidades (não somar entre pessoas). Segmentos sem lista de mercado nestas abas aparecem sem potencial.', CF, wrap=True); r += 1
+put(r, C0, 'POTENCIAL = linhas da lista do segmento com STATUS AUTOPEL diferente de ATIVO (inativo + não é cliente): REDES = quantidade de linhas; '
+           'PDV = soma do nº de lojas; Nº DE CAIXAS = soma do "Total de caixas/ mês" (FARMACIA VF: redes e associações sem contagem dupla). '
+           'O potencial é do segmento: quem divide o segmento divide as mesmas oportunidades (não somar entre pessoas).', CF, wrap=True); r += 1
 alt(r, 12); r += 1
 # 05/11/2026: com POSTOS, ESTACIONAMENTO e PET SHOP no potencial, a folha 6 passou da pagina -> segmentos x responsaveis na folha 7
 r = nova_folha(r)

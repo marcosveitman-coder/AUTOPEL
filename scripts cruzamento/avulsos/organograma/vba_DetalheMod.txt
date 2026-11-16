@@ -401,11 +401,12 @@ Private Sub Listas(ByVal segs As String, ByVal st As String, ByRef dados As Vari
     Dim chaves() As String, q As Long, nq As Long, rs As Long, c As Long, h As String, i As Long, m As Long, total As Long, s As String
     Dim ws() As Worksheet, hr() As Long, cS() As Long, cR() As Long, cF() As Long, cL() As Long, cC() As Long, ult() As Long, nomeSeg() As String
     Dim vS As Variant, vR As Variant, vF As Variant, vL As Variant, vC As Variant, d() As Variant, abas As String
+    Dim cX() As Long, vX As Variant, somaL As Double, somaX As Double
 
     chaves = Split(segs, ";")
     nq = UBound(chaves) - LBound(chaves) + 1
     ReDim ws(1 To nq): ReDim hr(1 To nq): ReDim cS(1 To nq): ReDim cR(1 To nq): ReDim cF(1 To nq)
-    ReDim cL(1 To nq): ReDim cC(1 To nq): ReDim ult(1 To nq): ReDim nomeSeg(1 To nq)
+    ReDim cL(1 To nq): ReDim cC(1 To nq): ReDim ult(1 To nq): ReDim nomeSeg(1 To nq): ReDim cX(1 To nq)
     For q = 1 To nq
         rs = AcharLinha("SEGMENTOS", chaves(LBound(chaves) + q - 1))
         If rs = 0 Then Err.Raise 5, , "segmento não configurado: " & chaves(LBound(chaves) + q - 1)
@@ -420,6 +421,7 @@ Private Sub Listas(ByVal segs As String, ByVal st As String, ByRef dados As Vari
             If h = "NOME FANTASIA" And cF(q) = 0 Then cF(q) = c
             If (Left$(h, 11) = "Nº DE LOJAS" Or h = "LOJAS") And cL(q) = 0 Then cL(q) = c
             If h = "CNPJ" And cC(q) = 0 Then cC(q) = c
+            If Left$(h, 15) = "TOTAL DE CAIXAS" And cX(q) = 0 Then cX(q) = c   ' 16/11/2026: caixas/mes da linha
         Next c
         If cR(q) = 0 Or cL(q) = 0 Then Err.Raise 5, , "colunas não achadas na aba " & ws(q).Name
         ult(q) = ws(q).Cells(ws(q).Rows.Count, cS(q)).End(xlUp).Row
@@ -427,8 +429,8 @@ Private Sub Listas(ByVal segs As String, ByVal st As String, ByRef dados As Vari
         abas = abas & IIf(abas = "", "", ", ") & ws(q).Name
     Next q
 
-    cab = Array("RAZÃO SOCIAL / EMPRESA", "NOME FANTASIA", "Nº DE LOJAS", "CNPJ", "SEGMENTO", "STATUS AUTOPEL", "ORIGEM (ABA E LINHA)")
-    If total > 0 Then ReDim d(1 To total, 1 To 7)
+    cab = Array("RAZÃO SOCIAL / EMPRESA", "NOME FANTASIA", "Nº DE LOJAS", "CNPJ", "SEGMENTO", "STATUS AUTOPEL", "ORIGEM (ABA E LINHA)", "CAIXAS/MÊS")
+    If total > 0 Then ReDim d(1 To total, 1 To 8)
     For q = 1 To nq
         If ult(q) > hr(q) Then
             vS = Coluna(ws(q), cS(q), hr(q) + 1, ult(q))
@@ -436,6 +438,7 @@ Private Sub Listas(ByVal segs As String, ByVal st As String, ByRef dados As Vari
             If cF(q) > 0 Then vF = Coluna(ws(q), cF(q), hr(q) + 1, ult(q))
             vL = Coluna(ws(q), cL(q), hr(q) + 1, ult(q))
             If cC(q) > 0 Then vC = Coluna(ws(q), cC(q), hr(q) + 1, ult(q))
+            If cX(q) > 0 Then vX = Coluna(ws(q), cX(q), hr(q) + 1, ult(q))
             For i = 1 To ult(q) - hr(q)
                 s = UCase$(Txt(vS(i, 1)))
                 If s <> "" Then
@@ -443,7 +446,10 @@ Private Sub Listas(ByVal segs As String, ByVal st As String, ByRef dados As Vari
                         m = m + 1
                         d(m, 1) = Txt(vR(i, 1))
                         If cF(q) > 0 Then d(m, 2) = Txt(vF(i, 1))
-                        If IsNumeric(vL(i, 1)) And Not IsEmpty(vL(i, 1)) Then d(m, 3) = vL(i, 1)
+                        If IsNumeric(vL(i, 1)) And Not IsEmpty(vL(i, 1)) Then d(m, 3) = vL(i, 1): somaL = somaL + vL(i, 1)
+                        If cX(q) > 0 Then
+                            If IsNumeric(vX(i, 1)) And Not IsEmpty(vX(i, 1)) Then d(m, 8) = vX(i, 1): somaX = somaX + vX(i, 1)
+                        End If
                         If cC(q) > 0 Then d(m, 4) = FormataCnpj(vC(i, 1))
                         d(m, 5) = nomeSeg(q): d(m, 6) = s
                         d(m, 7) = ws(q).Name & " – linha " & (hr(q) + i)
@@ -455,7 +461,9 @@ Private Sub Listas(ByVal segs As String, ByVal st As String, ByRef dados As Vari
     n = m
     If n > 0 Then dados = d
     If st = "POTENCIAL" Then
-        nota = "Potencial = linhas com STATUS AUTOPEL diferente de ATIVO nas abas " & abas & " deste arquivo."
+        nota = "Potencial = linhas com STATUS AUTOPEL diferente de ATIVO nas abas " & abas & " deste arquivo. Soma nesta lista: " & _
+               Format$(somaL, "#,##0") & " lojas e " & Format$(somaX, "#,##0") & " caixas/mês (no organograma, o PDV das redes/associações " & _
+               "da FARMACIA VF não conta de novo as lojas das associadas)."
     Else
         nota = "Linhas da aba " & abas & " deste arquivo" & IIf(st = "TOTAL", ".", " com STATUS AUTOPEL = " & st & ".")
     End If
@@ -547,6 +555,7 @@ Private Sub Escrever(ByVal rotulo As String, ByVal numero As String, ByVal nota 
     If n > 0 Then ws.Range(ws.Cells(6, 1), ws.Cells(5 + n, nc)).Value = dados
     If n > 0 Then
         ws.Range(ws.Cells(6, 3), ws.Cells(5 + n, 3)).NumberFormat = "#,##0"
+        If tipo = "P" Or tipo = "S" Then ws.Range(ws.Cells(6, 8), ws.Cells(5 + n, 8)).NumberFormat = "#,##0"
         If tipo = "C" Then
             ws.Range(ws.Cells(6, 7), ws.Cells(5 + n, 7)).NumberFormat = "dd/mm/yyyy"
             ws.Range(ws.Cells(6, 8), ws.Cells(5 + n, 8)).NumberFormat = "#,##0"
@@ -557,7 +566,7 @@ Private Sub Escrever(ByVal rotulo As String, ByVal numero As String, ByVal nota 
     ElseIf tipo = "E" Then
         larg = Array(30, 16, 14, 40, 60)
     Else
-        larg = Array(46, 32, 13, 20, 22, 16, 40)
+        larg = Array(46, 32, 13, 20, 22, 16, 40, 13)
     End If
     For c = 1 To nc
         ws.Columns(c).ColumnWidth = larg(LBound(larg) + c - 1)

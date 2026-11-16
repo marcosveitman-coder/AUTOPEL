@@ -123,3 +123,38 @@ conferir e gravar, com as propostas da aba LEIA.
   196.195). Macro, 22 dinâmicas e 10 caches presentes.
 - Lição: guardar o spec das exceções no repositório local (`resumos/dados`, fora do git). Se a fórmula for arrastada de
   novo, os valores estão no `MAPA MERCADO (MARCOS).xlsx`.
+
+## 4ª parte: potencial em 3 métricas no organograma (pedido do usuário)
+
+- **Pergunta do usuário:** o "Potencial" é PDV ou caixas? Nenhum dos dois: era a contagem de linhas das listas com STATUS
+  AUTOPEL diferente de ATIVO.
+- **Pedido:** renomear para **POTENCIAL REDES** e pôr embaixo **POTENCIAL PDV** (soma do nº de lojas) e **POTENCIAL Nº
+  DE CAIXAS** (soma do "Total de caixas/ mês"), sempre só nas linhas que não são ATIVO, em todos os quadros.
+- `org_dados.py` (por segmento: redes, `pdv`, `caixas`; por pessoa: `pot_pdv`, `pot_caixas`):
+  - colunas achadas pelo cabeçalho: abas FINAL E/X; FARMACIA VF H/V;
+  - nas 112 redes/associações da FARMACIA VF, o PDV usa o nº sem contagem dupla do fim da fórmula de caixas;
+  - supervisão e diretoria: cada segmento da equipe uma vez.
+- **ORGANOGRAMA impressao** (`org_impressao.py`):
+  - caixas: 3 linhas de potencial;
+  - faixa do supervisor em 2 linhas (6 métricas da carteira e embaixo os 3 potenciais);
+  - tabela da carteira: os 3 potenciais numa coluna, um embaixo do outro (13 colunas não cabem com letra 10);
+  - tabela por segmento: saíram Inativando, Lead no CRM e A trabalhar (sempre 0) e entraram PDV e caixas;
+  - **paginação pela altura real** (linha de caixas ou da tabela que não cabe vai para uma folha "(continuação)"):
+    9 folhas, a maior com 526 pt.
+- **Aba ORGANOGRAMA** (`org_layout.py`): 3 linhas nas caixas e 3 colunas nas tabelas (vai até a coluna AA).
+- **Duplo clique:**
+  - os números de PDV e caixas abrem a mesma lista do potencial de redes;
+  - a macro ganhou a coluna CAIXAS/MÊS e a soma de lojas e caixas na nota (`vba_DetalheMod.txt`, macro trocada com
+    `org_xlsm.py`);
+  - o `org_detalhe_esperado.py` compara PDV e caixas com a quantidade de linhas do potencial de redes.
+- **Conferência:**
+  - macro: 390 de 390;
+  - só mudaram ORGANOGRAMA, ORGANOGRAMA impressao e CONFIG DETALHE;
+  - Drogarias: 471.399 caixas = inativo + não é cliente do resumo da FARMACIA VF;
+  - imagens das folhas conferidas.
+
+| Segmento | Redes | PDV | Nº de caixas |
+|---|---|---|---|
+| Alimentação | 315 | 32.355 | 374.717 |
+| Drogarias | 90.352 | 106.337 | 471.399 |
+| Diretoria (todos) | 91.436 | 198.746 | 1.664.516 |

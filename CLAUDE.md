@@ -324,8 +324,9 @@ Armadilhas reais já vistas:
 
 **Aba "ORGANOGRAMA"** (04/11/2026; `avulsos/organograma/`, "constante organograma"):
 - a equipe e a carteira vêm das telas do CRM, transcritas em `dados/equipe.json` (local, com nomes);
-- potencial = linhas com STATUS AUTOPEL diferente de ATIVO (coluna W das abas FINAL, coluna P da FARMACIA VF). É do
-  segmento: não somar entre pessoas;
+- potencial = linhas com STATUS AUTOPEL diferente de ATIVO (coluna W das abas FINAL, coluna N da FARMACIA VF). É do
+  segmento: não somar entre pessoas. Desde 16/11 são 3 métricas: **POTENCIAL REDES** (linhas), **POTENCIAL PDV** (soma
+  do nº de lojas) e **POTENCIAL Nº DE CAIXAS** (soma do total de caixas/mês; associações da VF sem contagem dupla);
 - gravada pelo Excel (COM) numa cópia. Conferir as outras abas célula a célula; nos nomes definidos só entra a área de
   impressão.
 - **a aba ORGANOGRAMA do arquivo tem um layout anterior ao do `org_layout.py`** (resumo e legenda depois das caixas).
@@ -371,7 +372,7 @@ Armadilhas reais já vistas:
   - **largura real da Verdana** (`verdana10.txt`, de `mede_verdana.ps1`) com 10% de folga. O script para se uma palavra
     não couber na célula;
   - a impressora daqui só imprime ~757 pt de largura. A aba tem 740 pt (colunas de 16 px e folgas de 5 px). Conferir
-    `PageSetup.Pages.Count` (8 desde 11/11) e `VPageBreaks.Count` = 0 pelo COM.
+    `PageSetup.Pages.Count` (9 desde 16/11, paginação pela altura real) e `VPageBreaks.Count` = 0 pelo COM.
 
 ---
 

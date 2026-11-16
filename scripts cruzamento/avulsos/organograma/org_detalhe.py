@@ -106,10 +106,10 @@ def main(mapa):
             num = f"{br(n)} clientes" + (f" ({pct(o['v'])})" if o.get('fmt') == 'p' else '') + f" no CRM de {data_crm}"
             linhas.append([cel, 'C', d['q'], d['s'], d['st'], f"{P[d['q']]['nome']} – {d['rot']}", num])
         elif d['t'] == 'P':
-            num = f"{br(n)} oportunidades (" + ', '.join(ACENTO.get(s, s) for s in d['segs'].split(';')) + ')'
+            num = f"{br(n)} {d.get('u', 'redes')} de potencial (" + ', '.join(ACENTO.get(s, s) for s in d['segs'].split(';')) + ')'
             linhas.append([cel, 'P', d['q'], d['segs'], 'POTENCIAL', f"{P[d['q']]['nome']} – {d['rot']}", num])
         elif d['t'] == 'S':
-            linhas.append([cel, 'S', '', d['segs'], d['st'], d['rot'], f'{br(n)} na tabela por segmento'])
+            linhas.append([cel, 'S', '', d['segs'], d['st'], d['rot'], f"{br(n)} {d.get('u', '')} na tabela por segmento".replace('  ', ' ')])
         elif d['t'] == 'E':
             linhas.append([cel, 'E', d['q'], '', '', f"{P[d['q']]['nome']} – {d['rot']}", f'{n} pessoas'])
     limpa = lambda v: re.sub(r'[\t\r\n]+', ' ', str(v))

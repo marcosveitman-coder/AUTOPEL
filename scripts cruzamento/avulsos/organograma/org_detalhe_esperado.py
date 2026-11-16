@@ -69,6 +69,13 @@ def carteira(quem):
 IMP = json.load(open('org_impressao.json', encoding='utf8'))
 from openpyxl.utils import get_column_letter as Lt
 n_cel = {f"{Lt(o['c'])}{o['r']}": o['det']['n'] for o in IMP['ops'] if o.get('det')}
+# 16/11/2026: potencial PDV e nº de caixas mostram somas (lojas, caixas), mas a lista é a mesma do potencial de redes:
+# o esperado em linhas é o número da célula de redes com o mesmo tipo, pessoa, segmentos e status
+chave = lambda d: (d['t'], d.get('q'), d.get('segs'), d.get('st'))
+redes = {chave(o['det']): o['det']['n'] for o in IMP['ops'] if o.get('det') and o['det'].get('u', 'redes') == 'redes'}
+for o in IMP['ops']:
+    d = o.get('det')
+    if d and d.get('u') in ('lojas (PDV)', 'caixas/mês'): n_cel[f"{Lt(o['c'])}{o['r']}"] = redes[chave(d)]
 esp = {}
 for l in CEL:
     cel, tipo, quem, seg, st = l[0], l[1], l[2], l[3], l[4]
