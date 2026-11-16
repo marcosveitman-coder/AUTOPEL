@@ -61,11 +61,14 @@ def main(mapa, saida):
         cab = [s(x) for x in rows[h]]
         ix = {c: cab.index(c) for c in cab if c}
         grupos_cont = C.Counter(nucleo(s(r[ix['GRUPO ADMINISTRADOR']])) for r in rows[h + 1:] if r and s(r[1]))
+        # 16/11: o nome do grupo administrador não vira nome de busca se o grupo é outra rede da aba (Tendall Grill x Habib's)
+        redes_aba = {x.replace(' ', '') for r in rows[h + 1:] if r and s(r[1]) for x in nomes_da_rede(r[1])[:1]}
         for i, r in enumerate(rows[h + 1:], start=h + 2):
             if not r or not s(r[1]): continue
             g = s(r[ix['GRUPO ADMINISTRADOR']])
             nomes = nomes_da_rede(r[1])
-            if g and grupos_cont[nucleo(g)] == 1: nomes += [n for n in nomes_da_rede(g) if n not in nomes]   # grupo com uma rede só
+            if g and grupos_cont[nucleo(g)] == 1:     # grupo com uma rede só
+                nomes += [n for n in nomes_da_rede(g) if n not in nomes and (n.replace(' ', '') not in redes_aba or n in nomes_da_rede(r[1]))]
             E.append(ent(aba, i, nomes, [r[ix['CNPJ']], r[ix.get('CNPJ DE REFERÊNCIA (UNIDADE DA REDE)', ix['CNPJ'])]], [r[ix['RAZÃO SOCIAL']]],
                          extra=dict(nome=s(r[1]), uf=s(r[ix['UF SEDE']]), status_antes=s(r[ix['STATUS AUTOPEL']]) if 'STATUS AUTOPEL' in ix else '',
                                     apoio=aba == 'OUTROS FINAL', origem=s(r[ix['ORIGEM']]) if 'ORIGEM' in ix else '')))

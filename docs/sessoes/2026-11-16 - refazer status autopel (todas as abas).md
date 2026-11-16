@@ -212,3 +212,17 @@ conferir e gravar, com as propostas da aba LEIA.
 - **Lições:** depois de apagar coluna, conferir todo script que lê a aba por índice; ligação curada por linha precisa
   de palavra própria do nome, não de palavra de tipo; comparar com uma fonte de fora (CRM) achou erros que a revisão
   interna não achou.
+
+## 6ª parte: revisão final (pedido do usuário, apresentação C-level)
+
+- `revisao_fontes.py`: confere com as fontes brutas (CADASTRO DE CLIENTES.RLT e ultimo fat). Nenhum vendedor diferente
+  do cadastro, nenhuma data mais velha que a última nota, nenhum status contra a data.
+- Corrigido: a "última compra" da rede ATIVA agora é a compra mais recente (antes era o vínculo mais específico dos 360
+  dias); código de cliente reaproveitado por outra empresa sai; loja sem segmento (E001) herda o da loja principal;
+  estacionamento exige a mesma UF; ~25 vínculos fracos falsos revisados à mão (`manuais.json`: exclusões, `so_fortes`).
+- Decisão do usuário aplicada a todas as redes: marca não herda de outra marca do grupo (cada marca das abas FINAL/IRTT
+  é avaliada só com as linhas dela; a linha do grupo fica com o grupo); regra 9 em todos os grupos do IRTT (exceções em
+  `grupos_ok`); código que o IRTT repete em várias marcas só vale com o nome da marca.
+- Gravado (só as 623 células que mudaram), conferido célula a célula (0 erradas, nada mais mudou), organograma regerado.
+- **Pendente:** teste da macro do duplo clique (org_detalhe_teste + esperado), conferência das dinâmicas/resumos e do
+  organograma contra as abas, CLAUDE.md.

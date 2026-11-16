@@ -99,9 +99,11 @@ _MAN = _json.load(open(_ARQ, encoding='utf8')) if _os.path.exists(_ARQ) else {}
 EXCLUSOES = {tuple(x) for x in _MAN.get('exclusoes', [])}
 ALIAS_MANUAL = _MAN.get('alias', {})
 RAIZES_ERRADAS = {k: set(v) for k, v in _MAN.get('raizes_erradas', {}).items()}   # nome da rede -> raízes que não são dela
-CLIENTES_MANUAIS = _MAN.get('clientes', {})
-FAM_EXTRA = _MAN.get('familias_extra', {})
-SEPARAR = _MAN.get('separar', {})      # marca que NÃO herda a compra da outra marca do grupo (decisão do usuário, 16/11)        # nome da rede -> famílias a mais (ex.: restaurante de estrada que também é posto)        # nome da rede -> ['codigo/loja', ...] confirmados na conferência
+CLIENTES_MANUAIS = _MAN.get('clientes', {})        # nome da rede -> ['codigo/loja', ...] confirmados na conferência
+FAM_EXTRA = _MAN.get('familias_extra', {})        # nome da rede -> famílias a mais (ex.: restaurante de estrada que também é posto)
+SEPARAR = _MAN.get('separar', {})      # marca que NÃO herda a compra da outra marca do grupo (decisão do usuário, 16/11)
+SO_FORTES = set(_MAN.get('so_fortes', []))     # linha (nome normalizado) que só vale por CNPJ, razão, código ou grupo do IRTT
+GRUPOS_OK = set(_MAN.get('grupos_ok', []))     # grupo do IRTT conferido à mão que vale sem o nome da marca (regra 9)
 GRUPO_GENERICO = {'CLIENTES DIVERSOS', 'DIVERSOS', 'CLIENTES', 'CONSUMIDOR FINAL'}
 PROVEDOR = {x.upper() for x in 'terra uol bol gmail hotmail yahoo outlook live msn ig globo globomail r7 zipmail icloud'.split()}
 TIPO_FAM = {}   # 1ª palavra do nome do cliente -> ramos em que ela cabe
@@ -171,6 +173,13 @@ class Motor:
         self.ptok = C.defaultdict(set)     # palavra -> descrições de produto
         self.prod = C.defaultdict(list)    # descrição -> [(cliente, data, vendedor da nota)]
         self.doms = C.defaultdict(set)     # rótulo do domínio -> clientes
+        # 16/11 (revisão final): loja sem segmento (endereço de entrega "E001", "ENTREGA") herda o segmento mais comum das
+        # outras lojas do mesmo código. Sem isso a trava de segmento deixava passar e-mail de supermercado para loja.
+        seg_cod = C.defaultdict(C.Counter)
+        for k, c in cli.items():
+            if c['seg']: seg_cod[k[0]][c['seg']] += 1
+        for k, c in cli.items():
+            if not c['seg'] and seg_cod.get(k[0]): c['seg'] = seg_cod[k[0]].most_common(1)[0][0]
         for k, c in cli.items():
             if c['raiz']: self.raiz[c['raiz']].append(k)
             rz = norm_legal(c['nome'])
@@ -224,7 +233,8 @@ class Motor:
         uf_ok = lambda c, nome: nome in manuais or not ufs or c['uf'] in ufs or (nome not in ambiguos and not uf_sempre)
         def add(cam, k, d, prova):
             if (cam, k, d) in vistos: return
-            if cam not in ('CNPJ', 'RAZAO') and any((n, k[0]) in EXCLUSOES for n in nomes): return
+            g = 'GRUPO:' + (self.cli[k]['grp_desc'] or '')     # exclusão de um grupo inteiro do cadastro
+            if cam not in ('CNPJ', 'RAZAO') and any((n, k[0]) in EXCLUSOES or (n, g) in EXCLUSOES for n in nomes): return
             vistos.add((cam, k, d)); out.append((cam, k, d, prova))
         for r in raizes:
             for k in self.raiz.get(r, []): add('CNPJ', k, self.cli[k]['ult'], f'raiz {r}')
@@ -299,11 +309,10 @@ class Motor:
             k = vinc[0][1]
             return dict(status='INATIVO', data=None, vendedor=self.vendedor(k)[0], via=vinc[0][0], prova=vinc[0][3] + ' (cadastro sem nota)',
                         cliente=f"{k[0]}/{k[1]} {self.cli[k]['nome']}", n=len({v[1] for v in vinc}))
-        cam, k, d, prova = max(com, key=lambda v: (v[2], -ORDEM.index(v[0])))
-        if d > self.lim:
-            # ATIVO: mostra a prova mais específica entre as compras dos últimos 360 dias (código de cliente do IRTT cobre
-            # todas as lojas do código: o CD que atende duas redes não deve aparecer como prova da outra rede)
-            cam, k, d, prova = min([v for v in com if v[2] > self.lim], key=lambda v: (ORDEM_PROVA.index(v[0]), -v[2].toordinal()))
+        # 16/11 (revisão final): a data, o cliente e o vendedor são os da compra MAIS RECENTE da rede ("última compra").
+        # No empate, o vínculo mais específico (ORDEM_PROVA). Antes, a rede ATIVA mostrava o vínculo mais específico dos
+        # últimos 360 dias, que podia não ser a última compra; o CD que atende duas redes já sai no avalia.py.
+        cam, k, d, prova = max(com, key=lambda v: (v[2], -ORDEM_PROVA.index(v[0])))
         vd, fonte = self.vendedor(k)
         return dict(status='ATIVO' if d > self.lim else 'INATIVO', data=d, vendedor=vd, vend_fonte=fonte, via=cam, prova=prova,
                     cliente=f"{k[0]}/{k[1]} {self.cli[k]['nome']}", uf=self.cli[k]['uf'], seg=self.cli[k]['seg'],
