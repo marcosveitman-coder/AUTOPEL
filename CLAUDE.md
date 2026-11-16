@@ -168,7 +168,8 @@ personalizado e domínio de e-mail**.
    corrompido (base de terceiros), em que o comprador tem o CNPJ verdadeiro.
 8. **Relatório "ultimo fat" do TOTVS** (`ultimo fat (dd.mm.aa).xlsx`: por cliente, DT_FAT, vendedor e grupo):
    - usar a data **só depois do fim das bases de faturamento**. Antes disso vale a data das bases: ~54 raízes tinham
-     nota anterior que não aparece nas bases de venda;
+     nota anterior que não aparece nas bases de venda (regra de 23/10; no status de 16/11 o ultimo fat vale sempre, porque
+     as bases já cobrem até a véspera e o CRM usa a mesma data — ver STATUS AUTOPEL);
    - a coluna E "Descrição" é o **grupo do cliente** (ex.: o grupo de uma rede de farmácias). Ligar grupo → rede por um
      **mapa curado**: os CNPJs dos clientes do grupo caem nas linhas da rede **e** o nome bate; na dúvida, a cidade/UF
      decide. Grupos têm sufixo de vendedor/região ("GRUPO X - FULANO"). Mapa de farmácias:
@@ -293,6 +294,14 @@ Armadilhas reais já vistas:
   - regra 9 em todos os grupos do IRTT (exceções conferidas em `grupos_ok`). Código que o IRTT repete em várias bandeiras
     (distribuidor ou holding do grupo) só vale com o nome ou o CNPJ da bandeira no cliente;
   - conferir com `revisao_fontes.py` (vendedor = CADASTRO DE CLIENTES.RLT; data contra o ultimo fat);
+- **revisão de certeza (16/11, 4ª rodada):**
+  - **compra = nota com valor > 0** (devolução/valor zero não conta; o ultimo fat só tem valor > 0);
+  - bandeira nacional de combustível (Shell, Ipiranga, Petrobras…) vale em qualquer UF; o grupo do cadastro pode vir
+    cortado ("POSTOS SHEL");
+  - marcas do mesmo CNPJ: a compra pelo CNPJ vale para todas, o produto com o nome de uma é só dela;
+  - conferir sempre com `confere_bruto.py` (arquivos brutos, ~12 min, sozinho na máquina), `confere_compradores.py`
+    (maiores compradores → mapa) e `confere_final.py` (dinâmicas, textos, organograma, células de erro);
+  - a data do ultimo fat que não está nas bases vale (notas de outros canais e de antes de 2020; o CRM usa a mesma);
 - **resumos com texto fixo** ("FARMACIA VF RESUMO", "… port A e B", "I.R.T. T. resumo") não acompanham a dinâmica:
   depois de mudar status, reescrever os números do texto (`grava_status.ps1` aceita o tipo `n`, número). **Não renomear o
   título da coluna AG da IRTT**: uma cache de dinâmica usa o campo;

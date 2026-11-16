@@ -241,3 +241,42 @@ conferir e gravar, com as propostas da aba LEIA.
   mudou. O título da coluna AG da IRTT ("VENDEDOR (CLIENTES 20.10.26)") ficou: uma cache de dinâmica usa o campo, e
   renomear tiraria o campo da tabela. O texto do resumo avisa que os dados são de 16/11.
 - **Lição:** resumo com texto fixo não se atualiza com a dinâmica. Depois de mudar status, reescrever os números do texto.
+
+## 8ª parte: revisão de certeza (pedido do usuário: "100% de acuracidade, pode demorar")
+
+Em camadas, da mais objetiva para a de julgamento, sem reaproveitar o processamento onde dava:
+1. **`confere_bruto.py`** relê os 10 arquivos de faturamento, o ultimo fat e o cadastro **brutos** e refaz, para as 94.765
+   linhas de todas as abas: data mostrada, status x data, compra pela raiz do CNPJ e raiz no cadastro.
+   - Achou: **nota com valor zero ou negativo (devolução) contava como compra.** O `extrai_fat.py` agora guarda só nota
+     de venda (valor > 0); o `extrai_todos.py` roda os 10 arquivos (no Windows o paralelo precisa de script em arquivo).
+     Com isso uma rede do IRTT saiu de ATIVO e algumas dezenas de datas mudaram. O ultimo fat não tem nota com valor <= 0.
+   - Depois da correção: nenhuma data, status ou compra pela raiz diferente do bruto.
+2. **`revisao_fontes.py`**: vendedor = CADASTRO DE CLIENTES.RLT e data contra o ultimo fat — sem diferença.
+3. **`confere_compradores.py`** (de quem compra para o mapa): os 1.500 maiores compradores dos últimos 360 dias; a rede
+   que o comprador menciona (CNPJ da linha; nome na razão principal, no grupo ou no começo da fantasia) tem de estar
+   ATIVO. 81 redes revistas à mão: coincidência de palavra, ou o comprador é de outra empresa ou de outra UF.
+4. **Maiores redes não ATIVAS de cada aba** (30 por aba, com os clientes de mesmo nome): revistas à mão.
+5. **Todas as diferenças com o CRM refeitas no estado final** e os vínculos fracos novos revistos à mão.
+
+**Erros achados e corrigidos (meus, das correções da tarde):**
+- a trava "posto só na mesma UF" derrubou a **bandeira nacional**: postos com a bandeira Shell (grupo do cadastro
+  "POSTOS SHEL", nome cortado no TOTVS) são da rede. Bandeiras nacionais de combustível (`nacionais` no `manuais.json`)
+  valem em qualquer UF;
+- **marcas do mesmo CNPJ** ficaram juntas e o produto com o nome de uma (Pizza Hut) ia para a outra. A união das marcas
+  agora é só pelo nome: a compra pelo CNPJ vale para todas, o produto com o nome de uma é só dela;
+- **"DROGAL" colado batia em "DROGA LIDER"** (armadilha já registrada) na nova função de relação: nome colado só com
+  2+ palavras;
+- data mais nova vinda de vínculo falso (ex.: "ATACADÃO DAS EMBALAGENS"; e-mail com "nosso"): exclusões;
+- franqueadora de Hering pelo grupo do franqueado (mesmo endereço da empresa com fantasia HERING): vínculo à mão.
+- **Decisão sem mudança:** a data do ultimo fat que não está nas bases (notas de canais que faltam nas bases e notas
+  de 2018–2019, antes do início das bases) fica: o CRM, que vem do TOTVS, mostra a mesma data em 29 de 35 casos e nenhum
+  status depende disso. A regra 8 era para quando as bases terminavam antes do relatório.
+
+**Resultado:** 7 redes mudaram de status (21 linhas nas abas) e ~80 linhas de data/vendedor. Gravadas só as 131
+células que mudaram + 42 do texto dos resumos (`textos_resumos.py`, que recalcula os números pelo próprio arquivo).
+- `confere_gravacao.py`: 0 erradas, nada mais mudou; macro 390 de 390; `confere_final.py`: dinâmicas, tabelas fixas,
+  textos e organograma batem com as abas; nenhuma célula de erro nas abas do pedido.
+- A aba "I.R.T.T.__ (MAIORES 300 GRUPOS)" (fonte original do ranking, fora do pedido) tem 380 "#N/A" nas colunas G/H
+  desde antes de hoje. Não mexi.
+- **O que é julgamento:** vínculo só por nome, e-mail ou produto (franqueado, distribuidor) foi revisto à mão e a prova
+  está na coluna "COMO FOI ACHADO". O resto (CNPJ, código, razão, grupo com o nome) é fato do TOTVS.

@@ -1,5 +1,5 @@
 """Extrai um arquivo "faturamento AAAA*.xlsx" do TOTVS (16/11/2026) para um pickle enxuto.
-Lê as colunas pelo nome do cabeçalho (linha 1, ou a 1ª linha que tem EMISSAO). Guarda uma linha por cliente+loja+produto, com a nota mais recente
+Lê as colunas pelo nome do cabeçalho (linha 1, ou a 1ª linha que tem EMISSAO). Guarda uma linha por cliente+loja+produto, com a nota de venda (valor > 0) mais recente
 (data, vendedor, valor) e os dados do cliente: CNPJ, grupo (GRP_CLI), razão (CLIENTE), UF, município e segmento, além
 da descrição do produto.
 Uso: python extrai_fat.py "<faturamento.xlsx>" "<saida.pkl>" """
@@ -23,7 +23,7 @@ def data(v):
 def main(arq, saida):
     t = time.time()
     wb = openpyxl.load_workbook(arq, read_only=True)
-    out, linhas, sem_data = {}, 0, 0
+    out, linhas, sem_data, sem_valor = {}, 0, 0, 0
     for ws in wb.worksheets:
         it = ws.iter_rows(values_only=True)
         cab = [str(x or '').strip() for x in next(it)]
@@ -41,14 +41,15 @@ def main(arq, saida):
             k = (g(r, 'COD_CLI'), g(r, 'COD_LOJA'), g(r, 'COD_PROD'))
             try: v = float(r[idx['VLR_TOTAL']] or 0)
             except (TypeError, ValueError): v = 0.0
+            if v <= 0: sem_valor += 1; continue     # 16/11 (revisão final): devolução/valor zero não é compra
             ant = out.get(k)
             if ant is None or d > ant[0] or (d == ant[0] and v > ant[3]):
                 out[k] = (d, g(r, 'COD_VENDEDOR'), g(r, 'NOME_VENDEDOR'), v, g(r, 'CNPJ'), g(r, 'GRP_CLI'), g(r, 'CLIENTE'),
                           g(r, 'Estado'), g(r, 'MUNICIPIO'), g(r, 'DES_PROD'), g(r, 'SEGMENTO'))
     wb.close()
     dmin = min(v[0] for v in out.values()); dmax = max(v[0] for v in out.values())
-    pickle.dump(dict(arquivo=arq, linhas=linhas, sem_data=sem_data, dados=out), open(saida, 'wb'))
-    print(f'{arq}: {linhas} linhas ({sem_data} sem data), {len(out)} cliente+loja+produto, {dmin} a {dmax}, {time.time() - t:.0f}s', flush=True)
+    pickle.dump(dict(arquivo=arq, linhas=linhas, sem_data=sem_data, sem_valor=sem_valor, dados=out), open(saida, 'wb'))
+    print(f'{arq}: {linhas} linhas ({sem_data} sem data, {sem_valor} com valor <= 0 fora), {len(out)} cliente+loja+produto, {dmin} a {dmax}, {time.time() - t:.0f}s', flush=True)
 
 
 if __name__ == '__main__':

@@ -17,7 +17,7 @@ HOJE = dt.date.fromisoformat(sys.argv[2]) if len(sys.argv) > 2 else dt.date.toda
 
 
 # vínculos manuais que nenhuma regra acha: nome de busca -> nomes a mais (dados/manuais.json, local)
-from motor import ALIAS_MANUAL, RAIZES_ERRADAS, CLIENTES_MANUAIS, EXCLUSOES, UFS, FAM_EXTRA, TIPO, SEPARAR, SO_FORTES, GRUPOS_OK
+from motor import ALIAS_MANUAL, RAIZES_ERRADAS, CLIENTES_MANUAIS, EXCLUSOES, UFS, FAM_EXTRA, TIPO, SEPARAR, SO_FORTES, GRUPOS_OK, NACIONAIS
 
 
 class Proibidas:
@@ -110,6 +110,8 @@ def main():
         redes_farm = {norm(e['extra']['nome']) for e in es if e['aba'] == '"FARMACIA VF"'}
         r_assoc = set().union(*[assoc.get(x, set()) for x in redes_farm]) if redes_farm else set()
         uf_sempre = set(fams) <= {'SUPER', 'DROG', 'POSTO', 'ESTAC'}   # 16/11: posto e estacionamento também são regionais
+        if any(x in NACIONAIS for x in nomes):       # Shell, Ipiranga, Petrobras: o posto com a bandeira é de qualquer UF
+            uf_sempre, ufs = False, set()
         v = M.vinculos(nomes, raizes, razoes, Proibidas(todas, set(raizes) | r_assoc), fam=fams, principais=principais,
                        ambiguos=ambiguos, ufs=ufs, uf_sempre=uf_sempre, manuais={y for x in nomes for y in ALIAS_MANUAL.get(x, [])})
         for r in sorted(r_assoc):
@@ -123,7 +125,9 @@ def main():
             txt = ' '.join((c['_nome'], c['_fant'], c['_grp']))
             # "HIGA S" (de Higa's) também vale sem o S do apóstrofo: "HIGA PRODUTOS"
             vs = {n for n in nomes} | {n[:-2] for n in nomes if n.endswith(' S')}
-            return any(n in txt or n.replace(' ', '') in txt.replace(' ', '') for n in vs if len(n.replace(' ', '')) >= 4)
+            # nome colado só com 2+ palavras (regra 9 do CLAUDE.md: "DROGAL" colado batia em "DROGA LIDER")
+            return any(re.search(r'(?<![A-Z0-9])' + re.escape(n) + r'(?![A-Z0-9])', txt) or (' ' in n and n.replace(' ', '') in txt.replace(' ', ''))
+                       for n in vs if len(n.replace(' ', '')) >= 4)
         for x in set(nomes) | {norm(e['extra'].get('nome', '')) for e in es}:
             for ck in CLIENTES_MANUAIS.get(x, []):
                 k = tuple(ck.split('/'))
@@ -147,7 +151,8 @@ def main():
                 if gn in GRUPO_GENERICO or len(por_grp.get(gn, ())) > 2000: continue    # 'CLIENTES DIVERSOS' não é grupo de rede
                 # regra 9 (CLAUDE.md), para a marca separada do grupo: o grupo do cadastro só vale se tiver o nome da marca,
                 # ou o cliente tiver o nome dela ou o CNPJ dela ("GRUPO TRIGO" não é compra do Gurumê)
-                nome_no_grupo = any(x.replace(' ', '') in gn.replace(' ', '') for x in nomes if len(x.replace(' ', '')) >= 4)
+                nome_no_grupo = any(re.search(r'(?<![A-Z0-9])' + re.escape(x) + r'(?![A-Z0-9])', gn) or (' ' in x and x.replace(' ', '') in gn.replace(' ', ''))
+                                    for x in nomes if len(x.replace(' ', '')) >= 4)
                 for k in por_grp.get(gn, ()) if gn else ():
                     if regra9 and not nome_no_grupo and gn not in GRUPOS_OK and not tem_relacao(k): continue
                     v.append(('GRUPO ERP', k, cli[k]['ult'], f"grupo ERP '{cli[k]['grp_desc']}'"))
@@ -197,8 +202,9 @@ def main():
             for n in bs:
                 chave[('M', marca(E[n]))].append(n)
                 for r in E[n]['raizes']: chave[('R', r)].append(n)
-            for ms in chave.values():
-                for m in ms[1:]: une(m, ms[0])
+            for (tipo_, _), ms in chave.items():
+                if tipo_ != 'M': continue      # 16/11: só pelo nome; marcas do mesmo CNPJ ficam separadas, e as duas levam a
+                for m in ms[1:]: une(m, ms[0])  # compra pelo CNPJ (a da empresa), mas o produto com o nome de uma é só dela
             for a_ in bs:
                 for b_ in bs:     # "Ri Happy (+ PBKids)" inclui PB Kids; "DOMINOS" e "DOMINOS PIZZA"
                     ma = marca(E[a_])
