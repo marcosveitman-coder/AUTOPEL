@@ -316,7 +316,9 @@ Armadilhas reais já vistas:
 **CNPJ e caixas nas listas da Alessandra Dayan** (17/11/2026; `mapa_final/cnpj_alessandra*.py` → `top50_cnpj_caixas.ps1` →
 `confere_top50.py`, roteiro no LEIA-ME da pasta):
 - "Alessandra Dayan VF" e as 11 "(TOP 50)": cabeçalho na linha 6, tabela a/b/c/d nas linhas 1–4 (I letra, J valor; na VF a K
-  = supermercado), I "CNPJ" (matriz da marca) e J "Total de caixas/ mês" (supermercado 20/15/10/8; o resto 17/12/7/4);
+  = supermercado), I "CNPJ" (matriz da marca) e J "Total de caixas/ mês" (supermercado 20/15/10/8; o resto 17/12/7/4).
+  Na VF, desde 17/11 o quadro é do usuário, por segmento (F1:P5, letras E2:E5, cabeçalho na linha 8), e a J usa
+  ÍNDICE/CORRESP pelo SEGMENTO e pela letra do PORTE;
 - CNPJ = o CONFIRMADO da aba FINAL ligada ou o da linha de rede da FARMACIA VF / SUPERMERCADOS (reuniao) / IRTT; PROVÁVEL
   só com a razão da marca e com comentário "CNPJ provável (conferir)". Unidade de franquia, NÃO CONFIRMADO, farmácia
   avulsa com o mesmo nome e empresa de outra UF ficam em branco. A matriz pode não ser a 0001 (Grupo Mateus);

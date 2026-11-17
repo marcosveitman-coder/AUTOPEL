@@ -140,3 +140,17 @@ Arquivo trocado de novo às 10:06. Foi refeito a partir do original desta manhã
 **Lições**
 - O "CNPJ publicado no site da rede" nem sempre é da franqueadora. Às vezes é de uma unidade ou da loja virtual.
 - A BrasilAPI pode dizer "não encontrado" para um CNPJ que existe (Selfit). A cópia local da Receita resolve.
+
+## 3ª parte: caixas por segmento na Alessandra Dayan VF
+
+- O usuário montou na aba um quadro de caixas por porte para cada segmento:
+  - títulos dos segmentos em F1:P1, letras a–d em E2:E5 e valores em F2:P5;
+  - o cabeçalho dos dados foi para a linha 8 (dados de 9 a 558).
+- Gravado pelo Excel numa cópia, com a fórmula na coluna J (linhas 9–558):
+  `=SEERRO(ÍNDICE($F$2:$P$5;CORRESP(ESQUERDA($F9;1);$E$2:$E$5;0);CORRESP($H9;$F$1:$P$1;0));0)*N($C9)`.
+  Ela busca a coluna do SEGMENTO e a linha da letra do PORTE. Faz o mesmo que vários SE, numa fórmula só.
+- As duas dinâmicas da aba (L8 e L28) foram atualizadas.
+- Conferência: as 550 linhas recalculadas em Python estão iguais. As outras colunas e abas não mudaram. Total de
+  2.168.035 caixas/mês.
+- Arquivo trocado às 10:37. O backup está no scratchpad.
+- Os 11 títulos do quadro precisam ser iguais ao texto da coluna SEGMENTO: se mudar um título, a linha dá 0.
