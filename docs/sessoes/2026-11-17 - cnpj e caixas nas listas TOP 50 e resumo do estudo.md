@@ -214,3 +214,5 @@ diretor de compras, diretor de supply e CEO, usando Apollo, Lusha e LinkedIn.
 - Checar créditos e o que o plano libera (campos e buscas) antes de prometer o resultado.
 - No ZoomInfo, "presidente" no filtro de cargo traz todos os vice-presidentes. Usar "CEO", "Chief Executive" e
   "Diretor Presidente".
+
+- **Entrega (a pedido):** planilha "Contatos compras - redes proprias (17-11-2026).xlsx" na pasta COMERCIAL (NOVO), fora do git. Tem as 30 redes, as colunas de nome, cargo, LinkedIn, e-mail e telefone para os 5 cargos, e a situação da pesquisa por rede. Só 1 rede tem contatos (3 pessoas, com e-mail).
