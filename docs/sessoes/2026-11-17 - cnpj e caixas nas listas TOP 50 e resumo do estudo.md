@@ -154,3 +154,30 @@ Arquivo trocado de novo às 10:06. Foi refeito a partir do original desta manhã
   2.168.035 caixas/mês.
 - Arquivo trocado às 10:37. O backup está no scratchpad.
 - Os 11 títulos do quadro precisam ser iguais ao texto da coluna SEGMENTO: se mudar um título, a linha dá 0.
+
+## 4ª parte: rede própria x associação/franquia (Alessandra Dayan VF, colunas A e B)
+
+- O usuário inseriu duas colunas no começo da aba:
+  - A, "rede / associação ou franquia";
+  - B, "quem atende na autopel", com 9 linhas já preenchidas (nomes da equipe).
+- **A** foi preenchida nas 550 linhas: REDE PRÓPRIA (266) ou ASSOCIAÇÃO / FRANQUIA (284). Os sinais usados, em ordem:
+  1. decisões à mão, com pesquisa;
+  2. TIPO da FARMACIA VF;
+  3. lojas ativas na raiz do CNPJ da marca (50% ou mais das lojas = rede própria);
+  4. sinal de franquia: a marca está no observatório de franquias, a aba FINAL fala em franqueadora/ABF, ou o CNPJ tem
+     CNAE 7740-3/00.
+- Critérios:
+  - posto com bandeira de distribuidora (Petrobras, Shell, Ipiranga, Ale) = associação/franquia, porque é revendedor
+    independente;
+  - rede mista vai pelo modelo predominante: McDonald's, Burger King e Smart Fit = rede; Azzas, Habib's e Subway =
+    franquia.
+- **B**: o que já estava ficou como estava. Linha de associação/franquia com B vazio recebeu "IA + 1 ou 2 closer"
+  (274 linhas).
+- Pesquisa: Drogaria Total (associativista, Gironews), Boa Farma e Cityfarma (redes da Febrafar) e Legítima (junção de
+  donos de farmácias).
+- Conferência:
+  - nenhuma célula de C em diante mudou;
+  - nenhuma B já preenchida mudou;
+  - nenhuma linha de rede própria recebeu "IA";
+  - as outras abas ficaram iguais.
+- Arquivo trocado às 12:13, com backup no scratchpad.
