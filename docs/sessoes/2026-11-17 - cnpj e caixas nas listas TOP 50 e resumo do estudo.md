@@ -318,3 +318,14 @@ qualificação e CNPJ consultado) e o texto da aba COMO LER foi atualizado. Back
 - Nome de sócio da Receita é completo e o perfil do LinkedIn usa nome curto: com sobrenome comum, a busca enche de
   homônimos.
 - Buscar o nome da rede com "comprador" acha mais gente de compras do que buscar o sócio.
+
+## 8ª parte: um arquivo só
+
+- **Pedido:** ficar só com o arquivo mais completo e apagar o outro.
+- **Antes de apagar:**
+  - o arquivo antigo ("Contatos compras…", 30 redes) tinha contatos de uma rede só: 3 pessoas do ZoomInfo, com e-mail;
+  - 2 delas já estavam no arquivo novo;
+  - a 3ª (gerente de compras) entrou no arquivo novo em "OUTROS NOMES", sem e-mail, porque o usuário dispensou o e-mail.
+    Agora são 495 pessoas.
+- O antigo foi para a **Lixeira** (dá para recuperar) e há uma cópia local no scratchpad.
+- Na pasta COMERCIAL (NOVO) fica só "Contatos LinkedIn - redes proprias (17-11-2026).xlsx".
