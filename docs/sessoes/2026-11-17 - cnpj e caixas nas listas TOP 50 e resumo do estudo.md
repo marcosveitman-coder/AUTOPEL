@@ -365,3 +365,33 @@ dizia "cargo exato não informado". O usuário pediu 100% de acerto e **célula 
 
 **Lição:** nunca pôr uma pessoa num cargo por aproximação ("supply chain" no título não é diretor de supply). Na dúvida,
 deixar em branco.
+
+## 10ª parte: conferência perfil a perfil (interrompida: créditos)
+
+**Pedido:** "Sim, conferir todos" (220 perfis, ~3.080 créditos).
+
+**Como foi feito:**
+- `firecrawl_scrape` do perfil com `formats: ["query"]`, pedindo só os empregos atuais (cargo | empresa | início);
+- 14 créditos por perfil;
+- `people_company_enrich` também funciona, mas a resposta vem enorme.
+
+**Interrupção:** os créditos diários do Firecrawl acabaram depois de **63 perfis** (voltam em 18/11, 08:59).
+
+**Resultado dos 63:**
+- 6 saíram:
+  - gerente executiva de supply chain no lugar de gerente de compras;
+  - gerente comercial;
+  - diretor comercial no lugar de diretor de compras;
+  - "gerente" sem área;
+  - perfil sem empresa (2).
+- 6 sem emprego no provedor ficaram pelo título que a própria pessoa escreveu.
+- 2 não abriram.
+
+**Planilha regravada:**
+- a coluna do cargo diz "Conferido 17/11: cargo | empresa | desde" ou "NÃO conferido no perfil";
+- 121 bandeiras com cargo, 361 pessoas.
+
+**Para continuar:**
+- estado salvo em `avulsos/mapa_final/dados/contatos_1711/` (local, fora do git): `r4_urls.json` (fila), `r4_verif.tsv`
+  (respostas), `r4_aplica.py` (aplica);
+- conferir os perfis 61 em diante da fila e regravar a planilha.

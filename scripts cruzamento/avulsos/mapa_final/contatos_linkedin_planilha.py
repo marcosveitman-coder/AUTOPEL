@@ -151,6 +151,8 @@ def main(f_redes, f_lnk, saida, f_qsa=None, f_dec=None, f_r2=None):
         '  presidente do conselho, sócio ou diretor sem ser o principal executivo NÃO.',
         'Cargo incerto, perfil que não diz a empresa ou que já saiu = célula EM BRANCO. Empresas do mesmo grupo dividem as pessoas',
         '(ex.: GPA e Minuto Pão de Açúcar; Grupo Boticário e The Beauty Box/Eudora; DIA e DIA%).',
+        'Coluna do cargo no LinkedIn: "Conferido DD/MM" = perfil aberto, cargo atual e empresa confirmados naquele dia;',
+        '"NÃO conferido no perfil" = passou na regra pelo título da busca, mas o perfil ainda não foi aberto (conferência em andamento).',
         'Em branco = nenhum perfil público com esse cargo. É comum nas redes pequenas (postos, estacionamentos, lojas regionais),',
         'onde o dono faz as compras: veja a coluna do sócio da Receita.',
         'SÓCIO / ADMINISTRADOR (RECEITA): 2ª rodada, só nas bandeiras em que nenhum dos 5 cargos apareceu no LinkedIn. São os',
