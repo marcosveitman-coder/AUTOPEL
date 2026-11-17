@@ -313,6 +313,17 @@ Armadilhas reais já vistas:
   **FARMACIA VF sem as colunas I e J** (fica a H, considerado; todo script lê a aba pelo cabeçalho); o STATUS AUTOPEL dela está na **N**, com
   ATIVO / INATIVO / NÃO É CLIENTE; a fórmula de caixas usa U e V1:V4. Os scripts acham as colunas pelo cabeçalho.
 
+**CNPJ e caixas nas listas da Alessandra Dayan** (17/11/2026; `mapa_final/cnpj_alessandra*.py` → `top50_cnpj_caixas.ps1` →
+`confere_top50.py`, roteiro no LEIA-ME da pasta):
+- "Alessandra Dayan VF" e as 11 "(TOP 50)": cabeçalho na linha 6, tabela a/b/c/d nas linhas 1–4 (I letra, J valor; na VF a K
+  = supermercado), I "CNPJ" (matriz da marca) e J "Total de caixas/ mês" (supermercado 20/15/10/8; o resto 17/12/7/4);
+- CNPJ = o CONFIRMADO da aba FINAL ligada ou o da linha de rede da FARMACIA VF / SUPERMERCADOS (reuniao) / IRTT; PROVÁVEL
+  só com a razão da marca e com comentário "CNPJ provável (conferir)". Unidade de franquia, NÃO CONFIRMADO, farmácia
+  avulsa com o mesmo nome e empresa de outra UF ficam em branco. A matriz pode não ser a 0001 (Grupo Mateus);
+- a BrasilAPI às vezes diz "não encontrado" para CNPJ que existe: conferir no CNPJ.ws antes de tirar;
+- mexeu nas TOP 50: rodar `org_dados` → `org_impressao` → `org_detalhe.py` → `org_detalhe.ps1` (a CONFIG DETALHE guarda a
+  linha do cabeçalho) e o teste da macro.
+
 **Caixas por mês nas abas FINAL** (06/11/2026; `mapa_final/caixas_final.ps1`):
 - desde 06/11, as 7 abas FINAL têm **o cabeçalho na linha 6**, como a FARMACIA VF;
 - nas linhas 1–4 fica a tabela a/b/c/d (17/12/7/4, copiada da FARMACIA VF W1:X4): a letra na W (OUTROS: Y) e o valor na
@@ -373,7 +384,7 @@ Armadilhas reais já vistas:
     a carteira "INATIVOS";
   - o nome do vendedor no CRM é o **nome reduzido** do TOTVS (coluna "Nome Reduzid" do Ultimo faturamento).
 - **Linha "Ale Dayan" nas caixas** (10/11; o usuário recusou os quadros separados): as 11 abas "<SEGMENTO> (TOP 50)"
-  (cabeçalho na linha 3; EMPRESA e STATUS AUTOPEL):
+  (cabeçalho na linha 6 desde 17/11, antes na 3; EMPRESA e STATUS AUTOPEL):
   - em cada caixa de vendedor, venda interna e representante, 3 números: ativos (verde), inativos (amarelo) e não é
     cliente (cinza), somando as listas dos segmentos da pessoa (mapa `ALE_SEG` no `org_impressao.py`; Cosméticos = Beleza);
   - a legenda fica só na última folha de cada equipe, por falta de espaço;
@@ -400,7 +411,9 @@ Armadilhas reais já vistas:
   - **largura real da Verdana** (`verdana10.txt`, de `mede_verdana.ps1`) com 10% de folga. O script para se uma palavra
     não couber na célula;
   - a impressora daqui só imprime ~757 pt de largura. A aba tem 740 pt (colunas de 16 px e folgas de 5 px). Conferir
-    `PageSetup.Pages.Count` (9 desde 16/11, paginação pela altura real) e `VPageBreaks.Count` = 0 pelo COM.
+    `PageSetup.Pages.Count` (11 desde 17/11, paginação pela altura real) e `VPageBreaks.Count` = 0 pelo COM.
+  - **resumo do estudo para a diretoria** (17/11): folhas 10 e 11, a partir da linha 183 (método, premissas de caixas,
+    regra do status, fontes por dado e cuidados). Texto fixo no `org_impressao.py`: mudou premissa ou fonte, trocar ali.
 
 ---
 

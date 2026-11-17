@@ -344,7 +344,85 @@ put(r, 22, ', '.join(nomeseg(s) for s in SEM), 64, indent=1, wrap=True, border=T
 alt(r, 6); r += 1
 put(r, C0, 'Fonte: ' + D.get('fonte_crm', 'telas do CRM') + '; potencial: abas ALIMENTACAO, REDE DE LOJAS, CONSTRUÇÃO, POSTOS GAS & '
            'CONVENIENCIA, ESTACIONAMENTO e PET SHOP FINAL (coluna W, STATUS AUTOPEL de 16/11/2026) e "FARMACIA VF" (coluna N); Ale Dayan: abas "(TOP 50)" deste arquivo.', CF, wrap=True)
-ultima = r
+# ---------- 17/11/2026: resumo do estudo para a diretoria (racional, premissas e fontes), abaixo da linha 182, em 2 folhas
+r = max(r + 1, 183)
+def quadro(r, cab, linhas_, cols):
+    """tabela simples: cabecalho azul claro e linhas com borda; 1a coluna em negrito."""
+    for (c1, c2), t in zip(cols, cab): put(r, c1, t, c2, bold=True, fill=LIGHT, font=DARK, halign='center', wrap=True, border=True)
+    r += 1
+    for lin in linhas_:
+        for k, ((c1, c2), t) in enumerate(zip(cols, lin)):
+            put(r, c1, t, c2, bold=(k == 0), indent=1 if k == 0 or len(cols) == 2 else 0, wrap=True, border=True, halign='left' if k == 0 or len(cols) == 2 else 'center')
+        r += 1
+    return r
+def item(r, t):
+    put(r, C0, '•  ' + t, CF, indent=1, wrap=True); return r + 1
+r = nova_folha(r)
+r = titulo(r, 'RESUMO DO ESTUDO – COMO OS NÚMEROS FORAM FEITOS', 'Posição de 16/11/2026 · resumo para a diretoria')
+r = faixa(r, '4. O QUE O ESTUDO RESPONDE')
+alt(r, 4); r += 1
+for t in ['Quantas redes existem em cada segmento-alvo, quantas lojas (PDV) elas têm e quantas caixas por mês podem consumir.',
+          'Quais já compram da Autopel (ATIVO), quais já compraram (INATIVO) e quais nunca compraram (NÃO É CLIENTE).',
+          'Onde está o potencial (tudo o que não é ATIVO) e qual equipe responde por cada segmento.']:
+    r = item(r, t)
+alt(r, 8); r += 1
+r = faixa(r, '5. MÉTODO EM 4 PASSOS')
+r = quadro(r, ['Passo', 'Como foi feito'], [
+    ('1. Mapear o mercado', 'Listas por segmento (rankings, associações, pesquisa e as listas TOP 50) juntadas numa linha por rede/bandeira. '
+     'O grupo dono fica numa coluna, e as lojas não são contadas duas vezes.'),
+    ('2. Validar na Receita Federal', 'Cada CNPJ conferido na base oficial: dígito, existência, situação e nome. O CNPJ da rede é o da operadora, '
+     'da franqueadora ou do dono da marca, nunca o de um franqueado. Nas listas de terceiros, 104 de 276 CNPJs eram inválidos.'),
+    ('3. Cruzar com a Autopel', 'Faturamento 2018–2026 do TOTVS (~6,3 milhões de linhas), última nota, cadastro de clientes e CRM. Vínculo por '
+     'CNPJ, código/grupo do cliente e razão social; nome, e-mail e produto só com revisão manual. Conferido nota a nota com os arquivos brutos e com o CRM.'),
+    ('4. Medir o potencial', 'Nº de lojas × caixas por mês por loja do porte da rede. Potencial = redes que não estão ATIVAS.'),
+], [(2, 15), (16, 64)])
+alt(r, 8); r += 1
+r = faixa(r, '6. PREMISSAS – CAIXAS POR MÊS POR LOJA, SEGUNDO O PORTE DA REDE')
+r = quadro(r, ['Porte', 'Faturamento anual da rede', 'Supermercados', 'Demais segmentos *'], [
+    ('A – Grande', 'R$ 1 bi ou mais', '20', '17'), ('B – Média', 'R$ 300 mi a R$ 1 bi', '15', '12'),
+    ('C – Regional', 'R$ 20 mi a R$ 300 mi', '10', '7'), ('D – Pequena / local', 'menos de R$ 20 mi', '8', '4'),
+], [(2, 15), (16, 33), (34, 48), (49, 64)])
+alt(r, 4); r += 1
+put(r, C0, '* Farmácias, alimentação, lojas, construção, postos, estacionamentos, pet e listas TOP 50 (o supermercado da TOP 50 usa a '
+           'coluna de supermercados). Os valores ficam nas linhas 1 a 4 de cada aba.',
+    CF, wrap=True); r += 1
+put(r, C0, 'Porte = faturamento publicado (IRTT, ranking de farmácias, ABRAS); sem ele, lojas × média por loja: franquia R$ 1,49 mi (ABF), '
+           'lojas e construção R$ 7,42 mi (IRTT), posto R$ 15 mi (ANP), estacionamento R$ 2,26 mi (Estapar), minimercado R$ 0,13 mi.', CF, wrap=True); r += 1
+alt(r, 8); r += 1
+r = faixa(r, '7. COMO LER O STATUS AUTOPEL')
+r = quadro(r, ['Status', 'Regra'], [
+    ('ATIVO', 'Nota de venda (valor > 0) nos últimos 360 dias de qualquer cliente ligado à rede: lojas, franqueados, associadas ou produto personalizado.'),
+    ('INATIVO', 'Comprou há mais de 360 dias, ou está cadastrado no TOTVS sem nota.'),
+    ('NÃO É CLIENTE', 'Sem cadastro e sem compra.'),
+], [(2, 15), (16, 64)])
+r = nova_folha(r)
+r = titulo(r, 'RESUMO DO ESTUDO – FONTES E CUIDADOS', 'Sites, associações e bases usados para o nº de lojas, a UF e o CNPJ')
+r = faixa(r, '8. DE ONDE VIERAM OS DADOS')
+r = quadro(r, ['Dado', 'Fontes'], [
+    ('CNPJ, razão social, UF, situação e lojas ativas', 'Receita Federal – dados abertos do CNPJ (cópia completa de out/2026: estabelecimentos, '
+     'empresas e municípios) – arquivos.receitafederal.gov.br. Consulta pontual: BrasilAPI (brasilapi.com.br) e CNPJ.ws (inscrição estadual).'),
+    ('Supermercados', 'Ranking ABRAS 2025 e 2026 (faturamento e nº de lojas) e a lista de leads com CNPJ.'),
+    ('Farmácias', 'Ranking de redes de farmácias 2025 e o universo da Receita: ~120,7 mil farmácias ativas (CNAE 4771-7). '
+                  'Associações e franquias de farmácia com as associadas em linhas próprias.'),
+    ('Varejo, alimentação e franquias', 'Ranking IRTT Top 300 (por grupo e por bandeira); ABF / Portal do Franchising (maiores franquias 2025); '
+                                        'listas TOP 50 por segmento (Ale Dayan); notícias para grupo dono, sede e nº de lojas.'),
+    ('Material de construção', 'Revista ANAMACO – Top 50 Varejo Nacional 2025 e 2026; Exame (ranking IRTT do setor).'),
+    ('Postos e conveniência', 'ANP – Anuário Estatístico 2026 (postos por bandeira, região e UF); Receita por CNAE (4731-8/00 e 4729-6/02); imprensa.'),
+    ('Estacionamentos e pet shop', 'Estapar (prévia operacional 2T26), Revista PetCenter (100 Top Pet Shops), Panorama PetVet (IRTT 2026 do varejo pet), '
+                                   'ABF e imprensa; Receita por CNAE (5223-1/00, pet shop, veterinária, banho e tosa).'),
+    ('Base Autopel', 'TOTVS: faturamento 2018–2026, relatório de última nota e cadastro de clientes (vendedor da carteira); CRM: carteira por vendedor.'),
+    ('Associações consultadas', 'Abrasel, ANR, ABVTEX, FEBRAMAT, ABRAMAT, ABCEM, Fecombustíveis, ABIEPS, Instituto Pet Brasil, ABINPET, '
+                                'ANCLIVEPA, ABRAPARK e Sindepark. Nenhuma publica lista de redes: serviram só para conferência.'),
+], [(2, 17), (18, 64)])
+alt(r, 8); r += 1
+r = faixa(r, '9. CUIDADOS AO LER OS NÚMEROS')
+alt(r, 4); r += 1
+for t in ['O CNPJ da rede só aparece quando foi conferido na Receita; o provável leva um comentário na célula. Franquia sem franqueadora identificada fica sem CNPJ, porque o CNPJ de uma loja não compra pela rede.',
+          'O nº de lojas tem datas diferentes conforme a fonte (coluna de fonte em cada aba). "Ativa" na Receita não quer dizer loja aberta.',
+          'Algumas redes aparecem em mais de um segmento (ex.: redes pet também em lojas; minimercados em alimentação e conveniência). Ao somar segmentos, contar uma vez.',
+          'Caixas/mês é estimativa de potencial (lojas × premissa), não pedido firme. Serve para priorizar redes e equipes.']:
+    r = item(r, t)
+ultima = r - 1
 for o in ops: o.setdefault('wrap', True)
 ops += [dict(rowh=[k, v]) for k, v in sorted(H.items())]
 lim = folhas_ini + [ultima + 1]

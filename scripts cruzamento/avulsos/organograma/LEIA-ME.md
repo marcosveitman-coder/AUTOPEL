@@ -194,3 +194,12 @@ resumo das equipes, tabela 1, nota e fonte), desde 10/11. Rodar de novo na cópi
 
 A impressão divide as caixas em folhas de até 8 (2 linhas) e a tabela da carteira em folhas de até 13 linhas. A legenda
 entra onde couber; nas outras folhas, entra só a linha de cores da Ale Dayan.
+
+## Resumo do estudo para a diretoria (17/11/2026)
+
+O `org_impressao.py` grava, a partir da linha 183, duas folhas a mais na "ORGANOGRAMA impressao" (11 no total):
+- "como os números foram feitos": o que o estudo responde, o método em 4 passos, as premissas de caixas por porte e a
+  regra do STATUS AUTOPEL;
+- "fontes e cuidados": sites, rankings e associações de cada dado (nº de lojas, UF, CNPJ) e os cuidados de leitura.
+O texto é fixo no script: se uma premissa ou fonte mudar, trocar ali. Conferir com `org_png.ps1` (folhas 10 e 11).
+As listas TOP 50 têm o cabeçalho na linha 6 desde 17/11 (o `org_dados.py` acha sozinho).
