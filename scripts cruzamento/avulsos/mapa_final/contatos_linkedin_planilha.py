@@ -10,31 +10,56 @@ Como a pesquisa foi feita: buscador (Firecrawl) com site:br.linkedin.com/in "<ma
 grande e 4-10 marcas pequenas por busca. Só entra quem tem o cargo atual na empresa no título/trecho; perfil falso ou
 de outra empresa com o mesmo nome fica fora; "(conferir)" = cargo ou vínculo incerto; "comprador" no lugar de
 coordenador quando é o que existe.
+2ª rodada (opcional, bandeiras sem nenhum nome): sócios e administradores da Receita (QSA pela BrasilAPI / CNPJá aberto)
+  qsa.json    {idx: {cnpj, razao, qsa:[{nome, qual}], nota}}
+  dec.json    {idx: [{nome, curto, qual}]} decisores (sócio-administrador, administrador, diretor, presidente; sem PJ e menor)
+  r2lnk.tsv   idx, nome_receita, url, evidencia: perfil do LinkedIn achado para o sócio (ou outra pessoa do QSA)
+  vão na coluna "SÓCIO / ADMINISTRADOR (RECEITA)"; quem tem LinkedIn vem primeiro.
 Saída: xlsx novo (openpyxl; NÃO é o MAPA) com as abas CONTATOS (1 linha por bandeira), PESSOAS (1 linha por pessoa)
 e COMO LER.
-Uso: python contatos_linkedin_planilha.py redes.json lnk.tsv saida.xlsx"""
+Uso: python contatos_linkedin_planilha.py redes.json lnk.tsv saida.xlsx [qsa.json dec.json r2lnk.tsv]"""
 import sys, json, collections as C
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
 CARGOS = [('gerente', 'GERENTE DE COMPRAS'), ('coord', 'COORDENADOR DE COMPRAS'), ('dircompras', 'DIRETOR DE COMPRAS'),
-          ('supply', 'DIRETOR DE SUPPLY'), ('ceo', 'CEO')]
-CORES = ['DDEBF7', 'E2EFDA', 'FFF2CC', 'FCE4D6', 'EDE2F6']
+          ('supply', 'DIRETOR DE SUPPLY'), ('ceo', 'CEO'), ('socio', 'SÓCIO / ADMINISTRADOR (RECEITA)')]
+CORES = ['DDEBF7', 'E2EFDA', 'FFF2CC', 'FCE4D6', 'EDE2F6', 'E7E6E6']
+TERC = ['Cargo no LinkedIn'] * 5 + ['Na Receita / no LinkedIn']
 NAO = 'não encontrado'
 
 
-def main(f_redes, f_lnk, saida):
+def main(f_redes, f_lnk, saida, f_qsa=None, f_dec=None, f_r2=None):
     redes = json.load(open(f_redes, encoding='utf8'))
     pes = C.defaultdict(list)
     vistos = set()
     for l in open(f_lnk, encoding='utf8'):
         p = l.rstrip('\r\n').split('\t')
         if len(p) < 5 or not p[0].isdigit(): continue
-        k = (int(p[0]), p[1], p[3].split('?')[0].rstrip('/'))
+        k = (int(p[0]), p[1], p[3].split('?')[0].rstrip('/') or p[2])
         if k in vistos: continue
         vistos.add(k)
         pes[(int(p[0]), p[1])].append(dict(nome=p[2], url=p[3], ev=p[4]))
+    n_socio = 0
+    if f_qsa:
+        qsa = json.load(open(f_qsa, encoding='utf8')); dec = json.load(open(f_dec, encoding='utf8'))
+        r2 = C.defaultdict(dict)
+        for l in open(f_r2, encoding='utf8'):
+            p = l.rstrip('\r\n').split('\t')
+            if len(p) >= 4 and p[0].isdigit(): r2[p[0]].setdefault(p[1].upper(), (p[2], p[3]))
+        for i, ps in dec.items():
+            x = qsa[i]; c = x['cnpj']; cf = f'{c[:2]}.{c[2:5]}.{c[5:8]}/{c[8:12]}-{c[12:]}'
+            base_ev = lambda q: f"{q} na Receita (CNPJ {cf}, {x.get('razao', '')})" + (f" — {x['nota']}" if x.get('nota') else '')
+            lst = []
+            for pz in ps:
+                u, ev = r2[i].pop(pz['nome'].upper(), ('', ''))
+                lst.append(dict(nome=pz['nome'], url=u, ev=base_ev(pz['qual']) + (f' | LinkedIn: {ev}' if ev else '')))
+            for nome, (u, ev) in r2[i].items():   # pessoa do QSA que não é administradora, mas tem LinkedIn
+                q = next((s['qual'] for s in x.get('qsa', []) if s['nome'].upper() == nome), 'Sócio')
+                lst.append(dict(nome=nome.title(), url=u, ev=base_ev(q) + f' | LinkedIn: {ev}'))
+            lst.sort(key=lambda z: not z['url'])
+            if lst: pes[(int(i), 'socio')] = lst; n_socio += 1
 
     wb = Workbook()
     ws = wb.active; ws.title = 'CONTATOS'
@@ -43,7 +68,7 @@ def main(f_redes, f_lnk, saida):
     link = Font(name='Calibri', color='0563C1', underline='single')
     base = ['Nº', 'BANDEIRA', 'SEGMENTO', 'UF', 'Nº DE LOJAS', 'CAIXAS/MÊS', 'CARGOS ACHADOS (de 5)']
     ws.append([''] * len(base) + sum([[t, '', ''] for _, t in CARGOS], []) + ['OUTROS NOMES ACHADOS'])
-    ws.append(base + ['Nome', 'LinkedIn', 'Cargo no LinkedIn'] * len(CARGOS) + [''])
+    ws.append(base + sum([['Nome', 'LinkedIn', t] for t in TERC], []) + [''])
     nb = len(base)
     for j, (_, t) in enumerate(CARGOS):
         c0 = nb + 1 + 3 * j
@@ -69,7 +94,7 @@ def main(f_redes, f_lnk, saida):
         for k, t in CARGOS:
             ps = pes.get((i, k), [])
             if ps:
-                achados += 1; tot[k] += 1
+                achados += k != 'socio'; tot[k] += 1
                 cel += [ps[0]['nome'], ps[0]['url'], ps[0]['ev']]
                 outros += [f"{t.lower()}: {p['nome']} ({p['ev']}) {p['url']}" for p in ps[1:]]
             else:
@@ -77,6 +102,7 @@ def main(f_redes, f_lnk, saida):
             for p in ps:
                 lista.append([r['rede'], r['seg'], r['uf'], t, p['nome'], p['url'], p['ev']])
         tot['com_alguem'] += achados > 0
+        tot['com_nome'] += achados > 0 or (i, 'socio') in pes
         ws.append(lin + [achados] + cel + ['\n'.join(outros)])
         rr = ws.max_row
         for j in range(len(CARGOS)):
@@ -98,7 +124,8 @@ def main(f_redes, f_lnk, saida):
     for c in range(1, 8):
         w2.cell(1, c).font = cab; w2.cell(1, c).fill = fcab
     for rr in range(2, w2.max_row + 1):
-        c = w2.cell(rr, 6); c.hyperlink = c.value; c.font = link
+        c = w2.cell(rr, 6)
+        if c.value: c.hyperlink = c.value; c.font = link
     for c, w in enumerate([38, 18, 5, 24, 30, 55, 70], 1): w2.column_dimensions[get_column_letter(c)].width = w
     w2.freeze_panes = 'A2'; w2.auto_filter.ref = f'A1:G{w2.max_row}'
 
@@ -106,7 +133,8 @@ def main(f_redes, f_lnk, saida):
     txt = [
         'CONTATOS NO LINKEDIN - BANDEIRAS "REDE PRÓPRIA" DA ABA "Alessandra Dayan VF"',
         '',
-        f'Bandeiras: {len(redes)} (todas com REDE PRÓPRIA na coluna A). Com pelo menos 1 nome: {tot["com_alguem"]}. Pessoas: {len(lista)}.',
+        f'Bandeiras: {len(redes)} (todas com REDE PRÓPRIA na coluna A). Com pelo menos 1 dos 5 cargos: {tot["com_alguem"]}. '
+        f'Com algum nome (cargos ou sócio da Receita): {tot["com_nome"]}. Pessoas: {len(lista)}.',
         'Achados por cargo: ' + ', '.join(f'{t.lower()} {tot[k]}' for k, t in CARGOS) + '.',
         '',
         'Aba CONTATOS: 1 linha por bandeira; para cada cargo, nome, link do perfil e o cargo como aparece no LinkedIn.',
@@ -121,14 +149,19 @@ def main(f_redes, f_lnk, saida):
         '"não encontrado" = nenhum perfil público com esse cargo apareceu. É comum nas redes pequenas (postos, estacionamentos,',
         'lojas regionais), onde o dono faz as compras: o caminho é o sócio da Receita ou o telefone da loja.',
         'O LinkedIn muda todo dia: abrir o perfil antes da abordagem para confirmar o cargo.',
+        'SÓCIO / ADMINISTRADOR (RECEITA): 2ª rodada, só nas bandeiras em que nenhum dos 5 cargos apareceu no LinkedIn. São os',
+        'sócios-administradores, administradores e diretores do quadro societário (QSA) da Receita Federal, com o CNPJ consultado.',
+        'Nas redes pequenas, o dono é quem compra. Quando o sócio tem perfil no LinkedIn, o link vem ao lado.',
+        'Bandeiras sem CNPJ confirmado ficaram sem sócio; "(conferir)" no CNPJ = achado pelo nome na Receita.',
+        f'Bandeiras com sócio da Receita: {n_socio}.',
         'Sem e-mail e sem telefone, como pedido.',
     ]
     for t in txt: w3.append([t])
     w3['A1'].font = Font(bold=True, size=13); w3.column_dimensions['A'].width = 130
     wb.save(saida)
-    print(f'bandeiras {len(redes)} | com alguém {tot["com_alguem"]} | pessoas {len(lista)} | ' +
+    print(f'bandeiras {len(redes)} | com cargo {tot["com_alguem"]} | com algum nome {tot["com_nome"]} | pessoas {len(lista)} | ' +
           ' '.join(f'{k}={tot[k]}' for k, _ in CARGOS))
 
 
 if __name__ == '__main__':
-    main(*sys.argv[1:4])
+    main(*sys.argv[1:7])

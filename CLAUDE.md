@@ -322,10 +322,12 @@ Armadilhas reais já vistas:
 - CNPJ = o CONFIRMADO da aba FINAL ligada ou o da linha de rede da FARMACIA VF / SUPERMERCADOS (reuniao) / IRTT; PROVÁVEL
   só com a razão da marca e com comentário "CNPJ provável (conferir)". Unidade de franquia, NÃO CONFIRMADO, farmácia
   avulsa com o mesmo nome e empresa de outra UF ficam em branco. A matriz pode não ser a 0001 (Grupo Mateus);
-- a BrasilAPI às vezes diz "não encontrado" para CNPJ que existe: conferir no CNPJ.ws antes de tirar;
+- a BrasilAPI às vezes diz "não encontrado" para CNPJ que existe: conferir no CNPJ.ws ou no CNPJá aberto
+  (`open.cnpja.com/office/<14 dígitos>`, 5 por minuto, traz o QSA) antes de tirar;
 - **Nomes e LinkedIn de compras/diretoria** (17/11): busca pública `site:br.linkedin.com/in "<marca>" + cargos` pelo Firecrawl
   (os buscadores por script não trazem LinkedIn). Apollo, Lusha e ZoomInfo do usuário não buscam pessoas (plano). Só vale cargo
   atual; resultado em tsv local (tem nomes) e planilha por `contatos_linkedin_planilha.py`. Rede pequena quase não tem perfil.
+  Rede pequena: sócios do QSA (`socios_receita_qsa.py`) e busca "<rede>" + comprador. Link `google.com/goto` → `curl -w %{redirect_url}`.
 - mexeu nas TOP 50: rodar `org_dados` → `org_impressao` → `org_detalhe.py` → `org_detalhe.ps1` (a CONFIG DETALHE guarda a
   linha do cabeçalho) e o teste da macro.
 

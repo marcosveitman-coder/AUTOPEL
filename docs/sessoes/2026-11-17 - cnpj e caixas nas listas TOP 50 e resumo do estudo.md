@@ -272,3 +272,49 @@ A planilha antiga das 30 redes ficou na pasta.
 **Pendente (se o usuário quiser):**
 - 2ª rodada nas 98 sem nome, pelo sócio da Receita/QSA;
 - e-mails pelo Apollo para os nomes achados (170 créditos), com aprovação antes de gastar.
+
+## 7ª parte: 2ª rodada nas 98 bandeiras sem nome (sócios da Receita)
+
+**Pedido:** "Sim, 2ª rodada", feita pelos sócios da Receita.
+
+**Como foi feito:**
+- **CNPJ:**
+  - 79 das 98 já tinham CNPJ na "Alessandra Dayan VF";
+  - 4 foram achadas na cópia local da Receita, pelo nome mais CNAE e UF (`busca_receita.py`, ~5 min): NEE, Caetano,
+    Naser e Atacadão do Drywall. As três últimas ficaram "(conferir)";
+  - as outras 15 continuaram ambíguas: nome genérico ou vários operadores com a mesma marca.
+- **Sócios:** QSA pela BrasilAPI. Em 4 CNPJs a BrasilAPI disse "não encontrado" embora eles existam; o CNPJá aberto
+  (`open.cnpja.com/office/<cnpj>`) resolveu. O CNPJ.ws deu erro 500 nesse dia.
+  - Script: `avulsos/mapa_final/socios_receita_qsa.py`.
+  - Decisores = sócio-administrador, administrador, diretor e presidente. Ficam fora o sócio pessoa jurídica e o menor.
+- **LinkedIn:**
+  - busca pelo nome curto do sócio (1º nome + último sobrenome) com palavras do ramo;
+  - depois, busca pelo **nome da rede + comprador / gerente de compras / diretor**. Esta rendeu muito mais e achou
+    compradores e gerentes de compras de redes regionais.
+  - Os links `google.com/goto?...` que o Firecrawl devolve se resolvem com `curl -w "%{redirect_url}"` e dão o
+    br.linkedin.com.
+
+**Entrega:** a mesma planilha, regravada. Ganhou a coluna **"SÓCIO / ADMINISTRADOR (RECEITA)"** (nome, LinkedIn,
+qualificação e CNPJ consultado) e o texto da aba COMO LER foi atualizado. Backup local da versão anterior.
+
+**Números de conferência:**
+
+| Medida | Antes | Depois |
+|---|---|---|
+| Bandeiras com algum dos 5 cargos | 168 | 179 |
+| Bandeiras com algum nome (cargos ou sócio) | 168 | 250 |
+| Bandeiras sem nenhum nome | 98 | 16 |
+| Pessoas | 326 | 494 |
+
+- Na coluna de sócios: 150 sócios ou administradores em 82 bandeiras, 28 com LinkedIn.
+- As 16 sem nome são 15 sem CNPJ confirmado e 1 empresa sem QSA publicado.
+
+**Achados úteis:**
+- várias "redes" de estacionamento da lista são empresas de grupos grandes (Estapar, Indigo, Netpark, Multipark,
+  Maxipark, JHSF, Garage Inn); o sócio-administrador é executivo do grupo;
+- por isso os vínculos foram marcados na evidência.
+
+**Lições:**
+- Nome de sócio da Receita é completo e o perfil do LinkedIn usa nome curto: com sobrenome comum, a busca enche de
+  homônimos.
+- Buscar o nome da rede com "comprador" acha mais gente de compras do que buscar o sócio.
