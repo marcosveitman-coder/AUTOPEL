@@ -216,3 +216,59 @@ diretor de compras, diretor de supply e CEO, usando Apollo, Lusha e LinkedIn.
   "Diretor Presidente".
 
 - **Entrega (a pedido):** planilha "Contatos compras - redes proprias (17-11-2026).xlsx" na pasta COMERCIAL (NOVO), fora do git. Tem as 30 redes, as colunas de nome, cargo, LinkedIn, e-mail e telefone para os 5 cargos, e a situação da pesquisa por rede. Só 1 rede tem contatos (3 pessoas, com e-mail).
+
+## 6ª parte: nomes e LinkedIn de todas as redes próprias
+
+**Pedido:** o usuário recusou a lista das 30 redes. Quer **todas** as bandeiras com "REDE PRÓPRIA" na coluna A da
+"Alessandra Dayan VF", com nome e LinkedIn dos 5 cargos (gerente, coordenador e diretor de compras, diretor de supply,
+CEO). E-mail e telefone saem. Escolha: "Todas, 5 cargos".
+
+**Como foi feito:**
+- Busca pública pelo Firecrawl: `site:br.linkedin.com/in "<marca>"` mais os cargos, limite 10.
+  - Rede grande: uma busca por marca.
+  - Redes pequenas: 4 a 10 marcas por busca, com OR, br.linkedin.com e palavras do ramo ("estacionamentos", "postos"),
+    para evitar homônimos de fora.
+  - Os buscadores por script (DDG, Bing, Brave…) não devolvem LinkedIn.
+- Só entrou quem mostra o **cargo atual** naquela empresa no título ou no trecho.
+- Ficaram fora:
+  - perfis falsos ("CEO" com 1 a 5 conexões);
+  - quem já saiu da empresa;
+  - homônimos de outra empresa.
+- Marcações:
+  - "(conferir)" quando o cargo ou o vínculo é incerto;
+  - "comprador, não coordenador" quando o comprador é o que existe.
+- Empresas do mesmo grupo dividem as pessoas (GPA → Minuto; Boticário → Beauty Box/Eudora; DIA → DIA%; Hirota → Hirota
+  Express).
+- Resultado guardado em `lnk.tsv`, local e fora do git (tem nomes).
+- Script da planilha: `avulsos/mapa_final/contatos_linkedin_planilha.py`, que lê o json das bandeiras e o tsv da pesquisa.
+
+**Entrega:** "Contatos LinkedIn - redes proprias (17-11-2026).xlsx" na pasta COMERCIAL (NOVO), fora do git. Abas:
+- CONTATOS: 1 linha por bandeira, nome + link + cargo no LinkedIn para cada um dos 5 cargos, e "outros nomes";
+- PESSOAS: 1 linha por pessoa;
+- COMO LER.
+
+A planilha antiga das 30 redes ficou na pasta.
+
+**Números de conferência:**
+
+| Medida | Resultado |
+|---|---|
+| Bandeiras | 266 |
+| Com pelo menos 1 nome | 168 |
+| Sem nenhum nome | 98 |
+| Pessoas | 326 |
+
+- As 98 bandeiras sem nome somam 3.382 das 47.596 lojas (7%): 34 estacionamentos, 33 postos, 19 de construção e 7
+  supermercados regionais.
+- Por cargo: gerente 83, coordenador 34, diretor de compras 34, supply 43, CEO 116.
+- Custo: 2 créditos Firecrawl por busca, dentro do que o usuário aprovou.
+
+**Lições:**
+- Agrupar marcas pequenas numa busca rende pouco: rede regional pequena quase não tem compras no LinkedIn, porque o dono
+  compra.
+- Nessas redes, o caminho é o sócio (QSA) ou o telefone da loja.
+- Coordenador de compras é o cargo mais raro em público. Ficou "comprador" quando é o que existe.
+
+**Pendente (se o usuário quiser):**
+- 2ª rodada nas 98 sem nome, pelo sócio da Receita/QSA;
+- e-mails pelo Apollo para os nomes achados (170 créditos), com aprovação antes de gastar.
