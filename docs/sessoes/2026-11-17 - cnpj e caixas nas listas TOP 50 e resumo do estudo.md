@@ -181,3 +181,36 @@ Arquivo trocado de novo às 10:06. Foi refeito a partir do original desta manhã
   - nenhuma linha de rede própria recebeu "IA";
   - as outras abas ficaram iguais.
 - Arquivo trocado às 12:13, com backup no scratchpad.
+
+## 5ª parte: lista de contatos das redes próprias (interrompida pelo usuário)
+
+**Pedido:** para as redes próprias da coluna A, nome, LinkedIn, e-mail e telefone de cinco cargos: gerente, coordenador e
+diretor de compras, diretor de supply e CEO, usando Apollo, Lusha e LinkedIn.
+
+**Limites encontrados (17/11):**
+- **Apollo:** 170 créditos de e-mail e 0 de telefone. O plano bloqueia a busca de pessoas, tanto a da API quanto a do
+  agente de IA. Só enriquece quem já se tem por nome ou LinkedIn.
+- **Lusha:** plano gratuito, 4 créditos. Telefone custa 5.
+- **ZoomInfo:**
+  - a busca é gratuita mas devolve só IDs;
+  - o resgate custa 1 crédito por contato, e o plano não libera telefone nem LinkedIn;
+  - o limite acabou depois de 10 resgates.
+- **LinkedIn Hiring Pro:** só tem prévia de vaga de emprego.
+
+**O que foi feito:**
+- Escolhidas as 30 maiores redes próprias por caixas/mês.
+- A contagem gratuita no ZoomInfo achou 133 contatos em 23 redes. Sete redes não estão no ZoomInfo.
+- Resgatados 10 contatos (10 créditos) de uma rede; 3 são dos cargos pedidos, só com e-mail. O arquivo com eles é local,
+  fora do git.
+
+**Decisão do usuário:** parar aqui. Não houve pesquisa pública e nenhuma planilha foi gravada.
+
+**Para retomar:**
+- pesquisa pública de nome e LinkedIn por cargo;
+- depois, e-mails pelo Apollo por nome ou LinkedIn, até 170 créditos, com aprovação antes de gastar;
+- telefone exige comprar créditos ou fazer upgrade.
+
+**Lições:**
+- Checar créditos e o que o plano libera (campos e buscas) antes de prometer o resultado.
+- No ZoomInfo, "presidente" no filtro de cargo traz todos os vice-presidentes. Usar "CEO", "Chief Executive" e
+  "Diretor Presidente".
