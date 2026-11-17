@@ -101,3 +101,42 @@ Duas folhas novas na "ORGANOGRAMA impressao", linhas 183–234. Agora são 11 fo
 - A linha de apoio da FARMACIA VF com TIPO "Farmácia" (posição alta) é uma loja avulsa com o mesmo nome, e não a rede.
 - A ligação da SUPERMERCADOS (reuniao) a linhas de leads (posição 800+) pode ser homônimo de outra UF: conferir a UF.
 - A BrasilAPI pode não ter um CNPJ ativo. Conferir no CNPJ.ws antes de concluir que não existe.
+
+## 2ª parte: pesquisa das marcas sem CNPJ (pedido "Sim, pesquisar")
+
+Arquivo trocado de novo às 10:06. Foi refeito a partir do original desta manhã: as 12 abas, a CONFIG DETALHE e a impressão
+(estas duas ficaram iguais às da 1ª gravação).
+
+**Como foi feito**
+1. Observatório público de franquias da Marktech (`cnpj_publicado_site.py`): mostra o CNPJ que cada rede publica no
+   próprio site. Saíram 40 candidatos.
+2. Internet: site oficial (rodapé, "quem somos", política de privacidade), Reclame Aqui e cadastro de franquias da FGV.
+   Usado para supermercados, drogarias e franquias grandes.
+3. Todo candidato conferido na cópia local da Receita: razão social, nome fantasia, matriz, situação e CNAE. Quase todas
+   as franqueadoras têm CNAE 7740-3/00.
+
+**Regras de decisão**
+- Aceito: franqueadora, dona da marca ou operadora das lojas com o nome da marca.
+- Recusado:
+  - CNPJ publicado que é de uma unidade (Azul Empréstimo Maracanaú) ou da loja virtual (Chilli Beans; ficou a Luz
+    Franquias, da política de privacidade);
+  - empresa baixada (Chiquinho).
+- "Provável" com comentário na célula: Grupo É, Wizard (Pearson), Nagumo, Amigão, Carvalho, ADCOS e Capilé (esta com o
+  CNPJ inapto na Receita).
+
+**Resultado**
+- 469 das 550 marcas com CNPJ, eram 419 de manhã. Nas TOP 50 são 458 linhas.
+- Comentário "provável" em 49 marcas da Alessandra Dayan VF.
+- As outras 81 continuam em branco, sem franqueadora identificável:
+  - franquias pequenas de óticas, lavanderias, conveniência e alimentação;
+  - estacionamentos, postos e lojas de construção regionais, com nome comum e sem CNPJ seguro;
+  - Seguralta, Domino's, Divino Fogão, Unifarma e Drogaria Total, entre outras.
+
+**Conferências**
+- `confere_top50.py`: tudo certo.
+- Impressão e CONFIG DETALHE iguais às da manhã.
+- Macro: 390 de 390.
+
+**Lições**
+- O "CNPJ publicado no site da rede" nem sempre é da franqueadora. Às vezes é de uma unidade ou da loja virtual.
+- A BrasilAPI pode dizer "não encontrado" para um CNPJ que existe (Selfit). A cópia local da Receita resolve.

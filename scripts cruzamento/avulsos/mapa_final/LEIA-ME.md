@@ -202,6 +202,7 @@ na VF também a K = supermercado) e duas colunas novas no fim: I "CNPJ" (matriz 
 |---|---|---|
 | 1 | `cnpj_alessandra.py "<MAPA>" "<pasta>"` | candidatos: ligação curada de 05/11 → CNPJ da aba FINAL lido hoje; senão as linhas de apoio (FARMACIA VF, SUPERMERCADOS (reuniao), IRTT) |
 | 2 | `cnpj_alessandra_receita.py "<pasta>"` e `busca_receita.py` (~10 min) | raízes dos candidatos + termos de nome das marcas sem CNPJ, na cópia local da Receita |
+| 2b | `cnpj_publicado_site.py <faltam.tsv> <saida.json>` | CNPJ que a rede publica no site (observatório Marktech): só candidato, conferir na Receita |
 | 3 | `cnpj_alessandra_decide.py "<pasta>" "<MAPA>"` | matriz (indicador 1) de cada raiz, decisões à mão (`dados/dec_cnpj_alessandra.json`, local), `revisar.txt` e `cnpj.tsv` |
 | 4 | `top50_cnpj_caixas.ps1 -Arquivo <cópia> -Tsv cnpj.tsv` | grava pelo Excel (insere as linhas, `ListObject.Resize`, fórmula, CNPJ e comentário "CNPJ provável") |
 | 5 | `confere_top50.py <partida> <gravado> cnpj.tsv --exceto "ORGANOGRAMA impressao" "CONFIG DETALHE"` | célula antiga igual (descida), caixas recalculadas, CNPJ, sem erro, outras abas iguais |
