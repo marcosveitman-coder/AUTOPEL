@@ -7,9 +7,9 @@ Entradas (locais, fora do git, têm nomes de pessoas):
   lnk.tsv     pesquisa: idx, cargo (gerente|coord|dircompras|supply|ceo), nome, url, evidencia (cargo como aparece
               no LinkedIn / buscador). Várias pessoas por cargo: a 1ª é a principal, as outras vão em "Outros".
 Como a pesquisa foi feita: buscador (Firecrawl) com site:br.linkedin.com/in "<marca>" + cargos; uma busca por marca
-grande e 4-10 marcas pequenas por busca. Só entra quem tem o cargo atual na empresa no título/trecho; perfil falso ou
-de outra empresa com o mesmo nome fica fora; "(conferir)" = cargo ou vínculo incerto; "comprador" no lugar de
-coordenador quando é o que existe.
+grande e 4-10 marcas pequenas por busca. O lnk.tsv que entra aqui já passou pela regra estrita (r3_estrito, 17/11:
+o usuário achou um "diretor de supply" que era supervisor): só o cargo exato, atual, na empresa; o resto fica em branco.
+Conferência do cargo atual perfil a perfil: firecrawl_scrape do perfil com formats ["query"] (~14 créditos por perfil).
 2ª rodada (opcional, bandeiras sem nenhum nome): sócios e administradores da Receita (QSA pela BrasilAPI / CNPJá aberto)
   qsa.json    {idx: {cnpj, razao, qsa:[{nome, qual}], nota}}
   dec.json    {idx: [{nome, curto, qual}]} decisores (sócio-administrador, administrador, diretor, presidente; sem PJ e menor)
@@ -27,7 +27,7 @@ CARGOS = [('gerente', 'GERENTE DE COMPRAS'), ('coord', 'COORDENADOR DE COMPRAS')
           ('supply', 'DIRETOR DE SUPPLY'), ('ceo', 'CEO'), ('socio', 'SÓCIO / ADMINISTRADOR (RECEITA)')]
 CORES = ['DDEBF7', 'E2EFDA', 'FFF2CC', 'FCE4D6', 'EDE2F6', 'E7E6E6']
 TERC = ['Cargo no LinkedIn'] * 5 + ['Na Receita / no LinkedIn']
-NAO = 'não encontrado'
+NAO = ''
 
 
 def main(f_redes, f_lnk, saida, f_qsa=None, f_dec=None, f_r2=None):
@@ -142,17 +142,21 @@ def main(f_redes, f_lnk, saida, f_qsa=None, f_dec=None, f_r2=None):
         'Aba PESSOAS: 1 linha por pessoa (boa para filtrar ou importar no CRM).',
         '',
         'Como foi feito: busca pública do LinkedIn por buscador (perfis br.linkedin.com/in), com o nome da marca e os cargos.',
-        'Só entrou quem mostra o cargo ATUAL na empresa. Perfis falsos (ex.: "CEO" com 1 a 5 conexões) e homônimos ficaram fora.',
-        '"(conferir)" = cargo ou vínculo com a rede incerto no trecho público. "comprador, não coordenador" = não havia coordenador',
-        'visível e o comprador é a pessoa mais próxima do cargo. Empresas do mesmo grupo dividem as pessoas (ex.: GPA e Minuto',
-        'Pão de Açúcar; Grupo Boticário e The Beauty Box/Eudora; DIA e DIA%).',
-        '"não encontrado" = nenhum perfil público com esse cargo apareceu. É comum nas redes pequenas (postos, estacionamentos,',
-        'lojas regionais), onde o dono faz as compras: o caminho é o sócio da Receita ou o telefone da loja.',
-        'O LinkedIn muda todo dia: abrir o perfil antes da abordagem para confirmar o cargo.',
+        'REGRA (estrita): só entra quem tem HOJE, naquela empresa (ou no grupo dono da bandeira), o cargo da coluna:',
+        '  GERENTE DE COMPRAS = gerente/gestor de compras, suprimentos ou procurement. Gerente comercial, de categoria ou de logística NÃO.',
+        '  COORDENADOR DE COMPRAS = coordenador de compras ou suprimentos. Comprador e analista NÃO.',
+        '  DIRETOR DE COMPRAS = diretor/head de compras, suprimentos ou procurement, CPO. Diretor comercial NÃO.',
+        '  DIRETOR DE SUPPLY = diretor/head/VP de supply chain ou logística, CSCO. Gerente ou supervisor de supply/logística NÃO.',
+        '  CEO = CEO, presidente, diretor-presidente, diretor geral, diretor superintendente, country manager. VP, CFO, COO,',
+        '  presidente do conselho, sócio ou diretor sem ser o principal executivo NÃO.',
+        'Cargo incerto, perfil que não diz a empresa ou que já saiu = célula EM BRANCO. Empresas do mesmo grupo dividem as pessoas',
+        '(ex.: GPA e Minuto Pão de Açúcar; Grupo Boticário e The Beauty Box/Eudora; DIA e DIA%).',
+        'Em branco = nenhum perfil público com esse cargo. É comum nas redes pequenas (postos, estacionamentos, lojas regionais),',
+        'onde o dono faz as compras: veja a coluna do sócio da Receita.',
         'SÓCIO / ADMINISTRADOR (RECEITA): 2ª rodada, só nas bandeiras em que nenhum dos 5 cargos apareceu no LinkedIn. São os',
         'sócios-administradores, administradores e diretores do quadro societário (QSA) da Receita Federal, com o CNPJ consultado.',
         'Nas redes pequenas, o dono é quem compra. Quando o sócio tem perfil no LinkedIn, o link vem ao lado.',
-        'Bandeiras sem CNPJ confirmado ficaram sem sócio; "(conferir)" no CNPJ = achado pelo nome na Receita.',
+        'Bandeiras sem CNPJ confirmado ficaram sem sócio. O LinkedIn do sócio só vem quando o perfil mostra a empresa ou o grupo.',
         f'Bandeiras com sócio da Receita: {n_socio}.',
         'Sem e-mail e sem telefone, como pedido.',
     ]

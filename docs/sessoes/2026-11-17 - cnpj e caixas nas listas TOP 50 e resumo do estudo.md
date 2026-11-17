@@ -329,3 +329,39 @@ qualificação e CNPJ consultado) e o texto da aba COMO LER foi atualizado. Back
     Agora são 495 pessoas.
 - O antigo foi para a **Lixeira** (dá para recuperar) e há uma cópia local no scratchpad.
 - Na pasta COMERCIAL (NOVO) fica só "Contatos LinkedIn - redes proprias (17-11-2026).xlsx".
+
+## 9ª parte: correção, regra estrita de cargo
+
+**Reclamação do usuário:** o 1º perfil que ele abriu estava errado. Estava em "Diretor de Supply" alguém que é supervisor
+de logística. A pessoa tinha entrado só porque o título do perfil falava de "supply chain"; a evidência registrada
+dizia "cargo exato não informado". O usuário pediu 100% de acerto e **célula em branco quando o cargo não for achado**.
+
+**Regra nova (estrita):** só entra quem tem hoje, naquela empresa ou no grupo dono da bandeira, o cargo da coluna.
+
+| Coluna | Entra | Não entra |
+|---|---|---|
+| Gerente de compras | gerente/gestor de compras, suprimentos ou procurement | gerente comercial |
+| Coordenador | coordenador de compras ou suprimentos | comprador |
+| Diretor de compras | diretor/head de compras, suprimentos ou procurement, CPO | diretor comercial |
+| Diretor de supply | diretor/head/VP de supply chain ou logística, CSCO | gerente ou supervisor de supply/logística |
+| CEO | CEO, presidente, diretor-presidente, diretor geral, superintendente, country manager | VP, CFO, COO, presidente do conselho, sócio |
+
+- Também sai: tudo com "(conferir)", perfil sem a empresa e quem já saiu.
+- Aplicada pelo `r3_estrito` (local): 345 → 222 nomes.
+- Sócios da Receita:
+  - saíram os 3 CNPJs achados só pelo nome;
+  - saíram os links de LinkedIn de sócio sem a empresa no perfil (28 → 24).
+- "não encontrado" virou célula em branco.
+
+**Planilha regravada:**
+- 125 bandeiras com algum dos 5 cargos;
+- 202 bandeiras com algum nome;
+- 367 pessoas.
+
+**Conferência perfil a perfil:**
+- possível pelo `firecrawl_scrape` do perfil com `formats: ["query"]`, que devolve o cargo atual, a empresa e o início;
+- 14 créditos por perfil;
+- faltam 220 perfis, ~3.080 créditos, o que depende de aprovação do usuário.
+
+**Lição:** nunca pôr uma pessoa num cargo por aproximação ("supply chain" no título não é diretor de supply). Na dúvida,
+deixar em branco.
