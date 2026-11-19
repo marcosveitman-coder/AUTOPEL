@@ -90,6 +90,10 @@ COMPAT = {   # segmento do cliente no TOTVS aceito para cada segmento de rede (c
     'DROG': {'DROGARIAS', 'COSMETICOS', 'CORPORATIVO SAUDE'},
     'OUTROS': {'COSMETICOS', 'CORPORATIVO SAUDE', 'REDE DE LOJAS', 'CORPORATIVO', 'CORPORATIVO FINANCEIRO', 'CORPORATIVO EDUCACIONAL',
                'ENTRETENIMENTO', 'MAGAZINES', 'DROGARIAS'},
+    # 19/11/2026: indústrias (aba FULLFILMIT_INDUSTRIA FINAL). Indústria compra como corporativo, fabricante ou autopeças;
+    # loja, supermercado e farmácia com o mesmo nome não são a indústria.
+    'IND': {'CORPORATIVO', 'FABRICANTES DE EQUIPAMENTOS', 'AUTOMOTIVO PECAS E LOCADORAS', 'COSMETICOS', 'CORPORATIVO SAUDE',
+            'LOGISTICA', 'TRANSPORTE'},
 }
 DISTRIB = {'REVENDA', 'LOGISTICA', 'TRANSPORTE'}
 # exclusões manuais (nome da rede, código do cliente) que nenhuma regra separa: dados/manuais.json (local, fora do git)

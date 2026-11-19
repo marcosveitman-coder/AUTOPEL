@@ -1,0 +1,8 @@
+Revisão à mão dos vínculos fracos do STATUS AUTOPEL da aba FULLFILMIT_INDUSTRIA FINAL (19/11/2026).
+Vínculo por CNPJ (raiz) fica sempre. Os fracos (nome, e-mail, grupo, produto) foram lidos um a um:
+- rejeitados (8): homônimo ou palavra genérica no e-mail/nome (empresa de outro ramo), produto com o nome da marca comprado
+  por transportadora, e-mail de empresa de pagamentos para a distribuidora de combustível e o fabricante de lubrificante;
+- aceitos (9): empresa do mesmo grupo (serviços, holding, varejo ou distribuidora do próprio fabricante), franqueado
+  já conferido à mão em 16/11, fornecedor do parque industrial com o e-mail do grupo, e bobina personalizada com o nome
+  da loja própria do fabricante.
+A decisão fica em ind_status_manual.pkl (local, fora do git, porque cita clientes).

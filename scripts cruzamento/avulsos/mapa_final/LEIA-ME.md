@@ -211,3 +211,18 @@ Regras do CNPJ: entra o CONFIRMADO da aba FINAL e o PROVÁVEL com a razão socia
 CNPJ de uma unidade, o NÃO CONFIRMADO e o apoio que é farmácia avulsa ou empresa de outra UF com o mesmo nome. Se a
 raiz do CNPJ informado não for a matriz, entra a matriz (que pode não ser a 0001). Depois de mudar as TOP 50, rodar
 `org_dados` → `org_impressao` → `org_detalhe.py` → `org_detalhe.ps1`, porque a CONFIG DETALHE guarda a linha do cabeçalho.
+
+## Aba FULLFILMIT_INDUSTRIA FINAL (19/11/2026, pasta `industria/`)
+
+Grandes indústrias, uma linha por empresa. Sessão: `docs/sessoes/2026-11-19 - aba FULLFILMIT_INDUSTRIA FINAL.md`.
+Pasta de trabalho local (ex.: `%TEMP%\ind`), com `exame_mm26.json` (Exame Melhores e Maiores 2026, extraído do HTML de
+exame.com/mm/maiores) e `fonte_exame.json` (fonte → nome na Exame, receita, UF). Decisões à mão em `dados/dec_industria.py`.
+
+1. `python industria/receita_industria.py <pasta>`: raízes industriais da Receita (~5 min).
+2. `python industria/candidatas_industria.py <pasta>`: corte por capital, por segmento e região.
+3. `python industria/fontes_industria.py <pasta>`: listas com nome (Exame, ANFAVEA, ANIP, ELETROS, lubrificantes, PBE).
+4. `python industria/build_industria.py <pasta>`: linhas finais (`ind_rows.pkl`, `ind_view.txt` para conferir).
+5. `python industria/status_industria.py <pasta> <pasta do status de 16/11> AAAA-MM-DD`: STATUS (família IND).
+   Revisar os vínculos fracos e gravar as rejeições em `<pasta>/ind_status_manual.pkl` (`revisao_status.txt`).
+6. `python industria/grava_industria.py <pasta> <MAPA.xlsm> <saída.xlsm>`: grava a aba (que tem de estar vazia), o bloco
+   na MAIORES POR REGIÃO e a seção 9 da R_E_S_U_M_O. Conferir as partes do zip e abrir no Excel antes de trocar o arquivo.

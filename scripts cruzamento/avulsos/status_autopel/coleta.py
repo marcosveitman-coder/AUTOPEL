@@ -14,7 +14,7 @@ from motor import nomes_da_rede, nucleo, norm
 D = lambda x: re.sub(r'\D', '', str(x or ''))
 s = lambda x: str(x).strip() if x is not None else ''
 FINAIS = ['ALIMENTACAO FINAL', 'REDE DE LOJAS FINAL', 'CONSTRUÇÃO FINAL', 'PET SHOP  FINAL', 'ESTACIONAMENTO FINAL',
-          'POSTOS GAS & CONVENIENCIA FINAL', 'OUTROS FINAL']
+          'POSTOS GAS & CONVENIENCIA FINAL', 'OUTROS FINAL', 'FULLFILMIT_INDUSTRIA FINAL']
 TOP50 = ['ALIMENTAÇÃO (TOP 50)', 'BELEZA  (TOP 50)', 'CONVENIENCIA  (TOP 50)', 'DROGARIA  (TOP 50)', 'ESTACIONAMENTO (TOP 50)',
          'CONSTRUÇÃO (TOP 50)', 'OTICA  (TOP 50)', 'POSTO GASOLINA  (TOP 50)', 'REDE LOJAS (TOP 50)',
          'SERVIÇOS & FRANQUIAS (TOP 50)', 'SUPERMERCADO (TOP 50)']
@@ -35,7 +35,8 @@ def familia(e):
     a, sg = e['aba'], norm(e['extra'].get('seg', ''))
     if a == '"FARMACIA VF"': return 'DROG'
     fin = {'ALIMENTACAO FINAL': 'ALIM', 'REDE DE LOJAS FINAL': 'LOJAS', 'CONSTRUÇÃO FINAL': 'CONSTR', 'PET SHOP  FINAL': 'PET',
-           'ESTACIONAMENTO FINAL': 'ESTAC', 'POSTOS GAS & CONVENIENCIA FINAL': 'POSTO', 'OUTROS FINAL': 'OUTROS'}
+           'ESTACIONAMENTO FINAL': 'ESTAC', 'POSTOS GAS & CONVENIENCIA FINAL': 'POSTO', 'OUTROS FINAL': 'OUTROS',
+           'FULLFILMIT_INDUSTRIA FINAL': 'IND'}
     if a in fin: return fin[a]
     for chave, fam in [('SUPER', 'SUPER'), ('DROGARIA', 'DROG'), ('ESTACIONAMENTO', 'ESTAC'), ('POSTOS', 'POSTO'), ('CONVENIENCIA', 'POSTO'),
                        ('MATERIAL DE CONST', 'CONSTR'), ('ALIMENTACAO', 'ALIM'), ('FOODSERVICE', 'ALIM'), ('REDE DE LOJAS', 'LOJAS'),

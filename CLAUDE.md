@@ -273,6 +273,17 @@ Armadilhas reais já vistas:
   - corte regional "top N com X+": ao excluir uma candidata, entra outra. Buscar na Receita todas as candidatas acima do
     corte mínimo de uma vez (`q16`), e não só as N primeiras.
 
+**Aba FULLFILMIT_INDUSTRIA FINAL** (19/11/2026; `mapa_final/industria/`, roteiro na sessão de 19/11):
+- grandes indústrias: pneus, FMCG, farma/médica, eletro/linha branca, têxtil/calçados, automotivo, química/embalagens,
+  móveis/construção, óleo/lubrificantes e marcas com selo Procel/Conpet/ENCE. Layout das abas FINAL (cabeçalho na linha 6,
+  A–AA); a E é o nº de **unidades** (estabelecimentos ativos de todas as raízes da linha);
+- universo = Receita por CNAE + corte por capital + listas com nome (Exame Melhores e Maiores 2026, ANFAVEA, ANIP, ELETROS,
+  PBE) + líderes de capital fechado. Decisões à mão em `mapa_final/dados/dec_industria.py` (local, tem raízes de CNPJ);
+- porte pela receita da Exame (A ≥ 1 bi, B ≥ 300 mi, C ≥ 20 mi) ou, sem ela, pelo capital social (A ≥ 500 mi, B ≥ 100 mi,
+  C ≥ 10 mi), com nota;
+- STATUS pelo motor de 16/11 com a **família IND** (`motor.py` COMPAT, `coleta.py` FINAIS). Revisar os fracos à mão
+  (`ind_status_manual.pkl`, local).
+
 **STATUS AUTOPEL refeito em 16/11/2026** (`avulsos/status_autopel/`; o de 05/11 errou redes grandes):
 - **a compra de qualquer cliente ligado à rede conta**: franqueado, associada, distribuidor da rede, cliente no grupo com o
   nome da rede, comprador de produto personalizado (nome da rede logo depois da medida, ex. "80X40M <REDE>");
