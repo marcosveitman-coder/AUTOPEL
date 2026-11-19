@@ -176,8 +176,7 @@ da planilha de conferência, para o usuário confirmar.
   textos para a tabela compartilhada ao salvar, e o `grava_industria.py` procura o título nos dois lugares.
 
 ## Pendente
-- **Aprovação do usuário** para trocar o MAPA pela cópia gravada (ficou no scratchpad da sessão, `final\MAPA_final.xlsm` na pasta
-  temporária; o backup do MAPA de 12:05 está no scratchpad).
+- ~~Aprovação do usuário~~: aprovado; o MAPA foi trocado às 14:48 (backup do MAPA de 12:05 no scratchpad da sessão).
 - Os resumos com texto fixo e as dinâmicas não foram atualizados: o usuário atualiza ao abrir.
 - Contatos LinkedIn (perfis 64 a 220) quando houver crédito do Firecrawl.
 
