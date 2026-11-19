@@ -77,6 +77,16 @@ def main():
     for r, o in cand.items():
         if o['cnae'] in DEC.CNAE_FORA: continue
         for g in o['origem']: novo(r, DEC.SEG.get(r, o['seg']), 'Receita: ' + ('maiores do Brasil' if g == 'BRASIL' else 'maiores da ' + g.title().replace('Regiao', 'região')))
+    # ampliação (19/11, 2º pedido): regionais por UF, cooperativas e associadas de ABIA / ABRAFATI / ABRAMAT (amplia_industria.py)
+    pa = os.path.join(P, 'cand_amp.pkl')
+    if os.path.exists(pa):
+        for r, o in pickle.load(open(pa, 'rb')).items():
+            for g in o['origem']:
+                if g.startswith('REGIONAL'): novo(r, o['seg'], f'Receita: maiores do segmento na UF ({g.split()[1]})')
+                elif g == 'COOPERATIVA': novo(r, o['seg'], 'Receita: cooperativa agroindustrial')
+                elif g.startswith('ASSOC'):
+                    ent, nm = g[6:].split('|', 1)
+                    novo(r, o['seg'], f'{ent}: associada (site da entidade, 19/11/2026)', nm)
     # fontes nominais
     sem = []
     for i, f in enumerate(F):
@@ -111,6 +121,12 @@ def main():
     EMP.update(U['emp'])
     EST = C.defaultdict(list)
     for row in U['est']: EST[row[0]].append(row)
+    if os.path.exists(os.path.join(P, 'r_unid_amp.pkl')):         # unidades das raízes da ampliação
+        U2 = pickle.load(open(os.path.join(P, 'r_unid_amp.pkl'), 'rb'))
+        for k, v in U2['emp'].items(): EMP.setdefault(k, v)
+        tem = set(EST)
+        for row in U2['est']:
+            if row[0] not in tem: EST[row[0]].append(row)
     MUN = municipios()
     rec = receitas(P, F, FM)          # raiz -> (receita R$ mi, nome no ranking)
     SIT = {'01': 'NULA', '02': 'ATIVA', '03': 'SUSPENSA', '04': 'INAPTA', '08': 'BAIXADA'}
@@ -122,16 +138,24 @@ def main():
         mat = next((e for e in EST.get(r0, []) if e[3] == '1'), None)
         cnpj = (mat[0] + mat[1] + mat[2]) if mat else ''
         ind_n = sum(ind['raiz'][r]['n'] for r in rs if r in ind['raiz'])
-        rv = next((rec[r] for r in rs if r in rec), None)
+        rv = next((rec[r] for r in rs if r in rec), None) or next((DEC.RECEITA_EXTRA[r] for r in rs if r in getattr(DEC, 'RECEITA_EXTRA', {})), None)
         capt = sum(cap(r) for r in rs)
         porte = porte_receita(rv[0]) if rv else porte_capital(capt)
+        coop = EMP.get(r0, ('', ''))[1] == '2143'
+        if coop and not rv:
+            # cooperativa: o capital social (quotas dos cooperados) não mede o tamanho; vale o maior entre o capital e o
+            # nº de unidades industriais (10+ = B, 4+ = C)
+            pu = 'B – Média (R$ 300 mi a 1 bi)' if ind_n >= 10 else 'C – Regional (R$ 20 mi a 300 mi)' if ind_n >= 4 else ''
+            if pu and pu[0] < porte[0]: porte = pu
         fan = (mat[4] if mat else '').strip()
         nome = (DEC.NOME.get(r0) or L.get('nome_grupo') or L['nome_fonte'] or
                 (fan.title() if fan and len(fan) > 3 and not re.search(r'MATRIZ|FILIAL|UNIDADE|ESCRITORIO|SEDE|FABRICA|\d', fan) else '') or
                 re.sub(r'\b(S\.?/?A\.?|LTDA\.?|S/A)\b.*$', '', EMP.get(r0, ('',))[0]).strip().title())
         obs = []
         if len(rs) > 1: obs.append('uma linha para a empresa, que junta as raízes: ' + '; '.join(f"{r} {EMP.get(r, ('?',))[0]}" for r in rs))
-        if rv: obs.append(f'receita 2025: R$ {rv[0]:,.0f} mi (Exame Melhores e Maiores 2026, "{rv[1]}")'.replace(',', '.'))
+        if rv and 'Forbes' in rv[1]: obs.append(f'receita 2025: R$ {rv[0]:,.0f} mi ({rv[1]})'.replace(',', '.'))
+        elif rv: obs.append(f'receita 2025: R$ {rv[0]:,.0f} mi (Exame Melhores e Maiores 2026, "{rv[1]}")'.replace(',', '.'))
+        elif coop: obs.append(f'cooperativa: porte estimado pelo nº de unidades industriais ({ind_n}) e pelo capital social (R$ {capt / 1e6:,.0f} mi)'.replace(',', '.'))
         else: obs.append(f'porte estimado pelo capital social (R$ {capt / 1e6:,.0f} mi): a empresa não publica balanço no ranking da Exame'.replace(',', '.'))
         if L['selo']: obs.append('Inmetro/PBE: ' + '; '.join(sorted(L['selo'])))
         uf = mat[10] if mat else ''

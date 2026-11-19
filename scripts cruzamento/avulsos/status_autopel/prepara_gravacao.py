@@ -85,8 +85,10 @@ for i in por_aba['Alessandra Dayan']:
 # ---------------- Alessandra Dayan VF e TOP 50
 for aba in [a for a in por_aba if a == 'Alessandra Dayan VF' or a.endswith('(TOP 50)')]:
     ws = wb[aba]
-    h, cols, _ = cabecalho(ws, ['EMPRESA', 'STATUS AUTOPEL'], 6)
-    linhas = {r: s(v) for r, (v,) in enumerate(ws.iter_rows(min_row=1, max_col=1, values_only=True), 1)}
+    # 19/11: cabeçalho na linha 6 (TOP 50) ou 8 (VF, que ganhou colunas na frente): EMPRESA pela letra do cabeçalho
+    h, cols, _ = cabecalho(ws, ['EMPRESA', 'STATUS AUTOPEL'], 12)
+    ce = openpyxl.utils.column_index_from_string(cols['EMPRESA'])
+    linhas = {r: s(v) for r, (v,) in enumerate(ws.iter_rows(min_row=1, min_col=ce, max_col=ce, values_only=True), 1)}
     for i in por_aba[aba]:
         e, r = E[i], R[i]
         assert linhas.get(e['linha']) == e['extra']['nome'], (aba, e['linha'])

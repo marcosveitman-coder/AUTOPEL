@@ -282,7 +282,31 @@ Armadilhas reais já vistas:
 - porte pela receita da Exame (A ≥ 1 bi, B ≥ 300 mi, C ≥ 20 mi) ou, sem ela, pelo capital social (A ≥ 500 mi, B ≥ 100 mi,
   C ≥ 10 mi), com nota;
 - STATUS pelo motor de 16/11 com a **família IND** (`motor.py` COMPAT, `coleta.py` FINAIS). Revisar os fracos à mão
-  (`ind_status_manual.pkl`, local).
+  (exclusões no `status_autopel/dados/manuais.json`). A IND **não cria nome ambíguo** para as outras abas (NATURA);
+- **ampliação (19/11, 2º pedido)** com `amplia_industria.py`: 3 maiores por UF e segmento (capital >= R$ 10 mi, matriz com
+  CNAE industrial), cooperativas grandes (capital >= R$ 5 mi ou 4+ unidades industriais; fora as em liquidação/falidas/SCP) e
+  associadas da ABIA, ABRAFATI e ABRAMAT (nome → raiz conferido à mão em `ASSOC_RAIZ`/`ASSOC_FORA`). Cooperativa: porte pela
+  receita (Forbes Agro100/OCB, `RECEITA_EXTRA`) ou pelo nº de unidades industriais, porque o capital (quotas) não mede o
+  tamanho. O `grava_industria.py` regrava a aba e troca os blocos que ele mesmo pôs na MAIORES POR REGIÃO e na R_E_S_U_M_O.
+
+**Revisão do STATUS de 19/11/2026 (caso "Koni Store")** (`status_autopel/`, sessão de 19/11):
+- rodar com os relatórios do dia: `atualiza_clientes.py` (Clientes, Ultimo faturamento, FAT do mês e Pedidos abertos da pasta
+  `CSV\` do TOTVS sobre o `clientes.pkl` de 16/11). Pedido em aberto não conta como compra;
+- **mesma marca = um status**: mesmo CNPJ e o nome de uma no começo da outra (4+ letras: "KONI" x "KONI STORE") ou só uma
+  palavra de formato a mais (`FORMATO`: PIZZARIA, CLUBE, LOJAS, DROGARIA…; HIPER/ELETRO/MINI não, "ELETRO MATEUS" é outra marca);
+- **CNPJ de uma unidade** (coluna H das FINAL, ou G = "CNPJ DE UMA UNIDADE"/"FRANQUEADORA NÃO ACHADA") vai em `raizes_ref`:
+  vale como vínculo, mas não trava a junção com a mesma rede (a franqueadora nas listas da Alessandra);
+- linha de grupo "X (A / B / C)" não empresta à marca o nome de **outra marca com linha própria** (`alheios` no `avalia.py`);
+  o CNPJ da linha de grupo continua valendo para a marca;
+- `manuais.json`: `produtos` (nome da rede → texto do produto depois da medida, sem travas) e exclusões valem também para
+  código e grupo do IRTT;
+- **conferir sempre** com `auditoria.py` (conflitos de status na mesma raiz/nome e pistas fracas não aceitas) e
+  `conferencia_1911.py` (planilha para o usuário). Gravar só as diferenças: `prepara_gravacao.py` → `so_diferencas.py` →
+  `grava_celulas.ps1` (célula por célula, abas com filtro);
+- as listas da Alessandra/TOP 50 e a VF mudaram em 17/11 (cabeçalho na linha 6/8, VF com 2 colunas na frente): `coleta.py` e
+  `prepara_gravacao.py` leem pelo cabeçalho e param no fim da tabela (o usuário põe dinâmicas embaixo dos dados);
+- **CNPJ das listas da Alessandra conferido na Receita** (`mapa_final/raiz_receita.py`, várias raízes de uma vez): em 17/11 a
+  AZZAS 2154 ficou com o CNPJ do Magazine Luiza. Conferir razão e fantasia contra o nome da linha antes de gravar CNPJ.
 
 **STATUS AUTOPEL refeito em 16/11/2026** (`avulsos/status_autopel/`; o de 05/11 errou redes grandes):
 - **a compra de qualquer cliente ligado à rede conta**: franqueado, associada, distribuidor da rede, cliente no grupo com o

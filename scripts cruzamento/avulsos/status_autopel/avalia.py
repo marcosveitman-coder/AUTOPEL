@@ -10,7 +10,8 @@ Farmácia avulsa da FARMACIA VF: só a raiz do CNPJ.
 Entrada: clientes.pkl (base_clientes.py) e entidades.pkl (coleta.py). Saída: resultados.pkl.
 Uso: python avalia.py "<pasta de trabalho>" [AAAA-MM-DD de hoje] """
 import sys, os, re, pickle, datetime as dt, collections as C
-from motor import Motor, norm, norm_legal, COMPAT, GRUPO_GENERICO
+from motor import Motor, norm, norm_legal, COMPAT, GRUPO_GENERICO, depois_da_medida, _MAN
+PRODUTOS_MANUAIS = _MAN.get('produtos', {})     # nome da rede -> textos do produto depois da medida (19/11)
 
 PASTA = sys.argv[1]
 HOJE = dt.date.fromisoformat(sys.argv[2]) if len(sys.argv) > 2 else dt.date.today()
@@ -18,6 +19,11 @@ HOJE = dt.date.fromisoformat(sys.argv[2]) if len(sys.argv) > 2 else dt.date.toda
 
 # vínculos manuais que nenhuma regra acha: nome de busca -> nomes a mais (dados/manuais.json, local)
 from motor import ALIAS_MANUAL, RAIZES_ERRADAS, CLIENTES_MANUAIS, EXCLUSOES, UFS, FAM_EXTRA, TIPO, SEPARAR, SO_FORTES, GRUPOS_OK, NACIONAIS
+
+
+# 19/11: palavras de formato que não mudam a marca ("PIZZARIA SPOLETO" = SPOLETO; "CLUBE MELISSA" = MELISSA).
+# HIPER, ELETRO, MINI, EXPRESS ficam fora: "ELETRO MATEUS" é outra marca.
+FORMATO = set('PIZZARIA CLUBE LOJA LOJAS REDE GRUPO SUPERMERCADO SUPERMERCADOS DROGARIA DROGARIAS FARMACIA FARMACIAS OTICA OTICAS RESTAURANTE RESTAURANTES BOUTIQUE'.split())
 
 
 class Proibidas:
@@ -40,7 +46,7 @@ def main():
         for t in (c['fant'], c['grp_desc']):
             n = norm_legal(t)
             if n: exato[n].add(k)
-    todas = {r for e in E for r in e['raizes'] if not e['extra'].get('so_cnpj')}   # só CNPJ de redes; farmácia avulsa não trava
+    todas = {r for e in E for r in e['raizes'] + e.get('raizes_ref', []) if not e['extra'].get('so_cnpj')}   # só CNPJ de redes; farmácia avulsa não trava
     # FARMACIA VF: associadas de cada rede (coluna B "REDE / ASSOCIAÇÃO" das farmácias avulsas) e o mapa curado de grupos do
     # cadastro -> rede (avulsos/farmacias/final/grupos_redes.json, local). A rede herda a compra mais recente das associadas.
     assoc = C.defaultdict(set)
@@ -65,11 +71,16 @@ def main():
     for k, c in cli.items():
         if c['grp']: por_grpcod[c['grp']].append(k)
     # nomes usados por mais de uma rede (clusters diferentes): vínculo fraco exige a mesma UF
-    donos = C.defaultdict(set)
+    donos, donos_sem_ind = C.defaultdict(set), C.defaultdict(set)
     for e in E:
         if not e['extra'].get('so_cnpj'):
-            for x in e['nomes']: donos[x].add(e['cluster'])
+            for x in e['nomes']:
+                donos[x].add(e['cluster'])
+                if e['fam'] != 'IND': donos_sem_ind[x].add(e['cluster'])
     ambiguos = {x for x, cs in donos.items() if len(cs) > 1}
+    # 19/11: a aba da indústria deixou "NATURA" ambíguo (indústria x lojas) e a linha NATURA + AVON perdeu o vínculo pela UF.
+    # Para as redes das outras abas, a indústria não cria ambiguidade; para a indústria, vale tudo.
+    ambiguos_sem_ind = {x for x, cs in donos_sem_ind.items() if len(cs) > 1}
     cl = C.defaultdict(list)
     for n, e in enumerate(E):
         if not e['extra'].get('so_cnpj'): cl[e['cluster']].append(n)
@@ -95,13 +106,13 @@ def main():
     for e in E:
         if e['aba'].startswith('I.R.T.T'):
             for cod in e['codigos']: cod_marcas[cod].add(norm(e['nomes'][0] if e['nomes'] else e['extra'].get('nome', '')).replace(' ', ''))
-    def aval(cid, ns, fams_extra=(), regra9=True):
+    def aval(cid, ns, fams_extra=(), regra9=True, sem_nomes=(), raizes_extra=()):
         es = [E[n] for n in ns]
-        nomes = list(dict.fromkeys(x for e in es for x in e['nomes']))
+        nomes = list(dict.fromkeys(x for e in es for x in e['nomes'] if x not in sem_nomes))
         for x in list(nomes): nomes += [y for y in ALIAS_MANUAL.get(x, []) if y not in nomes]
         erradas = set().union(*[RAIZES_ERRADAS.get(x, set()) for x in nomes]) if nomes else set()
         t_r, t_z = tira.get(cid, (set(), set()))
-        raizes = sorted({r for e in es for r in e['raizes']} - erradas - t_r)    # ex.: CNPJ de outra empresa na aba IRTT
+        raizes = sorted({r for e in es for r in e['raizes'] + e.get('raizes_ref', []) + list(raizes_extra)} - erradas - t_r)    # ex.: CNPJ de outra empresa na aba IRTT
         razoes = list(dict.fromkeys(x for e in es for x in e['razoes'] if norm_legal(x) not in t_z))
         fams = sorted({e['fam'] for e in es} | {f for x in nomes for f in FAM_EXTRA.get(x, [])} | set(fams_extra))
         principais = {e['nomes'][0] for e in es if e['nomes']}
@@ -113,7 +124,7 @@ def main():
         if any(x in NACIONAIS for x in nomes):       # Shell, Ipiranga, Petrobras: o posto com a bandeira é de qualquer UF
             uf_sempre, ufs = False, set()
         v = M.vinculos(nomes, raizes, razoes, Proibidas(todas, set(raizes) | r_assoc), fam=fams, principais=principais,
-                       ambiguos=ambiguos, ufs=ufs, uf_sempre=uf_sempre, manuais={y for x in nomes for y in ALIAS_MANUAL.get(x, [])})
+                       ambiguos=ambiguos if 'IND' in fams else ambiguos_sem_ind, ufs=ufs, uf_sempre=uf_sempre, manuais={y for x in nomes for y in ALIAS_MANUAL.get(x, [])})
         for r in sorted(r_assoc):
             for k in M.raiz.get(r, []): v.append(('ASSOCIADA', k, cli[k]['ult'], f'associada da rede (raiz {r})'))
         for x in redes_farm:
@@ -131,7 +142,15 @@ def main():
         for x in set(nomes) | {norm(e['extra'].get('nome', '')) for e in es}:
             for ck in CLIENTES_MANUAIS.get(x, []):
                 k = tuple(ck.split('/'))
-                if k in cli: v.append(('NOME', k, cli[k]['ult'], 'vínculo conferido à mão (CRM, 16/11)'))
+                if k in cli: v.append(('NOME', k, cli[k]['ult'], 'vínculo conferido à mão (16 e 19/11)'))
+        # 19/11: produto personalizado conferido à mão (o nome da marca logo depois da medida), sem as travas de segmento/UF/
+        # CNPJ: "80X40M TENDALL" comprado pelo grupo do Habib's; "CALVIN KLEIN" e "NATURA" por um distribuidor de suprimentos
+        for x in set(nomes) | {norm(e['extra'].get('nome', '')) for e in es}:
+            for txt in PRODUTOS_MANUAIS.get(x, []):
+                t = norm(txt)
+                for nd in M.ptok.get(t.split()[0], ()):
+                    if depois_da_medida(nd).startswith(t):
+                        for k, d, nv in M.prod[nd]: v.append(('PRODUTO', k, d, f"produto '{nd[:60]}' (conferido à mão)"))
         for e in es:
             for cod in e['codigos']:      # códigos e grupos da aba IRTT já foram validados (regra 9) quando a aba foi feita
                 ks = por_cod.get(cod, [])
@@ -171,6 +190,9 @@ def main():
         # com o mesmo nome caem (sem isso, tirando um falso entrava o próximo com o mesmo nome)
         if any(norm(e['extra'].get('nome', '')) in SO_FORTES for e in es):
             v = [x for x in v if x[0] in ('CNPJ', 'RAZAO', 'CODIGO', 'ASSOCIADA', 'GRUPO MAPA', 'GRUPO ERP') or x[3].startswith('vínculo conferido')]
+        # 19/11: exclusão manual (nome da rede, código do cliente) vale também para código e grupo da aba IRTT
+        # (o código de uma cooperativa de crédito estava na lista da Coop Supermercado)
+        v = [x for x in v if x[0] in ('CNPJ', 'RAZAO') or not any((n_, x[1][0]) in EXCLUSOES for n_ in nomes)]
         res = M.resultado(v)
         # provas: o vínculo mais recente de cada caminho
         melhor = {}
@@ -189,6 +211,10 @@ def main():
     MARCA = lambda a: (a.endswith('FINAL') and a != 'OUTROS FINAL') or a.startswith('I.R.T.T')
     marca = lambda e: (norm(e['nomes'][0]) if e['nomes'] else norm(e['extra'].get('nome', ''))).replace(' ', '')
     n_sep = 0
+    marca_dona = C.defaultdict(set)
+    for cid_, ns_ in cl.items():
+        for n in ns_:
+            if MARCA(E[n]['aba']) and E[n]['nomes']: marca_dona[E[n]['nomes'][0]].add(cid_[0])
     for i, (cid, ns) in enumerate(cl.items()):
         bs = [n for n in ns if MARCA(E[n]['aba'])]
         so_drog = {E[n]['fam'] for n in ns} <= {'DROG'}
@@ -209,13 +235,34 @@ def main():
                 for b_ in bs:     # "Ri Happy (+ PBKids)" inclui PB Kids; "DOMINOS" e "DOMINOS PIZZA"
                     ma = marca(E[a_])
                     if ma and any(x.replace(' ', '').startswith(ma) for x in E[b_]['nomes'] + [marca(E[b_])]): une(a_, b_)
+                    # 19/11: mesma raiz e o nome inteiro dentro do outro ("MELISSA" x "CLUBE MELISSA")
+                    na = E[a_]['nomes'][0] if E[a_]['nomes'] else ''
+                    if (len(na.replace(' ', '')) >= 5 and set(E[a_]['raizes']) & set(E[b_]['raizes'])
+                            and any(set(x.split()) - set(na.split()) <= FORMATO and re.search(r'(?<![A-Z0-9])' + re.escape(na) + r'(?![A-Z0-9])', x)
+                                    for x in E[b_]['nomes'])): une(a_, b_)
             grupos = C.defaultdict(list)
             for n in bs: grupos[raiz_(n)].append(n)
         else:
             grupos = {}
         if len(grupos) <= 1:
-            res = aval(cid, ns)
-            for n in ns: R[n] = res
+            # 19/11 (caso Frango Assado x linha "IMC (FRANGO ASSADO / PIZZA HUT / KFC)"): a linha de grupo emprestava à marca
+            # o nome de OUTRA marca que tem linha própria no MAPA (a bobina da Pizza Hut deixava o Frango Assado ATIVO).
+            # As linhas de marca são avaliadas sem esses nomes; a linha que os traz fica com o grupo todo.
+            alheios = set()
+            if bs and cid[1] is None:
+                proprios = {x for n in bs for x in E[n]['nomes']}
+                alheios = {x for n in ns if n not in bs for x in E[n]['nomes'] if x not in proprios and x in marca_dona and marca_dona[x] - {cid[0]}}
+            if alheios:
+                com = [n for n in ns if set(E[n]['nomes']) & alheios]
+                sem = [n for n in ns if n not in com]
+                # o CNPJ da linha de grupo continua valendo (compra pelo CNPJ vale para todas as marcas: St. Marché)
+                res = aval(cid, sem, sem_nomes=alheios, raizes_extra={r for n in com for r in E[n]['raizes']})
+                for n in sem: R[n] = res
+                res = aval(cid, ns)
+                for n in com: R[n] = res
+            else:
+                res = aval(cid, ns)
+                for n in ns: R[n] = res
         else:
             n_sep += 1
             nm_g = {g: {x.replace(' ', '') for n in ms for x in E[n]['nomes']} | {marca(E[n]) for n in ms} for g, ms in grupos.items()}

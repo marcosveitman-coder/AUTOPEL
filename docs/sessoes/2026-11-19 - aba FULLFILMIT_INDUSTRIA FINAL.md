@@ -92,3 +92,98 @@ Mudanças no motor:
 
 ## Pendente
 - Contatos LinkedIn (17/11): conferir os perfis 64 a 220 quando houver crédito do Firecrawl e refazer a planilha.
+
+---
+
+# 2ª parte (19/11/2026): revisão do STATUS AUTOPEL em todas as abas + ampliação da indústria
+
+## Pedido
+O usuário mostrou um erro e pediu dois trabalhos:
+- **o erro:** a linha "Koni Store" (ALIMENTACAO FINAL 131) estava NÃO É CLIENTE, mas a marca tem pedido programado e compra
+  (bobina "80X100M KONI" do cliente do grupo da marca);
+- **revisão:** ter certeza do STATUS AUTOPEL em todas as abas, sem conflitos internos;
+- **ampliação:** a aba de indústrias ficou pequena; focar em associações, cooperativas e empresas regionais.
+
+## Causa do caso Koni
+A mesma marca estava em duas linhas com o mesmo CNPJ: "KONI" na IRTT, ATIVO, e "KONI STORE" na ALIMENTACAO FINAL, NÃO É CLIENTE.
+Como o prefixo tem só 4 letras, as duas linhas não foram ligadas, e o produto "KONI" não bate com o nome "KONI STORE".
+
+## O que a auditoria achou (e foi corrigido no motor)
+Ferramenta nova: `auditoria.py`, que procura conflitos de status na mesma raiz ou no mesmo nome, mais as pistas fracas não aceitas.
+- **Mesma marca com dois status:** Koni, Pizzaria Spoleto, Melissa × Clube Melissa.
+  - Regra nova: mesmo CNPJ + prefixo de 4+ letras, ou só uma palavra de formato a mais.
+- **CNPJ de franqueado separava a rede da mesma rede nas listas da Alessandra**: We Pink, Santo Remédio e outras.
+  - Regra nova: o CNPJ de uma unidade (coluna H, ou a G que avisa "unidade") vale só como vínculo.
+- **Linha de grupo emprestando nome de outra marca:** o Frango Assado estava ATIVO por uma bobina da Pizza Hut. Agora fica ATIVO
+  pela bobina "FRANGO ASSADO POSTOS" da própria IMC.
+- **A aba nova de indústrias criou nomes ambíguos** (NATURA), e a linha NATURA + AVON perdeu o vínculo pela UF. A IND não cria
+  mais ambiguidade para as outras abas.
+- **Vínculos errados ou que faltavam:**
+  - código de cooperativa de crédito na lista da Coop Supermercado (IRTT), excluído;
+  - produtos personalizados e clientes conferidos à mão: Tendall, Calvin Klein, Natura, Apoio Mineiro, Rei do Mate, Unissul,
+    Mega Descontão e Petrox.
+- **CNPJs das listas da Alessandra / TOP 50, gravados em 17/11, conferidos na Receita** (468 raízes):
+  - AZZAS 2154 estava com o CNPJ do Magazine Luiza. Foi corrigido, e o status vinha das compras do Magalu;
+  - o CNPJ do St. Marché na aba SUPERMERCADOS (reuniao) é do Spani Atacadista, e o St. Marché fica INATIVO (Hortus, cadastro sem
+    nota). Essa aba é do usuário e não foi alterada: avisado.
+- **Base do dia:** `atualiza_clientes.py` usa os CSVs do TOTVS de 19/11. Foram 4.888 datas de última nota mais novas que as do 16/11.
+- **Abas editadas pelo usuário desde 17/11:**
+  - REDE DE LOJAS FINAL tem dinâmicas embaixo dos dados (linha 334) e a Alessandra Dayan VF também (linha 565);
+  - a VF ganhou 2 colunas na frente e o cabeçalho foi para a linha 8;
+  - a coleta e a gravação agora leem pelo cabeçalho e param no fim da tabela.
+
+Fica como estava (regra de 16/11): a marca não herda a compra de outra marca do mesmo grupo. Esses casos estão na aba CONFLITOS
+da planilha de conferência, para o usuário confirmar.
+
+## Resultado da revisão do STATUS
+- **29 linhas mudam de status** (de 98 mil avaliadas), em 266 células.
+  - 17 sobem para ATIVO (marca igual em duas abas, produto personalizado da própria marca, associada, franqueado);
+  - 4 descem de ATIVO para INATIVO (vínculo de cooperativa de crédito, CNPJ de outra empresa e uma farmácia pela data do dia);
+  - 8 passam de NÃO É CLIENTE para INATIVO.
+- **Planilha de conferência:** `COMERCIAL (NOVO)\CONFERENCIA STATUS AUTOPEL 19.11.2026.xlsx` (LEIA, MUDANÇAS, CONFLITOS).
+- **CNPJ da AZZAS 2154** corrigido na Alessandra Dayan VF (linha 260) e na REDE LOJAS (TOP 50) (linha 8).
+- **Conferência do arquivo:** as 266 células planejadas estão certas e nenhuma outra célula mudou. A exceção é a IRTT coluna H,
+  "Dias sem comprar" (fórmula HOJE()−G, que acompanha as datas novas). Macro e as 52 dinâmicas mantidas.
+
+## Resultado da ampliação da indústria
+- **De 496 para 1.037 linhas:**
+
+  | Origem das linhas novas | Linhas |
+  |---|---:|
+  | Regionais (3 maiores por UF e segmento) | 378 |
+  | Cooperativas | 92 |
+  | Associadas da ABIA, ABRAFATI e ABRAMAT | 71 |
+
+- **Por segmento:**
+
+  | Segmento | Linhas |
+  |---|---:|
+  | FMCG | 276 |
+  | Química, plásticos e embalagens | 168 |
+  | Eletro | 119 |
+  | Construção | 115 |
+  | Automotivo | 99 |
+  | Têxtil | 98 |
+  | Farma | 89 |
+  | Óleo | 56 |
+  | Pneus | 17 |
+
+- **Por região:** Sudeste 439, Sul 232, Nordeste 186, Norte 90, Centro-Oeste 90.
+- **STATUS:** 18 ATIVO, 86 INATIVO, 933 NÃO É CLIENTE, calculado junto com as outras abas (um cluster por empresa).
+- **Exclusões das listas novas** (`FORA_AMP`): construtoras, holdings, importadoras, algodoeiras, usinas, projetos sem operação,
+  empresas em liquidação/falidas e SCP.
+- **MAIORES POR REGIÃO e R_E_S_U_M_O:** os blocos da indústria foram regravados no mesmo lugar, sem duplicar. O Excel passa os
+  textos para a tabela compartilhada ao salvar, e o `grava_industria.py` procura o título nos dois lugares.
+
+## Pendente
+- **Aprovação do usuário** para trocar o MAPA pela cópia gravada (ficou no scratchpad da sessão, `final\MAPA_final.xlsm` na pasta
+  temporária; o backup do MAPA de 12:05 está no scratchpad).
+- Os resumos com texto fixo e as dinâmicas não foram atualizados: o usuário atualiza ao abrir.
+- Contatos LinkedIn (perfis 64 a 220) quando houver crédito do Firecrawl.
+
+## Lições
+- Antes de gravar CNPJ numa lista, conferir na Receita a razão e a fantasia contra o nome da linha. O erro da AZZAS (CNPJ do
+  Magalu) passou em 17/11 e dava ATIVO pelas compras do Magalu.
+- Aba nova numa família de nomes comuns cria ambiguidade para as abas antigas: rodar a auditoria depois de toda aba nova.
+- O usuário edita o MAPA durante a sessão (colunas novas na VF, dinâmicas embaixo dos dados): sempre recoletar do arquivo atual.
+- No PowerShell, `Range.Value2 = $null` dá erro de referência nula: usar `ClearContents()`.

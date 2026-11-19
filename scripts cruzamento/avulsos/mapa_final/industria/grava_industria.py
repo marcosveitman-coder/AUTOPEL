@@ -117,12 +117,12 @@ def resumo_rows(k0):
     for a, b in [
         ('1. Segmentos pedidos', 'Pneus; bens de consumo não duráveis (FMCG: alimentos, bebidas, higiene, limpeza, cosméticos); farmacêutica e médica; eletroeletrônicos e linha branca; têxtil, calçados e vestuário; automotivo, autopeças e máquinas; química, plásticos, papel e embalagens; móveis e materiais de construção; óleo e lubrificantes (fabricantes e revendas). Fabricantes com selo PROCEL, CONPET ou etiqueta ENCE/PBE marcados na OBSERVAÇÃO.'),
         ('2. Receita Federal por CNAE', 'Varredura das empresas ativas com fábrica (CNAE principal da indústria de cada segmento; lubrificante: refino 1921, lubrificantes 1922 e atacado de lubrificantes 4681-8/05). Filtro contra erro de cadastro: porte "demais", sociedade (fora MEI/EIRELI) e capital social de R$ 5 mi ou mais.'),
-        ('3. Corte por segmento e região', 'As maiores pelo capital social no Brasil (FMCG 60, química/papel 50, demais 40) + as 6 maiores de cada segmento em cada região (capital de R$ 20 mi ou mais). Pneus e lubrificantes: todas com capital de R$ 20 mi ou mais.'),
-        ('4. Listas de mercado', 'Exame Melhores e Maiores 2026 (receita de 2025) nos setores industriais; associadas da ANFAVEA, da ELETROS e da ANIP; mercado de lubrificantes 2025 (Lubes em Foco); tabelas ENCE/PBE do Inmetro 2025; e multinacionais líderes que não publicam balanço (Unilever, P&G, Colgate, PepsiCo etc.).'),
+        ('3. Corte por segmento e região', 'As maiores pelo capital social no Brasil (FMCG 60, química/papel 50, demais 40) + as 6 maiores de cada segmento em cada região (capital de R$ 20 mi ou mais). Pneus e lubrificantes: todas com capital de R$ 20 mi ou mais. Ampliação (19/11): as 3 maiores de cada segmento em cada UF (capital de R$ 10 mi ou mais e a matriz numa atividade industrial do segmento) e as cooperativas agroindustriais grandes (capital de R$ 5 mi ou mais, ou 4+ unidades industriais).'),
+        ('4. Listas de mercado', 'Exame Melhores e Maiores 2026 (receita de 2025) nos setores industriais; associadas da ANFAVEA, da ELETROS e da ANIP; mercado de lubrificantes 2025 (Lubes em Foco); tabelas ENCE/PBE do Inmetro 2025; e multinacionais líderes que não publicam balanço (Unilever, P&G, Colgate, PepsiCo etc.). Ampliação (19/11): associadas da ABIA (alimentos), da ABRAFATI (tintas) e da ABRAMAT (materiais de construção), nos sites das entidades; maiores cooperativas (Forbes Agro100 / Sistema OCB).'),
         ('5. Fora da lista', 'Mineração, siderurgia, saneamento, geração de energia, exploração de petróleo, distribuidoras de combustível, tradings de grãos, usinas de açúcar e etanol a granel, agropecuária, construtoras, varejo, holdings e importadoras sem fábrica.'),
         ('6. CNPJ e unidades', 'CNPJ = matriz da empresa na Receita (todas conferidas: existem e estão ativas). Empresas do mesmo grupo com várias razões sociais viram uma linha (ex.: JBS + Seara; Tupy + MWM). Nº de unidades = estabelecimentos ativos de todas as raízes da linha (fábricas, CDs, filiais e lojas próprias).'),
-        ('7. Porte', 'Receita 2025 da Exame: A ≥ R$ 1 bi, B R$ 300 mi a 1 bi, C R$ 20 a 300 mi, D < R$ 20 mi. Sem receita publicada: estimado pelo capital social (A ≥ R$ 500 mi, B R$ 100 a 500 mi, C R$ 10 a 100 mi, D < R$ 10 mi), com aviso na OBSERVAÇÃO.'),
-        ('8. STATUS AUTOPEL', 'Mesmo motor das outras abas (16/11): CNPJ (raiz), razão social, grupo do cliente, nome fantasia, e-mail e produto personalizado, com as travas contra homônimo. Indústria só casa por nome com cliente de segmento corporativo, fabricante ou autopeças. ATIVO = compra há menos de 360 dias; INATIVO = comprou antes ou só tem cadastro; NÃO É CLIENTE = nada. Vínculos fracos revistos à mão.')]:
+        ('7. Porte', 'Receita 2025 da Exame: A ≥ R$ 1 bi, B R$ 300 mi a 1 bi, C R$ 20 a 300 mi, D < R$ 20 mi. Sem receita publicada: estimado pelo capital social (A ≥ R$ 500 mi, B R$ 100 a 500 mi, C R$ 10 a 100 mi, D < R$ 10 mi), com aviso na OBSERVAÇÃO. Cooperativa: o capital (quotas) não mede o tamanho; vale a receita da Forbes Agro100 / OCB ou o nº de unidades industriais (10+ = B, 4+ = C).'),
+        ('8. STATUS AUTOPEL', 'Mesmo motor das outras abas (revisto em 19/11, com os relatórios do TOTVS do dia): CNPJ (raiz), razão social, grupo do cliente, nome fantasia, e-mail e produto personalizado, com as travas contra homônimo. Indústria só casa por nome com cliente de segmento corporativo, fabricante ou autopeças. ATIVO = compra há menos de 360 dias; INATIVO = comprou antes ou só tem cadastro; NÃO É CLIENTE = nada. Vínculos fracos revistos à mão.')]:
         lin([(a, S_TAB), (b, S_TAB)])
     k += 1
     lin([('Segmento', S_HEAD), ('Empresas', S_HEAD), ('ATIVO', S_HEAD), ('INATIVO', S_HEAD), ('NÃO É CLIENTE', S_HEAD), ('5 maiores (porte)', S_HEAD)], 30)
@@ -144,7 +144,11 @@ def resumo_rows(k0):
         ('ANIP – Associação Nacional da Indústria de Pneumáticos', 'Fabricantes de pneus com fábrica no Brasil.', 'apresentação da ANIP na Câmara (set/2024) e imprensa'),
         ('Lubes em Foco – mercado de lubrificantes 2025', 'Iconic, Vibra, Blueway (Raízen), Moove, Petronas, Castrol, Quaker, Ultrax e outras.', 'https://portallubes.com.br/2026/05/the-brazilian-lubricant-market-in-2025/'),
         ('Inmetro – tabelas de eficiência energética (PBE/ENCE 2025)', 'Marcas com etiqueta ENCE e selos PROCEL/CONPET: aquecedores a gás, bombas, ar-condicionado, fogões, refrigeradores, lavadoras e veículos.', 'https://www.gov.br/inmetro/pt-br/assuntos/regulamentacao/avaliacao-da-conformidade/programa-brasileiro-de-etiquetagem/tabelas-de-eficiencia-energetica'),
-        ('ANAMACO, ABRAMAT, ABCEM, ANR, Abrasel, ABRAS, APAS', 'Consultadas: são de varejo, construção e alimentação fora do lar (já cobertas pelas outras abas FINAL); não publicam lista de indústrias.', 'pesquisa Google')]:
+        ('ABIA – associadas', 'Indústrias de alimentos e bebidas (cerca de 70 associadas).', 'https://abia.org.br/a-abia/associadas/'),
+        ('ABRAFATI – associados', 'Fabricantes de tintas (38).', 'https://abrafati.com.br/associados/'),
+        ('ABRAMAT – associados', 'Indústria de materiais de construção (cerca de 40).', 'https://abramat.org.br/'),
+        ('Forbes Agro100 2026 / Sistema OCB', 'Receita 2025 das 10 maiores cooperativas agropecuárias.', 'https://rio.coop/cooperativas-movimentam-r1708-bi-e-se-destacam-entre-as-maiores-empresas-do-agro/'),
+        ('ANAMACO, ABCEM, ANR, Abrasel, ABRAS, APAS', 'Consultadas: são de varejo, construção e alimentação fora do lar (já cobertas pelas outras abas FINAL); a lista da ABCEM estava fora do ar.', 'pesquisa Google')]:
         lin([(a, S_TAB), (b, S_TAB), (e, S_TAB)])
     k += 1
     lin([('• O nº de unidades de uma indústria inclui CDs, escritórios e lojas próprias (ex.: Hering, Veste). Para caixas/mês vale a mesma regra das outras abas (letra do porte × unidades).', None)])
@@ -159,6 +163,22 @@ def caminho(z, nome):
     return 'xl/' + t.group(1).lstrip('/').replace('xl/', '')
 
 
+MARCA = {REGIAO: 'INDÚSTRIAS — acrescentado em', RESUMO: '9. INDÚSTRIAS (acrescentado'}
+
+
+def tira_bloco(x, marca, sst=()):
+    """Tira o bloco que este script já acrescentou (da linha com o título até o fim da aba), para regravar sem duplicar."""
+    rows = list(re.finditer(r'<row r="(\d+)"[^>]*?/>|<row r="(\d+)"(?:[^>]*[^/>])?>.*?</row>', x, flags=re.S))
+    # o Excel, ao salvar, passa o texto para a tabela de textos compartilhados: procura também o índice (t="s")
+    ids = {str(i) for i, t in enumerate(sst) if marca in t}
+    tem = lambda g: escape(marca) in g or marca in g or any(f't="s"><v>{i}</v>' in g for i in ids)
+    ini = next((m for m in rows if tem(m.group(0))), None)
+    if not ini: return x
+    k0 = int(ini.group(1) or ini.group(2))
+    depois = [m for m in rows if int(m.group(1) or m.group(2)) >= k0]
+    return x[:depois[0].start()] + x[depois[-1].end():]
+
+
 def acrescenta(x, novas, ultima):
     ult = max(int(n) for n in re.findall(r'<row r="(\d+)"', x))
     assert int(re.search(r'<row r="(\d+)"', novas[0]).group(1)) > ult
@@ -169,9 +189,14 @@ def acrescenta(x, novas, ultima):
 def main():
     z = zipfile.ZipFile(MAPA); novos = {}
     p = caminho(z, ABA); x = z.read(p).decode('utf8')
-    assert '<sheetData/>' in x, 'a aba não está vazia'
     corpo, dim = aba_xml()
-    x = x.replace('<sheetData/>', corpo, 1)
+    if '<sheetData/>' in x and '<cols>' not in x:
+        x = x.replace('<sheetData/>', corpo, 1)
+    else:
+        # 19/11 (ampliação): a aba já foi gravada por este script; troca colunas, dados e filtro (o resto da aba fica)
+        x = re.sub(r'<cols>.*?</cols>', '', x, flags=re.S)
+        x = re.sub(r'<autoFilter [^>]*/>', '', x)
+        x = re.sub(r'<sheetData>.*?</sheetData>|<sheetData/>', lambda m: corpo, x, count=1, flags=re.S)
     x = re.sub(r'<dimension ref="[^"]*"/>', f'<dimension ref="{dim}"/>', x)
     sel = ' tabSelected="1"' if 'tabSelected="1"' in x else ''
     x = re.sub(r'<sheetViews>.*?</sheetViews>', f'<sheetViews><sheetView{sel} workbookViewId="0"><pane ySplit="6" topLeftCell="A7" activePane="bottomLeft" state="frozen"/>'
@@ -179,6 +204,8 @@ def main():
     novos[p] = x.encode('utf8'); print(ABA, p, len(rows))
     for aba, fn in [(REGIAO, regiao_rows), (RESUMO, resumo_rows)]:
         p = caminho(z, aba); x = z.read(p).decode('utf8')
+        sst = [re.sub(r'<[^>]+>', '', t) for t in re.findall(r'<si>.*?</si>', z.read('xl/sharedStrings.xml').decode('utf8'), flags=re.S)] if 'xl/sharedStrings.xml' in z.namelist() else []
+        x = tira_bloco(x, MARCA[aba], sst)
         ult = max(int(n) for n in re.findall(r'<row r="(\d+)"', x))
         linhas, fim = fn(ult + 3)
         novos[p] = acrescenta(x, linhas, fim).encode('utf8'); print(aba, p, 'linhas', ult + 3, 'a', fim)

@@ -20,6 +20,9 @@ TOP50 = ['ALIMENTAÇÃO (TOP 50)', 'BELEZA  (TOP 50)', 'CONVENIENCIA  (TOP 50)',
          'SERVIÇOS & FRANQUIAS (TOP 50)', 'SUPERMERCADO (TOP 50)']
 
 
+FORMATO = set('PIZZARIA CLUBE LOJA LOJAS REDE GRUPO SUPERMERCADO SUPERMERCADOS DROGARIA DROGARIAS FARMACIA FARMACIAS OTICA OTICAS RESTAURANTE RESTAURANTES BOUTIQUE'.split())
+
+
 def cnpj_ok(c):
     c = D(c)
     if len(c) != 14 or len(set(c)) == 1: return False
@@ -46,9 +49,10 @@ def familia(e):
     return 'X'
 
 
-def ent(aba, linha, nomes, cnpjs=(), razoes=(), codigos=(), grupos=(), extra=None):
+def ent(aba, linha, nomes, cnpjs=(), razoes=(), codigos=(), grupos=(), extra=None, raizes_ref=()):
     raizes = sorted({D(c)[:8] for c in cnpjs if cnpj_ok(c)})
-    return dict(aba=aba, linha=linha, nomes=[n for n in nomes if n], raizes=raizes, razoes=[r for r in razoes if s(r)],
+    ref = sorted({D(c)[:8] for c in raizes_ref if cnpj_ok(c)} - set(raizes))
+    return dict(aba=aba, linha=linha, nomes=[n for n in nomes if n], raizes=raizes, raizes_ref=ref, razoes=[r for r in razoes if s(r)],
                 codigos=list(codigos), grupos=[g for g in grupos if s(g)], extra=extra or {})
 
 
@@ -66,11 +70,20 @@ def main(mapa, saida):
         redes_aba = {x.replace(' ', '') for r in rows[h + 1:] if r and s(r[1]) for x in nomes_da_rede(r[1])[:1]}
         for i, r in enumerate(rows[h + 1:], start=h + 2):
             if not r or not s(r[1]): continue
+            # 19/11: o usuário pôs tabelas dinâmicas embaixo dos dados (REDE DE LOJAS FINAL, linha 334): linha de rede tem o Nº na A
+            if not isinstance(r[0], (int, float)): continue
             g = s(r[ix['GRUPO ADMINISTRADOR']])
             nomes = nomes_da_rede(r[1])
             if g and grupos_cont[nucleo(g)] == 1:     # grupo com uma rede só
                 nomes += [n for n in nomes_da_rede(g) if n not in nomes and (n.replace(' ', '') not in redes_aba or n in nomes_da_rede(r[1]))]
-            E.append(ent(aba, i, nomes, [r[ix['CNPJ']], r[ix.get('CNPJ DE REFERÊNCIA (UNIDADE DA REDE)', ix['CNPJ'])]], [r[ix['RAZÃO SOCIAL']]],
+            # 19/11: o CNPJ de referência (H) é de UMA UNIDADE (franqueado): vale como vínculo (raizes_ref), mas não é o CNPJ
+            # da rede. Antes ele entrava como CNPJ da rede, e a trava "CNPJs diferentes" separava a rede da mesma rede nas
+            # listas da Alessandra (franqueadora): o mesmo nome ficava com dois status.
+            ref = r[ix['CNPJ DE REFERÊNCIA (UNIDADE DA REDE)']] if 'CNPJ DE REFERÊNCIA (UNIDADE DA REDE)' in ix else None
+            conf = s(r[ix['CONFERÊNCIA DO CNPJ']]).upper() if 'CONFERÊNCIA DO CNPJ' in ix else ''
+            unidade = conf.startswith('CNPJ DE UMA UNIDADE') or conf.startswith('FRANQUEADORA NÃO ACHADA')   # F também é de uma unidade
+            E.append(ent(aba, i, nomes, [] if unidade else [r[ix['CNPJ']]], [] if unidade else [r[ix['RAZÃO SOCIAL']]],
+                         raizes_ref=[x for x in (ref, r[ix['CNPJ']] if unidade else None) if x],
                          extra=dict(nome=s(r[1]), uf=s(r[ix['UF SEDE']]), status_antes=s(r[ix['STATUS AUTOPEL']]) if 'STATUS AUTOPEL' in ix else '',
                                     apoio=aba == 'OUTROS FINAL', origem=s(r[ix['ORIGEM']]) if 'ORIGEM' in ix else '')))
     # ---- Alessandra Dayan: 11 tabelas lado a lado (linha 1 = segmento, linha 2 = cabeçalho)
@@ -87,10 +100,18 @@ def main(mapa, saida):
     # ---- Alessandra Dayan VF e TOP 50 (EMPRESA, UF, ..., STATUS AUTOPEL, SEGMENTO)
     for aba in ['Alessandra Dayan VF'] + TOP50:
         rows = list(wb[aba].iter_rows(values_only=True))
-        h = next(i for i, r in enumerate(rows[:6]) if r and s(r[0]) == 'EMPRESA')
+        # 19/11: lê pelo cabeçalho (desde 17/11 o cabeçalho é a linha 6, na VF a 8, e a VF ganhou colunas na frente);
+        # a coluna CNPJ (matriz da marca, 17/11) entra como raiz
+        h = next(i for i, r in enumerate(rows[:12]) if r and 'EMPRESA' in [s(x) for x in r])
+        cab = [s(x) for x in rows[h]]
+        ix = {c: cab.index(c) for c in reversed(cab) if c}
+        iE, iU, iS, iG, iC = ix['EMPRESA'], ix['UF'], ix['STATUS AUTOPEL'], ix.get('SEGMENTO'), ix.get('CNPJ')
+        g = lambda r, j: s(r[j]) if j is not None and j < len(r) else ''
         for i, r in enumerate(rows[h + 1:], start=h + 2):
-            if not r or not s(r[0]): continue
-            E.append(ent(aba, i, nomes_da_rede(r[0]), extra=dict(nome=s(r[0]), seg=s(r[7]), uf=s(r[1]), status_antes=s(r[6]))))
+            if not r or not g(r, iE): break      # 19/11: fim da tabela (embaixo há dinâmicas do usuário)
+            cn = [g(r, iC)] if cnpj_ok(g(r, iC)) else []
+            E.append(ent(aba, i, nomes_da_rede(r[iE]), cn, extra=dict(nome=g(r, iE), seg=g(r, iG), uf=g(r, iU), status_antes=g(r, iS),
+                                                                       col_status=L(iS + 1))))
     # ---- IRTT por bandeira (cabeçalho na linha 4)
     rows = list(wb['I.R.T.T.__Por bandeira (FINAL)'].iter_rows(values_only=True))
     cab = [s(x) for x in rows[3]]
@@ -158,6 +179,23 @@ def main(mapa, saida):
                 chave[(e['fam'], cp(pre))].append(n)
     for k, ns in chave.items():
         for a in ns[1:]: junta(a, ns[0])
+    # 19/11/2026 (caso "Koni Store" x "Koni" da IRTT, mesma raiz): com o MESMO CNPJ, o prefixo curto (4+ letras) também
+    # junta. Sem isso a linha "KONI STORE" ficava NÃO É CLIENTE e a "KONI" ATIVO pela bobina "80X100M KONI".
+    por_raiz = C.defaultdict(list)
+    for n, e in enumerate(E):
+        if e['extra'].get('so_cnpj') or not e['nomes']: continue
+        for r in e['raizes']: por_raiz[r].append(n)
+    for r, ns in por_raiz.items():
+        for a in ns:
+            for b in ns:
+                if a < b:
+                    xa, xb = cp(E[a]['nomes'][0]), cp(E[b]['nomes'][0])
+                    curto, longo = sorted((xa, xb), key=len)
+                    if len(curto) >= 4 and longo.startswith(curto): junta(a, b)
+                    # 19/11: "MELISSA" x "CLUBE MELISSA", "SPOLETO" x "PIZZARIA SPOLETO": nome inteiro dentro do outro (5+ letras)
+                    na, nb = sorted((E[a]['nomes'][0], E[b]['nomes'][0]), key=len)
+                    if (len(na.replace(' ', '')) >= 5 and valido(na) and set(nb.split()) - set(na.split()) <= FORMATO
+                            and re.search(r'(?<![A-Z0-9])' + re.escape(na) + r'(?![A-Z0-9])', nb)): junta(a, b)
     # Alessandra Dayan (e VF / TOP 50, mesmos nomes) -> linhas das outras abas do cruzamento de 05/11/2026. As abas FINAL
     # andaram 5 linhas em 06/11 (cabeçalho foi para a linha 6): aceita a linha N ou N+5, conferindo o nome.
     import json, os
