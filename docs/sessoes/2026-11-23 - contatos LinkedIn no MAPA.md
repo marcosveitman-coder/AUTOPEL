@@ -27,3 +27,17 @@
 
 ## Lição
 - Arquivo de texto gravado em modo texto no Windows com '\r\n' vira '\r\r\n'. Gravar com `newline=''`.
+
+## 2º pedido (23/11): lista completa da Alessandra Dayan VF pela aba "Pessoas" do LinkedIn — EM ANDAMENTO
+- Pedido: preencher P:AD das 550 linhas da VF (coluna B: rede própria e associação/franquia) com as pessoas dos cargos pedidos,
+  buscando como o usuário mostrou (página da empresa no LinkedIn → Pessoas → cargo).
+- Método: busca de pessoas do LinkedIn com o filtro de empresa, no navegador embutido, com a conta do usuário:
+  `search/results/people/?company=<NOME>&keywords=CEO OR presidente OR "diretor geral" OR compras OR suprimentos OR supply`.
+  - No máximo ~6 termos com OR (8 dá "Nenhum resultado"). O parâmetro `title` com OR vira frase e falha. `/company/<slug>/people/?keywords=` é ignorado.
+  - Extrator no localStorage do linkedin.com: guarda nome, título, cargo atual, local e perfil só dos cartões com cargo-alvo.
+  - A CSP do LinkedIn bloqueia `eval` depois de um `await`: a função de espera transforma o extrator em função antes de esperar.
+- Estado na parada (limite de uso do Claude): 180 de 539 buscas feitas, sem bloqueio do LinkedIn. Nada foi gravado no MAPA.
+  O passo a passo para retomar está no ESTADO.md da pasta local `mapa_final/dados/contatos_2311/` (fora do git).
+- Falta: as 359 buscas restantes, uma 2ª busca com outros nomes para quem não teve resultado, a classificação estrita dos cargos
+  (empresa igual; na dúvida, em branco), a conferência no perfil, a gravação na VF e nas abas ESTACIONAMENTO/POSTOS FINAL (cópia +
+  conferência célula a célula) e a planilha de conferência.
