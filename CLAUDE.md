@@ -363,6 +363,9 @@ Armadilhas reais já vistas:
   (os buscadores por script não trazem LinkedIn). Apollo, Lusha e ZoomInfo do usuário não buscam pessoas (plano). Só vale cargo
   atual; resultado em tsv local (tem nomes) e planilha por `contatos_linkedin_planilha.py`. Rede pequena quase não tem perfil.
   Rede pequena: sócios do QSA (`socios_receita_qsa.py`) e busca "<rede>" + comprador. Link `google.com/goto` → `curl -w %{redirect_url}`.
+- **Contatos dentro do MAPA** (23/11; `contatos_mapa.py` → `grava_contatos.ps1`): Alessandra Dayan VF P:AD (5 cargos × Nome/
+  LinkedIn/Cargo, cabeçalho do usuário em P7:AD8, filtro mantido) e AB:AP nas ESTACIONAMENTO/POSTOS FINAL (cabeçalho copiado
+  da VF para AB5:AP6). Sem arquivo e sem aba novos (pedido do usuário).
 - mexeu nas TOP 50: rodar `org_dados` → `org_impressao` → `org_detalhe.py` → `org_detalhe.ps1` (a CONFIG DETALHE guarda a
   linha do cabeçalho) e o teste da macro.
 
