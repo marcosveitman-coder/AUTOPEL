@@ -54,3 +54,13 @@
   (funções do navegador e cuidados).
 - Falta: a partir de 01/12, refazer as buscas 60–71 e fazer as 72–539. Depois, a classificação estrita, a conferência no perfil e a
   gravação na VF e nas abas ESTACIONAMENTO/POSTOS FINAL. Nada foi gravado no MAPA.
+
+### Gravação parcial em 24/11 (pedido do usuário: "Write now")
+- Das 71 buscas feitas, as pessoas foram conferidas à mão (decisões locais em `dados/contatos_2311/dec_2411.py`). Só entrou
+  quem tem o cargo pedido atual na própria rede ou franqueadora. Ficaram fora: franqueado de unidade (vários "CEO" de franquias),
+  ex-CEO, VP sem o cargo pedido, CFO e conselho, empresa homônima, cargo só no título sem a empresa, e rede com dois "CEO".
+- Gravado com `contatos_linkedin_2411.py` → `grava_contatos.ps1` (cópia, Excel, célula por célula, filtro da VF intacto):
+  - 216 células: 61 blocos de cargo na Alessandra Dayan VF (41 linhas) e 11 na POSTOS GAS & CONVENIENCIA FINAL (6 redes);
+  - 7 blocos que já tinham contato de 23/11 ficaram como estavam.
+- Conferência: só as 216 células mudaram em todo o arquivo. O MAPA estava fechado e igual à cópia de partida ao ser trocado.
+- Falta: as buscas 60–71 (parciais) e 72–539, a partir de 01/12, quando volta o limite mensal do LinkedIn.
