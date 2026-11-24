@@ -41,3 +41,16 @@
 - Falta: as 359 buscas restantes, uma 2ª busca com outros nomes para quem não teve resultado, a classificação estrita dos cargos
   (empresa igual; na dúvida, em branco), a conferência no perfil, a gravação na VF e nas abas ESTACIONAMENTO/POSTOS FINAL (cópia +
   conferência célula a célula) e a planilha de conferência.
+
+### Continuação em 24/11 — busca parada pelo limite mensal do LinkedIn
+- O navegador embutido reabriu deslogado e o localStorage veio vazio: as 180 buscas de 23/11 se perderam (não havia cópia em disco).
+  Desde então, cada lote é gravado em `mapa_final/dados/contatos_2311/brutos/bNNN.json` (local, fora do git), já filtrado
+  pela empresa da busca.
+- Refeitas e salvas as buscas 1–59; as 60–71 vieram parciais.
+- Lotes encadeados de 24 buscas (~4 s cada) derrubaram a sessão (2ª queda). No ritmo lento (7–14 s), a conta bateu o
+  **limite mensal de pesquisas** da conta gratuita ("Você atingiu seu limite mensal para pesquisas"): a busca passa a mostrar
+  só 3 cartões. O limite volta em 01/12/2026.
+- Scripts: `mapa_final/linkedin_lote.py` (monta o lote), `linkedin_nomes.py` (nomes trocados na URL), `linkedin_funcoes.txt`
+  (funções do navegador e cuidados).
+- Falta: a partir de 01/12, refazer as buscas 60–71 e fazer as 72–539. Depois, a classificação estrita, a conferência no perfil e a
+  gravação na VF e nas abas ESTACIONAMENTO/POSTOS FINAL. Nada foi gravado no MAPA.

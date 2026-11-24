@@ -363,6 +363,9 @@ Armadilhas reais já vistas:
   (os buscadores por script não trazem LinkedIn). Apollo, Lusha e ZoomInfo do usuário não buscam pessoas (plano). Só vale cargo
   atual; resultado em tsv local (tem nomes) e planilha por `contatos_linkedin_planilha.py`. Rede pequena quase não tem perfil.
   Rede pequena: sócios do QSA (`socios_receita_qsa.py`) e busca "<rede>" + comprador. Link `google.com/goto` → `curl -w %{redirect_url}`.
+- **Busca de pessoas no LinkedIn pela conta do usuário** (24/11; `mapa_final/linkedin_lote.py` + `linkedin_funcoes.txt`):
+  a conta gratuita tem **limite mensal de pesquisas** (~250; depois só 3 cartões por busca, volta no dia 1º). Ir devagar
+  (12 por lote, 7–14 s entre buscas: 24 seguidas derrubaram a sessão). Gravar cada lote em disco: o localStorage some quando a sessão cai.
 - **Contatos dentro do MAPA** (23/11; `contatos_mapa.py` → `grava_contatos.ps1`): Alessandra Dayan VF P:AD (5 cargos × Nome/
   LinkedIn/Cargo, cabeçalho do usuário em P7:AD8, filtro mantido) e AB:AP nas ESTACIONAMENTO/POSTOS FINAL (cabeçalho copiado
   da VF para AB5:AP6). Sem arquivo e sem aba novos (pedido do usuário).
