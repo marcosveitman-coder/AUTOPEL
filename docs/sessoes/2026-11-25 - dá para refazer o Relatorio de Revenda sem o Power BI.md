@@ -45,3 +45,15 @@ Python a partir dos arquivos do TOTVS.
   de 26/10 e 814 em 25/11. Uma média móvel de 3 meses mudaria todo mês: logo é uma **tabela estática** (importada uma vez ou
   digitada), e não uma medida calculada sobre as vendas do dia.
 - Próximo passo: o usuário ver no Power BI de que tabela/consulta vem a coluna (painel Dados, Transformar dados).
+
+## MedVenda descoberta (export `data.xlsx` da página Indicadores do Power BI, 25/11)
+- O export traz 45 colunas, entre elas **MediaVenda**, **QTD Fat** e três colunas de venda mensal: **Mês -3**, **Mês -2**,
+  **Mês -1**.
+- **MedVenda (Revenda) = MediaVenda (Power BI) = TETO da média de Mês -3, Mês -2 e Mês -1.** Bate nos 2.342 SKUs com valor;
+  nos 1.871 sem valor, os três meses também estão vazios. A hipótese do usuário (média dos últimos 3 meses) está certa na
+  conta.
+- **Os três meses são estáticos:** iguais em 100% dos 2.334 SKUs entre o export de 26/10 e o de 25/11. Também não são o
+  MES_01..03 do EstoqueNecessidade de 25/11 (13 de 2.342 iguais) nem as bases de faturamento. São de uma tabela do Power BI
+  carregada uma vez e não atualizada; a MedVenda do Revenda está defasada.
+- **Falta:** de qual tabela/arquivo vêm as colunas Mês -3..-1 e a QTD Fat (o usuário vai olhar em Transformar dados). Com ela,
+  e sabendo quais meses são, dá para atualizar a MedVenda e fechar a reprodução do Revenda.
