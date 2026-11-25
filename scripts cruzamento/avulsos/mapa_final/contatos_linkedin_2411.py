@@ -32,7 +32,7 @@ assert vf[8][15] == 'Nome' and vf[7][15] == 'GERENTE DE COMPRAS'
 for row, dec in D.items():
     assert vf[row][3] == emp[row], (row, vf[row][3], emp[row])
     put('Alessandra Dayan VF', I('P'), row, vf[row], dec)
-po = {i: r for i, r in enumerate(wb['POSTOS GAS & CONVENIENCIA FINAL'].iter_rows(min_row=1, max_row=60, max_col=42, values_only=True), 1)}
+po = {i: r for i, r in enumerate(wb['POSTOS GAS & CONVENIENCIA FINAL'].iter_rows(min_row=1, max_row=600, max_col=42, values_only=True), 1)}
 assert po[6][27] == 'Nome' and po[5][27] == 'GERENTE DE COMPRAS'
 for row, prow in POSTOS.items():
     put('POSTOS GAS & CONVENIENCIA FINAL', I('AB'), prow, po[prow], D[row])

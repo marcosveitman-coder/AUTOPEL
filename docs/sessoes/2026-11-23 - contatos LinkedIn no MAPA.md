@@ -64,3 +64,14 @@
   - 7 blocos que já tinham contato de 23/11 ficaram como estavam.
 - Conferência: só as 216 células mudaram em todo o arquivo. O MAPA estava fechado e igual à cópia de partida ao ser trocado.
 - Falta: as buscas 60–71 (parciais) e 72–539, a partir de 01/12, quando volta o limite mensal do LinkedIn.
+
+### Continuação em 25/11 — buscas 60–297 e 2ª gravação
+- O limite liberou em 25/11 (antes do dia 1º). Feitas as buscas 60 a 297 em ritmo lento, com uma fila guardada na página: cada
+  chamada extrai a página atual e abre a próxima busca depois de 7–14 s.
+- A partir da busca 281, os resultados voltaram com 0–3 pessoas e a página passou a oferecer o Premium: sinal de que o limite
+  está chegando. As buscas pararam ali. Faltam refazer as 281–297 e fazer as 298–539.
+- Candidatos conferidos à mão a cada lote, com a mesma regra estrita de 24/11. Lista local em `dados/contatos_2311/brutos/c*.tsv`.
+- Gravado com `contatos_linkedin_2411.py` (decisões em `dados/contatos_2311/dec_2511.py`) → `grava_contatos.ps1`:
+  - 330 células: 104 blocos de cargo na Alessandra Dayan VF e 6 na POSTOS GAS & CONVENIENCIA FINAL;
+  - 1 bloco que já tinha contato ficou como estava.
+- Conferência: só as 330 células mudaram. O MAPA estava fechado e igual à cópia de partida ao ser trocado.
