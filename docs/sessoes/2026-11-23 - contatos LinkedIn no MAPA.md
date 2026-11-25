@@ -82,3 +82,8 @@
   (mesmo autoFilter, 526 linhas ocultas) e nenhum valor mudou.
 - Pedido novo: foco total nessas 24 drogarias. A aba Pessoas da página da empresa lista os funcionários mesmo com o limite de
   pesquisa. A sessão do LinkedIn caiu de novo após 4 buscas de empresas; à espera de novo login.
+- Depois do novo login, a primeira busca abriu uma "Verificação de segurança" do LinkedIn (não resolvida por automação). O usuário
+  decidiu parar por hoje. Pendente: as 24 drogarias do filtro (busca de empresas + aba Pessoas, 30–60 s por página) e as buscas
+  281–539 da lista geral.
+- Lições: o LinkedIn derrubou a sessão 3 vezes e pediu verificação com navegação automática seguida; a aba Pessoas da empresa não
+  sofre o corte de 3 cartões do limite de pesquisa.
