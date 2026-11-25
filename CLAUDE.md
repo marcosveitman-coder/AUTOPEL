@@ -67,6 +67,8 @@ Fontes de dados fora desta pasta (só leitura):
 - `Ultimo faturamento - SQL.csv` (nesta pasta): por cliente, a última nota e o vendedor (código + nome).
   É a fonte da tradução **código → nome do vendedor**.
 - Na pasta de relatórios TOTVS (`CSV\`) também ficam `FAT - SQL.csv` (só a semana corrente) e `Pedidos abertos - SQL.csv`.
+- **Atualizar esses CSVs pelo TOTVS** (Gera Dados Excel → `C:\Excel\listagem.xlsx` → CSV com ";"): roteiro e script em
+  `avulsos/totvs_relatorios/` (25/11/2026). O login é do usuário. A listagem aberta no Excel trava o próximo relatório.
 - Planilhas de trabalho do usuário: OneDrive `Planejamento comercial_AUTOPEL\2026\COMERCIAL (NOVO)\` e `Downloads\`.
 
 ---
