@@ -75,3 +75,10 @@
   - 330 células: 104 blocos de cargo na Alessandra Dayan VF e 6 na POSTOS GAS & CONVENIENCIA FINAL;
   - 1 bloco que já tinha contato ficou como estava.
 - Conferência: só as 330 células mudaram. O MAPA estava fechado e igual à cópia de partida ao ser trocado.
+
+### 25/11 (noite) — filtro da VF devolvido e foco nas drogarias do filtro
+- O usuário limpou o filtro da VF para ver o resultado. Devolvido com `mapa_final/filtro_vf.ps1` (cópia, Excel):
+  STATUS AUTOPEL = INATIVO ou NÃO É CLIENTE e SEGMENTO = DROGARIA, D8:O558, 24 linhas visíveis. Conferido contra o backup
+  (mesmo autoFilter, 526 linhas ocultas) e nenhum valor mudou.
+- Pedido novo: foco total nessas 24 drogarias. A aba Pessoas da página da empresa lista os funcionários mesmo com o limite de
+  pesquisa. A sessão do LinkedIn caiu de novo após 4 buscas de empresas; à espera de novo login.
