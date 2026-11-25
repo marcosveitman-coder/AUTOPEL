@@ -535,6 +535,9 @@ Armadilhas reais já vistas:
   Kalunga. `cruza_kalunga.py` (vínculos já pesquisados > código do fabricante > texto) → `grava_atl.py` (XML da aba).
   A aba `kalunga_ean` tem o nome com acento quebrado (UTF-8 lido como latin-1). Família: a do produto Kalunga no site
   (`familias_site.py`, ~50 min, json fora do git) > a do produto parecido > a da descrição.
+- **Refazer o Relatorio de Revenda sem o Power BI** (25/11; `avulsos/compras/reproduz_revenda.py`): a Geral sai só do
+  EstoqueNecessidade (filial 05, ATIVO, RV/PA; MedContr = teto da média de MES_01..03; preços = teto a 2 casas). Só a
+  **MedVenda** (e a Total Media) vem de fora; HistoricodeCompras e OrdemCompra não entram na Geral.
 - **Revisar a projeção de 3 meses com os números do dia** (só leitura): `avulsos/compras/revisa_projecao.py`. Mostra
   divergências, Comprado vencido ou sem data, rupturas que o Comprado já cobre e cenários (sessão de 05/11).
 - Script: `avulsos/compras/revisa_relatorio_revenda.ps1` (+ `confere_revenda.py`). Sessão: `docs/sessoes/2026-10-23 -
