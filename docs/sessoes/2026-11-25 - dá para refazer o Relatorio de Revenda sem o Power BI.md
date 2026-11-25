@@ -57,3 +57,17 @@ Python a partir dos arquivos do TOTVS.
   carregada uma vez e não atualizada; a MedVenda do Revenda está defasada.
 - **Falta:** de qual tabela/arquivo vêm as colunas Mês -3..-1 e a QTD Fat (o usuário vai olhar em Transformar dados). Com ela,
   e sabendo quais meses são, dá para atualizar a MedVenda e fechar a reprodução do Revenda.
+
+## O que o modelo semântico do Power BI mostra (visto pelo navegador, só leitura)
+- Relatório "Necessidade de Compras", modelo semântico de mesmo nome (21 tabelas, atualizado em 25/11 às 09h28). O modelo é de outro
+  usuário da empresa; o usuário que pediu só tem leitura (sem permissão de gravação): a fórmula (DAX) e a consulta (Power Query)
+  **não aparecem** pelo navegador, e a aba Linhagem só mostra o relatório a jusante (a fonte não aparece sem permissão).
+- **Onde está a MediaVenda:** tabela **Estoque Necessidade**, como **coluna** (inteiro), não como medida.
+- **Colunas vizinhas da mesma tabela:** `Mes-1`, `Mes-2`, `Mes-3` (e a Total Media), e também `Mes Julho 1`, `Mes Agosto 2`, `Mes Setembro 3`
+  (com versões em R$). Os nomes com **julho, agosto e setembro** explicam por que a MediaVenda não muda: os meses estão
+  escritos fixos no modelo (média de jul–set, não dos últimos 3 meses de verdade).
+- A tabela de vendas do modelo é a **FatMensal** (e FatConsolidado, Fat2025, Fat2025A): EMISSAO, COD_PROD, QTD Fat, FILIAL.
+  O EstoqueNecessidade, o HistoricodeCompras e a OrdemCompra aparecem como tabelas do modelo.
+- Pendente: a fórmula/consulta exata (pedir ao dono do modelo ou pedir permissão de gravação) e confirmar se Mes-1..-3 são
+  jul/ago/set 2026. Se forem, a MedVenda do Revenda = teto da média de jul–set (vendas da FatMensal por produto) e dá para
+  refazer com as bases de faturamento de jul–set; hoje isso bate menos de 4% (as bases `fat` não são a FatMensal).
