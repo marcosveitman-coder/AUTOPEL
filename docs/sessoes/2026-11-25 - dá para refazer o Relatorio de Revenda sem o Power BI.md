@@ -37,3 +37,11 @@ Testado com os arquivos de 25/11 (`avulsos/compras/reproduz_revenda.py`). Os nú
 ## Para fechar 100%
 Descobrir de onde vem a MedVenda (qual medida do Power BI ou qual relatório de vendas). Com ela, a saída inteira se refaz em
 Python a partir dos arquivos do TOTVS.
+
+## Pista nova sobre a MedVenda (mesmo dia)
+- No Power BI o campo se chama **MediaVenda** (ao lado de **QTD Fat**) e está nas telas de indicadores e de rastrear vendas.
+- **A MedVenda não muda com o tempo:** nos 4.212 códigos comuns, o valor da aba Geral de 13/11 (arquivo de trabalho) é
+  igual ao do Relatorio de Revenda de 25/11, e as 1.875 células vazias são as mesmas nos dois. O V30481 tem 814 no export do Power BI
+  de 26/10 e 814 em 25/11. Uma média móvel de 3 meses mudaria todo mês: logo é uma **tabela estática** (importada uma vez ou
+  digitada), e não uma medida calculada sobre as vendas do dia.
+- Próximo passo: o usuário ver no Power BI de que tabela/consulta vem a coluna (painel Dados, Transformar dados).
