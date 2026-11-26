@@ -100,3 +100,7 @@
   pública (diretor de outra área, dono, gerente, comprador), com o cargo real marcado "[aproximado]" na coluna "Cargo no LinkedIn"
   (decisões locais em `dados/contatos_2311/dec_2511f.py`). 48 células; conferido: só elas mudaram, filtro igual. Agora as 24 linhas
   do filtro têm pelo menos um contato, todos com o link do LinkedIn.
+- Pedido seguinte: nas drogarias sem ninguém de compras, procurar tudo de compras, supply, suprimentos, estoque e logística. Gravadas
+  10 pessoas (30 células, "[aproximado]" no cargo) em Unifarma, Vida, Drogamais, Maxifarma, Cityfarma, Legítima e PMP
+  (`dados/contatos_2311/dec_2511g.py`). Sem ninguém dessas áreas no LinkedIn: Augefarma, Farmagnus, Capilé, Afiminas, Uai Farma.
+  Conferido: só as 30 células mudaram, filtro igual.
