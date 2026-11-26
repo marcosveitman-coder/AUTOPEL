@@ -85,3 +85,15 @@ Python a partir dos arquivos do TOTVS.
   (colunas `Mes Julho 1`, `Mes Agosto 2`, `Mes Setembro 3`), de origem ainda não identificada.
 - Não deu para ver DAX/Power Query (usuário só tem leitura). Capturas de tela do Chrome travaram (janela sem renderizar); o
   DOM da página funcionou e foi lido pela árvore de acessibilidade.
+
+## 26/11: e se o dono do modelo não responder? (alternativas)
+- **Teste feito:** os valores de Mês -1, -2 e -3 (export de 25/11) foram comparados com MES_01..03 das 19 fotos diárias do
+  EstoqueNecessidade (13/08 a 26/10), em 3 ordens possíveis. O melhor resultado foi 315 de 2.342 SKUs (13%): **não são uma cópia do
+  MES do TOTVS de nenhuma data**. A origem continua desconhecida.
+- **Caminhos sem depender do dono:**
+  1. a TI ou o administrador do Power BI abre o modelo (ou assume a propriedade) e lê a fórmula;
+  2. o usuário pede a permissão pelo botão "Solicitar acesso" do modelo, ou por um superior;
+  3. conferir o outro relatório do mesmo espaço de trabalho ("Base Relatorio Geral…"), que pode ter modelo próprio;
+  4. **redefinir a MedVenda aqui:** a MedContr (média dos 3 últimos meses fechados, do próprio TOTVS) já é a venda média atual;
+     o modelo tem até a coluna `VlrUltPrecoMedContr` (MedContr × preço). Sem a MedVenda parada, a Total Media vira
+     MedContr × Ult.Preco. Só a coluna CF (relação venda/estoque) usa a Total Media.
