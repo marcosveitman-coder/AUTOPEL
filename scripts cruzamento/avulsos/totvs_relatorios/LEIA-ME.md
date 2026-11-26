@@ -12,7 +12,7 @@ Roteiro para atualizar os CSVs da pasta de relatórios TOTVS (`...\RELATORIOS TO
 
 | Relatório | Destino (sobrescreve) |
 |---|---|
-| 005 - CADASTRO DE PRODUTO COM NCM | `CSV\etc\005 - CADASTRO DE PRODUTO COM NCM.RLT.csv` |
+| 005 - CADASTRO DE PRODUTO COM NCM | `produtos\PROTUDOS TOTVS - SQL.csv` (desde 26/11; antes `CSV\etc\005 - ...RLT.csv`) |
 | 198 - FATURAMENTO EQUIPE (até D-1) | `CSV\FAT - SQL.csv` |
 | 199 - ULTIMO FATURAMENTO CLIENTE | `CSV\Ultimo faturamento - SQL.csv` |
 | 200 - PEDIDOS EM ABERTO COM STATUS | `CSV\Pedidos abertos - SQL.csv` |
@@ -33,4 +33,10 @@ salva_listagem_csv.ps1 -Destino "<arquivo.csv>" -Desde (Get-Date)
 - **O WebAgent abre a listagem no Excel** depois de gerar. Com ela aberta, o próximo relatório dá
   "O arquivo C:\EXCEL\Listagem.XLSx esta em uso, feche o excel!". O script fecha a janela "listagem - Excel"
   (WM_CLOSE) no fim. Esse Excel não aparece para `GetActiveObject`.
+- Se outro Excel do usuário estiver aberto, a listagem abre dentro dele: o script fecha só a janela `XLMAIN` com o
+  título "listagem" (WM_CLOSE), sem mexer nas outras pastas.
+- Tempos: 25/11 ≈ 22 min no total; 26/11 ≈ 2 h 08 min (TOTVS lento; 198 e 232 ~40 min). Com o TOTVS lento, os cliques
+  aparecem 15–30 s depois: esperar ~20 s por clique e conferir o campo de data antes do OK.
+- Funciona também no navegador embutido do app (barra lateral), depois que o usuário autoriza o WebAgent e faz o login.
+  Zoom do Chrome do usuário: 125%.
 - Conferir: a 1ª linha de cada CSV traz o nome do relatório (`005 - ...RLT;;;`).

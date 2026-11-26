@@ -16,12 +16,34 @@ function Close-Listagem {
   # O Excel aberto pelo WebAgent nao aparece para GetActiveObject: fecha a janela "listagem - Excel"
   # com WM_CLOSE (se houver alteracao, o proprio Excel pergunta; nada se perde).
   param([string]$Caminho)
+  # Cada pasta do Excel tem a propria janela (XLMAIN). Fecha so a(s) janela(s) "listagem - Excel",
+  # mesmo quando a listagem abriu dentro de um Excel do usuario com outras pastas abertas.
   $nome = [IO.Path]::GetFileNameWithoutExtension($Caminho)
-  $ps = @(Get-Process EXCEL -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like "$nome*" })
-  foreach ($p in $ps) { [void]$p.CloseMainWindow() }
+  if (-not ('JanelasXL' -as [type])) {
+    Add-Type @"
+using System; using System.Text; using System.Collections.Generic; using System.Runtime.InteropServices;
+public static class JanelasXL {
+  delegate bool EnumProc(IntPtr h, IntPtr p);
+  [DllImport("user32.dll")] static extern bool EnumWindows(EnumProc f, IntPtr p);
+  [DllImport("user32.dll", CharSet=CharSet.Unicode)] static extern int GetWindowText(IntPtr h, StringBuilder s, int n);
+  [DllImport("user32.dll", CharSet=CharSet.Unicode)] static extern int GetClassName(IntPtr h, StringBuilder s, int n);
+  [DllImport("user32.dll")] public static extern bool PostMessage(IntPtr h, uint m, IntPtr w, IntPtr l);
+  public static List<IntPtr> Achar(string prefixo) {
+    var r = new List<IntPtr>();
+    EnumWindows((h, p) => { var c = new StringBuilder(64); GetClassName(h, c, 64);
+      if (c.ToString() == "XLMAIN") { var t = new StringBuilder(512); GetWindowText(h, t, 512);
+        if (t.ToString().StartsWith(prefixo, StringComparison.OrdinalIgnoreCase)) r.Add(h); }
+      return true; }, IntPtr.Zero);
+    return r;
+  }
+}
+"@
+  }
+  $hs = [JanelasXL]::Achar("$nome")
+  foreach ($h in $hs) { [void][JanelasXL]::PostMessage($h, 0x0010, [IntPtr]::Zero, [IntPtr]::Zero) }  # WM_CLOSE
   Start-Sleep -Seconds 4
   try { $fs = [IO.File]::Open($Caminho, 'Open', 'Read', 'None'); $fs.Close(); $livre = $true } catch { $livre = $false }
-  Write-Output ("FECHAR: janelas=" + $ps.Count + " | listagem " + $(if ($livre) { "livre" } else { "AINDA EM USO" }))
+  Write-Output ("FECHAR: janelas=" + $hs.Count + " | listagem " + $(if ($livre) { "livre" } else { "AINDA EM USO" }))
 }
 
 if ($SoFechar) { Close-Listagem $Origem; exit 0 }
