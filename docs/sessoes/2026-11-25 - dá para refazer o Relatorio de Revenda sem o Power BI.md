@@ -71,3 +71,17 @@ Python a partir dos arquivos do TOTVS.
 - Pendente: a fórmula/consulta exata (pedir ao dono do modelo ou pedir permissão de gravação) e confirmar se Mes-1..-3 são
   jul/ago/set 2026. Se forem, a MedVenda do Revenda = teto da média de jul–set (vendas da FatMensal por produto) e dá para
   refazer com as bases de faturamento de jul–set; hoje isso bate menos de 4% (as bases `fat` não são a FatMensal).
+
+## 26/11: exploração da página "Rastrear Venda" do relatório (Chrome do usuário, só leitura, sem exportar nada)
+- A página tem filtros (Codigo, Descricao, GRPVEN, Tipo, Filial, RAZAO_SOCIAL) e 3 tabelas:
+  - posição de estoque (colunas do EstoqueNecessidade);
+  - **pedidos de venda** (`dt_emissao`, `pedido`, `produto`, `quantidade`, `filial`): tem dados de outubro/2026 (atual);
+  - **faturamento** (`EMISSAO`, descrição, `QTD Fat`, custos, razão social): as colunas da tabela **FatMensal** do modelo.
+- **A tabela de faturamento está desatualizada:** filtrando o produto V30481, as notas mais recentes são de **16/01/2026**
+  (de 05 a 16/01); o export antigo dela (`PowerB_restrear.venda3`, 150 mil linhas mais recentes) vai de 02/12/2025 a
+  **19/01/2026**. Ou seja, a FatMensal não recebe vendas desde meados de janeiro de 2026. A coluna `QTD Fat` aparece vazia nessas
+  linhas filtradas por código.
+- Conclusão provisória: a MedVenda (Mes-1..-3) não pode vir de vendas recentes da FatMensal; são valores gravados no modelo
+  (colunas `Mes Julho 1`, `Mes Agosto 2`, `Mes Setembro 3`), de origem ainda não identificada.
+- Não deu para ver DAX/Power Query (usuário só tem leitura). Capturas de tela do Chrome travaram (janela sem renderizar); o
+  DOM da página funcionou e foi lido pela árvore de acessibilidade.
