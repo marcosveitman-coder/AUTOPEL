@@ -129,3 +129,14 @@
   filtro igual (526 ocultas).
 - Pendente: buscas 298–424 (redes pequenas: óticas, conveniência, postos, estacionamentos, construção) e a cópia dos contatos de
   estacionamento/postos para as abas FINAL.
+
+### 26/11 (3ª parte) — redes pequenas (buscas 298–424) pelo WebSearch
+- Cerca de 60 redes consultadas, em ordem de potencial de caixas (óticas, conveniências e construção primeiro; postos e
+  estacionamentos pequenos quase não têm perfil público). Rendimento: ~1 contato a cada 3 buscas.
+- Gravados 27 blocos (81 células) em 24 redes. Candidatos em `dados/contatos_2311/brutos/c051.tsv`. Só com o link do perfil;
+  quem aparece só em texto de post ficou de fora. Quase todos "[aproximado]" (cargo do trecho da busca).
+- Descartados por homônimo: Casa Rios (empresa de Portugal), SimPark (Sorocaba ≠ Simopark), Mega Visão (distribuidora),
+  NYS Collection (EUA), Star Parks (parques, não estacionamento).
+- Conferido: só as 81 células da VF mudaram; filtro igual (526 ocultas).
+- Pendente: as ~65 redes de 298–424 ainda não consultadas (postos, estacionamentos e lojas pequenas, com pouca chance) e a
+  cópia dos contatos de estacionamento/postos para as abas FINAL.
