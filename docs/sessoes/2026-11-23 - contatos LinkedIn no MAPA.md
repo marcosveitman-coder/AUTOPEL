@@ -104,3 +104,5 @@
   10 pessoas (30 células, "[aproximado]" no cargo) em Unifarma, Vida, Drogamais, Maxifarma, Cityfarma, Legítima e PMP
   (`dados/contatos_2311/dec_2511g.py`). Sem ninguém dessas áreas no LinkedIn: Augefarma, Farmagnus, Capilé, Afiminas, Uai Farma.
   Conferido: só as 30 células mudaram, filtro igual.
+- Pedido de buscar as pendentes pela conta nova: recusado de novo; combinado fazer as 118 linhas das redes grandes (buscas 425–539)
+  pela busca pública. Parou na 1ª consulta: acabaram os créditos diários do Firecrawl (renovam em ~11 h). Nada gravado nessa etapa.
