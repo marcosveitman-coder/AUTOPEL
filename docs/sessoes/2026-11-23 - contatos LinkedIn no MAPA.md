@@ -96,3 +96,7 @@
   O filtro (INATIVO/NÃO É CLIENTE + DROGARIA) continua igual. Conferência: só as 18 células mudaram.
 - Das 24 linhas do filtro, 14 têm pelo menos um contato e 10 seguem em branco (redes pequenas sem perfil com o cargo pedido:
   Farmácias Associadas, D1000, Capilé, Grupofarma, Nossa Rede, Uai Farma, Afiminas, Cityfarma, Pedpharma/Redebella, Legítima, PMP).
+- Pedido "preciso de 100%": as 10 drogarias do filtro sem ninguém com o cargo pedido receberam a pessoa mais próxima achada na busca
+  pública (diretor de outra área, dono, gerente, comprador), com o cargo real marcado "[aproximado]" na coluna "Cargo no LinkedIn"
+  (decisões locais em `dados/contatos_2311/dec_2511f.py`). 48 células; conferido: só elas mudaram, filtro igual. Agora as 24 linhas
+  do filtro têm pelo menos um contato, todos com o link do LinkedIn.
