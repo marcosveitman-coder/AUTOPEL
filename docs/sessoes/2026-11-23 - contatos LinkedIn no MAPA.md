@@ -116,3 +116,16 @@
   Sander, Rek Parking, Vezani e Sandrini, Casas da Água, Comercial Ivaiporã, Rede HG, Monte Carlo, Agricopel, Óticas Gassi,
   PB Estacionamentos, Via Laser, Veste, Rede Dom Pedro e outras. Os contatos de estacionamento (Estapar, Netpark) só foram
   para a VF; a cópia na ESTACIONAMENTO FINAL ainda não foi feita.
+
+### 26/11 (2ª parte) — redes menores do fim da lista
+- O crédito diário do Firecrawl acabou logo na 1ª consulta (renova no dia seguinte, ~09:00). A busca seguiu pelo WebSearch
+  (buscador do próprio Claude, `allowed_domains: linkedin.com`), que também traz perfis públicos; o cargo atual vem dos trechos,
+  então quase tudo entrou com "[aproximado]".
+- 17 redes consultadas. Gravados 12 blocos (36 células) em 9 redes (Prudential, Via Laser, Agricopel, Monte Carlo, Rede HG,
+  Óticas Gassi, Concreserv, Sander, Comercial Ivaiporã). Candidatos em `dados/contatos_2311/brutos/c050.tsv`.
+- Sem ninguém aproveitável: Gepark, Via Mais Parking, Rek Parking, Vezani e Sandrini, Casas da Água, PB Estacionamentos, Veste,
+  Rede Dom Pedro. Pessoas citadas só em texto de post, sem link do perfil, ficaram de fora (regra: tem que ter o link).
+- Conferido: só as 36 células da VF mudaram; ORGANOGRAMA, ORGANOGRAMA impressao e Alessandra Dayan sem mudança de valor;
+  filtro igual (526 ocultas).
+- Pendente: buscas 298–424 (redes pequenas: óticas, conveniência, postos, estacionamentos, construção) e a cópia dos contatos de
+  estacionamento/postos para as abas FINAL.

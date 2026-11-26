@@ -369,7 +369,8 @@ Armadilhas reais já vistas:
   a conta gratuita tem **limite mensal de pesquisas** (~250; depois só 3 cartões por busca, volta no dia 1º). Ir devagar
   (12 por lote, 7–14 s entre buscas: 24 seguidas derrubaram a sessão). Gravar cada lote em disco: o localStorage some quando a sessão cai.
   A aba **Pessoas** da empresa (`/company/<slug>/people/`, achar o slug pela busca de empresas) lista funcionários mesmo com o
-  limite. Navegação automática seguida derrubou a sessão 3 vezes e abriu "Verificação de segurança" (25/11): parar e deixar
+  limite. Sem crédito do Firecrawl, o WebSearch com `allowed_domains: ["linkedin.com"]` também traz perfis públicos (cargo
+  só pelo trecho: marcar "[aproximado]"). Navegação automática seguida derrubou a sessão 3 vezes e abriu "Verificação de segurança" (25/11): parar e deixar
   o usuário resolver; nunca contornar. Filtro da VF (drogarias): `mapa_final/filtro_vf.ps1`.
 - **Contatos dentro do MAPA** (23/11; `contatos_mapa.py` → `grava_contatos.ps1`): Alessandra Dayan VF P:AD (5 cargos × Nome/
   LinkedIn/Cargo, cabeçalho do usuário em P7:AD8, filtro mantido) e AB:AP nas ESTACIONAMENTO/POSTOS FINAL (cabeçalho copiado
