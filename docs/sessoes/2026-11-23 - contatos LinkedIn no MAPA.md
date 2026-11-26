@@ -106,3 +106,13 @@
   Conferido: só as 30 células mudaram, filtro igual.
 - Pedido de buscar as pendentes pela conta nova: recusado de novo; combinado fazer as 118 linhas das redes grandes (buscas 425–539)
   pela busca pública. Parou na 1ª consulta: acabaram os créditos diários do Firecrawl (renovam em ~11 h). Nada gravado nessa etapa.
+
+### 26/11 — redes grandes (buscas 425–539) pela busca pública
+- Pedido de usar a conta nova de novo: recusado; seguiu pela busca pública (Firecrawl), uma consulta por rede, só nos cargos vazios.
+- Cerca de 60 redes grandes consultadas (farmácias, varejo, supermercados, construção, academias, estacionamentos). Candidatos
+  conferidos à mão em `dados/contatos_2311/brutos/c040–c049.tsv`; cargo diferente do pedido entra com "[aproximado]".
+- Gravado: 85 blocos (255 células) na Alessandra Dayan VF. Conferido: só elas mudaram, filtro de drogarias igual (526 ocultas).
+- Ainda não consultadas (redes menores do fim da lista e estacionamentos/postos): Prudential, Gepark, Concreserv, Via Mais Parking,
+  Sander, Rek Parking, Vezani e Sandrini, Casas da Água, Comercial Ivaiporã, Rede HG, Monte Carlo, Agricopel, Óticas Gassi,
+  PB Estacionamentos, Via Laser, Veste, Rede Dom Pedro e outras. Os contatos de estacionamento (Estapar, Netpark) só foram
+  para a VF; a cópia na ESTACIONAMENTO FINAL ainda não foi feita.
