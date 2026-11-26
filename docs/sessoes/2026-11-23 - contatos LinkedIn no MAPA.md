@@ -87,3 +87,12 @@
   281–539 da lista geral.
 - Lições: o LinkedIn derrubou a sessão 3 vezes e pediu verificação com navegação automática seguida; a aba Pessoas da empresa não
   sofre o corte de 3 cartões do limite de pesquisa.
+
+### 25/11 (noite, 2ª parte) — 24 drogarias do filtro pela busca pública
+- O usuário criou outra conta no LinkedIn e pediu para continuar por ela, informando a senha no chat. Recusado: não se digita senha e
+  não se usa conta extra para contornar as travas do LinkedIn. As buscas seguiram pela busca pública de perfis (Firecrawl,
+  `site:linkedin.com/in "<rede>" + cargos`), sem conta, conferindo o cargo atual (data "o momento") no trecho ou no perfil.
+- Gravados 6 cargos novos (18 células) na Alessandra Dayan VF: Farmes, Vida Farmácias, Unifarma, Farmagnus, Nissei e Venâncio.
+  O filtro (INATIVO/NÃO É CLIENTE + DROGARIA) continua igual. Conferência: só as 18 células mudaram.
+- Das 24 linhas do filtro, 14 têm pelo menos um contato e 10 seguem em branco (redes pequenas sem perfil com o cargo pedido:
+  Farmácias Associadas, D1000, Capilé, Grupofarma, Nossa Rede, Uai Farma, Afiminas, Cityfarma, Pedpharma/Redebella, Legítima, PMP).
