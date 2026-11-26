@@ -151,3 +151,13 @@
 - Todas as buscas 298–539 já foram feitas pelo menos uma vez. O que ficou vazio não tem perfil público achável; só a busca dentro
   do LinkedIn (aba Pessoas da empresa, conta do usuário) poderia achar mais.
 - Pendente: cópia dos contatos de estacionamento/postos para as abas FINAL.
+
+### 26/11 (5ª parte) — contatos novos nas abas FINAL de estacionamento e postos
+- Pedido: copiar para ESTACIONAMENTO FINAL e POSTOS GAS & CONVENIENCIA FINAL (AB:AP) os contatos que estavam só na VF.
+- Script novo `scripts cruzamento/avulsos/mapa_final/contatos_finais_2611.py` (mesma ligação por cluster do `contatos_mapa.py`,
+  com `entidades.pkl` da coleta de 19/11; só preenche bloco vazio na FINAL). Uso: `python contatos_finais_2611.py <MAPA>
+  <entidades.pkl> <saida.tsv>` → `grava_contatos.ps1`.
+- Gravados 27 blocos (81 células): 4 na ESTACIONAMENTO FINAL (Estapar, Multiplan, SMS, Netpark) e 23 na POSTOS (Agricopel,
+  Tradição, Rede HG, Monte Carlo, Sander, JP Santa Lúcia, Rede J Amaral, Dia, Carrefour Express, Lubrax+/Jet Oil pela Vibra,
+  conveniências e mercados autônomos). 41 blocos já existiam e ficaram.
+- Conferido em todas as abas: só as 81 células mudaram; filtro da VF igual (526 ocultas).
