@@ -140,3 +140,14 @@
 - Conferido: só as 81 células da VF mudaram; filtro igual (526 ocultas).
 - Pendente: as ~65 redes de 298–424 ainda não consultadas (postos, estacionamentos e lojas pequenas, com pouca chance) e a
   cópia dos contatos de estacionamento/postos para as abas FINAL.
+
+### 26/11 (4ª parte) — fim das buscas 298–424
+- As ~37 redes que faltavam foram consultadas pelo WebSearch (postos, estacionamentos, construção e óticas pequenas).
+- Gravados 6 blocos (18 células) em 4 redes (Ótica São José, SMS Estacionamentos, Rede J Amaral, Loja Elétrica). Candidatos em
+  `dados/contatos_2311/brutos/c052.tsv`. Conferido: só as 18 células mudaram; filtro igual (526 ocultas).
+- Fora por homônimo ou UF diferente: Sertão (é de MS), Potiguar (é do MA), Casa Sol Decor (gerente de compras saiu em dez/2024),
+  Posto Trevo (diretor sem UF), Ótica Center (pode ser a mesma Óptica Center já preenchida). Sem perfil útil: os demais postos e
+  estacionamentos pequenos.
+- Todas as buscas 298–539 já foram feitas pelo menos uma vez. O que ficou vazio não tem perfil público achável; só a busca dentro
+  do LinkedIn (aba Pessoas da empresa, conta do usuário) poderia achar mais.
+- Pendente: cópia dos contatos de estacionamento/postos para as abas FINAL.
