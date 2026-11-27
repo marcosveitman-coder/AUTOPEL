@@ -97,3 +97,20 @@ Python a partir dos arquivos do TOTVS.
   4. **redefinir a MedVenda aqui:** a MedContr (média dos 3 últimos meses fechados, do próprio TOTVS) já é a venda média atual;
      o modelo tem até a coluna `VlrUltPrecoMedContr` (MedContr × preço). Sem a MedVenda parada, a Total Media vira
      MedContr × Ult.Preco. Só a coluna CF (relação venda/estoque) usa a Total Media.
+
+## 26/11: relatório refeito sem o Power BI (decisão do usuário: MedContr no lugar da MedVenda)
+- **Decisão:** a MedVenda do Power BI vem de colunas fixas e desatualizadas (origem não identificada). No relatório novo,
+  **MedVenda = MedContr** (vazia quando 0) e **Total Media = MedContr × Ult.Preco**.
+- **Script:** `avulsos/compras/gera_revenda.py` (entrada: só o EstoqueNecessidade). Gera a aba Geral (24 colunas, mesma ordem de
+  colunas, formatos e ordem de linhas do Power BI) e uma aba por comprador com subtotal por marca e "Total Geral".
+- **Arquivo gerado (25/11):** `Downloads\COMPRAS[[\Relatorio de Revenda 25-11-2026 (sem Power BI).xlsx` (9 abas, abre no Excel).
+- **Conferência contra o relatório do Power BI:**
+  - 4.266 SKUs, os mesmos, **na mesma ordem** (4.266 de 4.266);
+  - todas as colunas iguais, exceto MedVenda e Total Media (por decisão) e **1 célula** de ULT_COMPRA (um código com
+    data em um armazém e vazio no outro: o Power BI deixa vazio, o novo traz a data);
+  - abas por comprador: mesmos nomes (em ordem alfabética), mesmas linhas e subtotais (Valor Total e Vlr Estoque iguais).
+- **O que mudou de verdade:** MedVenda igual nos dois em 1.851 dos 4.266 SKUs (os que não vendem). Total Media somada: R$ 14,4 mi
+  (Power BI, parada) → R$ 18,3 mi (MedContr × preço). Exemplos: V30481 814 → 1.082; V15982 1.286 → 1.350; V13790 22 → vazio.
+- **Regras do que vira aba:** comprador com 5 ou mais SKUs e que não seja INATIVO/OCIOSO; nome da aba = primeiro nome.
+- **Como usar todo dia:** baixar o EstoqueNecessidade do TOTVS e rodar
+  `python gera_revenda.py "EstoqueNecessidade (N).xlsx" "Relatorio de Revenda dd-mm-aaaa.xlsx"`.
