@@ -23,7 +23,7 @@ for k, v in d.items():
     if not dd: dd = [s for s in soc if s[1] in ("Sócio-Administrador", "Administrador") and s[0] != ceo]
     if dd: dire, dire_q = dd[0]
     out[k] = {"st": "OK", "cnpj": v["cnpj"], "razao": q["razao"], "fantasia": v["fantasia"], "uf": v["uf"],
-              "cnae": v["cnae"], "como": v["como"], "ceo": ceo, "ceo_q": ceo_q, "dir": dire, "dir_q": dire_q}
+              "cnae": v["cnae"], "como": v["como"], "nivel": v.get("nivel", "CONFIRMADO (nome único)"), "fonte": v.get("fonte", ""), "ceo": ceo, "ceo_q": ceo_q, "dir": dire, "dir_q": dire_q}
 json.dump(out, open(sys.argv[3], "w", encoding="utf8"), ensure_ascii=False, indent=0)
 from collections import Counter
 print(Counter(v["st"] for v in out.values()), "ceo", sum(1 for v in out.values() if v.get("ceo")), "dir", sum(1 for v in out.values() if v.get("dir")))

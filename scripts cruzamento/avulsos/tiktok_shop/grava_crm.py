@@ -21,6 +21,14 @@ hdr = list(next(ws.iter_rows(max_row=1, values_only=True)))
 assert hdr[39:46] == ["CNPJ", "nome CEO", "linkedin CEO", "nome diretor", "linkedin diretor", "nome gerente", "linkedin gerente"], hdr[39:46]
 linhas = [(i, r[0], r[1], r[29]) for i, r in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2) if r[0]]
 wb.close()
+# o usuario pode ter mexido em AN-AT depois da ultima gravacao: so regrava se AN-AT estiverem como o script deixou
+if os.path.exists(os.path.join(BK, "ultima_gravacao.json")):
+    ult = json.load(open(os.path.join(BK, "ultima_gravacao.json"), encoding="utf8"))
+    wb = openpyxl.load_workbook(CRM, read_only=True); ws = wb["Leads"]
+    for i, r in enumerate(ws.iter_rows(min_row=2, max_col=42, values_only=True), start=2):
+        an, ao = (r[39] or ""), (r[40] or "")
+        if [an, ao] != ult.get(str(i), ["", ""]): raise SystemExit(f"linha {i}: AN/AO mudaram desde a ultima gravacao ({an!r}, {ao!r}); conferir antes")
+    wb.close()
 os.makedirs(BK, exist_ok=True); shutil.copy2(CRM, os.path.join(BK, os.path.basename(CRM)))
 cel = {}; conf = []
 for lin, idc, loja, cat in linhas:
@@ -31,8 +39,8 @@ for lin, idc, loja, cat in linhas:
         cel[("AO", lin)] = (ceo, 6); cel[("AP", lin)] = (link(ceo) if ceo else "", 20 if ceo else 6)
         cel[("AQ", lin)] = (dire, 6); cel[("AR", lin)] = (link(dire) if dire else "", 20 if dire else 6)
         cel[("AS", lin)] = ("", 6); cel[("AT", lin)] = ("", 6)
-        conf.append([idc, loja, cat, "CNPJ ACHADO", fmt(v["cnpj"]), v["razao"], v["fantasia"], v["cnae"], v["uf"],
-                     ", ".join(v["como"]), ceo, v["ceo_q"], dire, v["dir_q"], ""])
+        conf.append([idc, loja, cat, "CNPJ " + v["nivel"], fmt(v["cnpj"]), v["razao"], v["fantasia"], v["cnae"], v["uf"],
+                     ", ".join(v["como"]), ceo, v["ceo_q"], dire, v["dir_q"], v["fonte"]])
     else:
         for c in ("AN", "AO", "AP", "AQ", "AR", "AS", "AT"): cel[(c, lin)] = ("", 6)
         cc = C.get(idc, {})
@@ -42,6 +50,7 @@ for lin, idc, loja, cat in linhas:
                "SEM NOME": "nome da loja curto/genérico demais para buscar"}.get(v["st"], "CNPJ não está ativo na Receita")
         conf.append([idc, loja, cat, v["st"], "", "", "", "", "", "", "", "", "", "", obs + ("; candidatos: " + " ".join(fmt(x[:14]) for x in cc.get("cands", [])) if cc.get("cands") else "")])
 gravar_celulas(CRM, "Leads", cel)
+json.dump({str(l): [cel[("AN", l)][0], cel[("AO", l)][0]] for _, (c, l) in enumerate(cel) if c == "AN"}, open(os.path.join(BK, "ultima_gravacao.json"), "w", encoding="utf8"), ensure_ascii=False)
 out = openpyxl.Workbook(); w = out.active; w.title = "Conferencia CNPJ"
 w.append(["ID CRM", "Loja", "Categoria", "Resultado", "CNPJ", "Razão social (Receita)", "Nome fantasia (Receita)", "CNAE",
           "UF", "Como foi achado", "Nome CEO", "Qualificação no QSA", "Nome diretor", "Qualificação no QSA", "Observação"])

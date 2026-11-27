@@ -7,7 +7,8 @@ python prep_termos.py <CRM.xlsx> tt_q.json                       # nome da loja 
 AUTOPEL_MAPA_FINAL_DADOS=<pasta> python ../mapa_final/busca_receita.py tt_q.json tt_rec.pkl   # ~8 min
 python busca_colado.py tt_q.json tt_col.pkl                       # 2a passada, nome sem espacos (~8 min)
 python casa_cnpj.py tt_q.json tt_rec.pkl tt_cnpj.json <CRM.xlsx> tt_col.pkl
-python qsa.py tt_cnpj.json tt_qsa.json                            # BrasilAPI (curl), cache
+python desempata.py tt_cnpj.json dados/dec_ambiguos.json tt_cnpj3.json   # ambiguos (opcional)
+python qsa.py tt_cnpj3.json tt_qsa.json                            # BrasilAPI (curl), cache
 python pessoas.py tt_cnpj.json tt_qsa.json tt_pes.json
 python grava_crm.py <CRM.xlsx> tt_pes.json tt_cnpj.json <conferencia.xlsx> <pasta_backup>
 ```
@@ -26,3 +27,9 @@ Regras:
 - O arquivo tem tabela e validação de dados: gravar pelo XML (`gravar_celulas`, que aceita fórmula `{"f","v"}`), nunca
   salvar pelo openpyxl.
 - TikTok não abre nesta rede (certificado) e o FastMoss não mostra a empresa do vendedor.
+
+**Desempate dos ambíguos** (`desempata.py`, decisões em `dados/dec_ambiguos.json`, local, tem CNPJs):
+- pela web (Instagram, site, Shopee/Mercado Livre): a cidade ou o nome do vendedor que só um candidato tem → "PROVÁVEL (web)";
+- todos os candidatos na mesma cidade: o de razão com o nome, senão o mais novo → "PROVÁVEL (mesma cidade)";
+- os sites de consulta de CNPJ (cnpj.biz, Serasa, Econodata) listam os mesmos homônimos e não desempatam;
+- o Firecrawl gasta 2 créditos por busca e o crédito diário acaba em ~45 buscas; o WebSearch não acha loja brasileira pequena.

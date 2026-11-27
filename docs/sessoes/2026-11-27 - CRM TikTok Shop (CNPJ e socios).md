@@ -28,8 +28,17 @@ preencher AN–AT: CNPJ, nome CEO, LinkedIn CEO, nome diretor, LinkedIn diretor,
 Planilha de conferência (razão, fantasia, CNAE, UF, como foi achado, qualificação no QSA, candidatos dos ambíguos):
 `Downloads\CRM_TikTokShop_conferencia_CNPJ.xlsx` (fora do git).
 
+## 2º pedido: resolver as 120 ambíguas
+- Pesquisa na web (Firecrawl) de ~40 lojas: cidade no Instagram/site, nome do vendedor na Shopee/Mercado Livre.
+  17 resolvidas como "PROVÁVEL (web)"; 5 pela regra "todos os candidatos na mesma cidade". Decisões em
+  `tiktok_shop/dados/dec_ambiguos.json` (local).
+- Os créditos diários do Firecrawl acabaram (~45 buscas); o WebSearch não traz loja brasileira pequena. Ficaram **98**
+  ambíguas.
+- Planilha regravada: 339 CNPJs, 336 CEOs, 34 diretores. Conferido: só AN–AT mudaram (68 células), Excel abre.
+  A conferência mostra o nível (CONFIRMADO / PROVÁVEL (web) / PROVÁVEL (mesma cidade)) e a fonte de cada desempate.
+
 ## Pendências / ideias
-- Os 120 ambíguos podem ser resolvidos olhando a loja (cidade, produto) ou pela página da loja no TikTok, que não abre aqui.
+- Os 98 ambíguos restantes podem ser resolvidos (Firecrawl renova o crédito no dia seguinte) olhando a loja (cidade, produto) ou pela página da loja no TikTok, que não abre aqui.
 - Gerente (AS/AT) ficou em branco: o QSA não tem e loja pequena não tem gerente público.
 
 ## Lições

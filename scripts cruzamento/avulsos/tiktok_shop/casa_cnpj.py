@@ -71,7 +71,9 @@ for q in Q:
         pri = {r: v for r, v in ok.items() if compativel(cat, v[0][8], "")[1]}
         if pri: ok = pri
     if len(ok) > 1:
-        out[q["id"]] = {"st": "AMBIGUO", "n": len(ok), "cands": [v[0][0] + v[0][1] + v[0][2] for v in ok.values()][:10]}
+        out[q["id"]] = {"st": "AMBIGUO", "n": len(ok), "cands": [v[0][0] + v[0][1] + v[0][2] for v in ok.values()][:10],
+                        "det": [{"cnpj": m[0] + m[1] + m[2], "razao": EMP.get(r, ("",))[0], "fantasia": m[4], "cnae": m[8],
+                                 "uf": m[10], "mun": m[11], "inicio": m[7], "como": sorted(como)} for r, (m, como) in ok.items()]}
         continue
     r, (m, como) = next(iter(ok.items()))
     out[q["id"]] = {"st": "OK", "cnpj": m[0] + m[1] + m[2], "razao": EMP.get(r, ("",))[0], "fantasia": m[4],
