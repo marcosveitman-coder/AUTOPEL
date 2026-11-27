@@ -44,6 +44,21 @@ Planilha de conferência (razão, fantasia, CNAE, UF, como foi achado, qualifica
   Conferido: só AN–AT mudaram, Excel abre.
 - Tarefa agendada para 28/11 9h15 (`tiktok-shop-desempate-ambiguos`) tenta as 96 com o crédito novo do Firecrawl.
 
+## 4º pedido: link do perfil de verdade no LinkedIn (conta do usuário no Chrome)
+- O usuário pediu o link do **perfil** do decisor, não a busca por nome. Conta conferida pelo e-mail principal na página de
+  e-mails do LinkedIn (Claude in Chrome, sessão já logada pelo usuário).
+- Busca por nome do sócio não serve (cartão só mostra nome e cargo; dezenas de homônimos: 0 de 12). Busca **pela loja**
+  (`"<loja>"`, `tiktok_shop/linkedin_lista.py` + `linkedin_funcoes.js`, lotes de 12 com 8–10 s entre buscas,
+  `li_passo.py` grava cada lote em `dados/li_result.json`, local):
+  - CEO = sócio do QSA (1º nome + um sobrenome) com a loja no cartão, ou cargo CEO/fundador/sócio/proprietário;
+  - diretor/gerente pelo cargo; quem não é sócio precisa de "na/no/at/em <loja>" e do estado da empresa;
+  - cargo "Anterior:" não vale; "Product Owner" não é dono; revisão à mão de cada lote (homônimos de outra empresa caíram).
+- 310 das 340 lojas pesquisadas; **35 lojas com perfil** (27 CEO, 6 diretores, 9 gerentes). A sessão caiu na busca 311
+  (tela de cadastro): parado sem mexer. Faltam 30 lojas de prioridade C.
+- Planilha: AP/AR/AT = "Ver perfil" (link do perfil) ou vazio; AS = nome do gerente. Quando o decisor achado não é o sócio
+  do QSA, a AO/AQ passa a ter o nome da pessoa do link. Conferência com nome, cargo no perfil, como achou e link.
+- Bugs da rotina: `''` dentro de string virou backspace (cargo nunca casava); lote de 20 estourou o tempo do navegador.
+
 ## Pendências / ideias
 - Os 98 ambíguos restantes podem ser resolvidos (Firecrawl renova o crédito no dia seguinte) olhando a loja (cidade, produto) ou pela página da loja no TikTok, que não abre aqui.
 - Gerente (AS/AT) ficou em branco: o QSA não tem e loja pequena não tem gerente público.

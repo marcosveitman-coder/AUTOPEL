@@ -7,6 +7,7 @@ import sys, os, json, shutil, re, urllib.parse, openpyxl
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 from gravar_coluna_xml import gravar_celulas
 CRM, PES, CNP, CONF, BK = sys.argv[1:6]
+LI = json.load(open(sys.argv[6], encoding="utf8")) if len(sys.argv) > 6 else None  # dados/li_result.json (perfis achados)
 P = json.load(open(PES, encoding="utf8")); C = json.load(open(CNP, encoding="utf8"))
 MIN = {"Da", "De", "Do", "Das", "Dos", "E"}
 def nome(n):
@@ -16,6 +17,8 @@ def fmt(c): return f"{c[:2]}.{c[2:5]}.{c[5:8]}/{c[8:12]}-{c[12:]}"
 def link(n):
     u = "https://www.linkedin.com/search/results/people/?keywords=" + urllib.parse.quote(n)
     return {"f": f'HYPERLINK("{u}","Buscar no LinkedIn")', "v": "Buscar no LinkedIn"}
+def perfil(u):
+    return {"f": f'HYPERLINK("{u}","Ver perfil")', "v": "Ver perfil"}
 wb = openpyxl.load_workbook(CRM, read_only=True); ws = wb["Leads"]
 hdr = list(next(ws.iter_rows(max_row=1, values_only=True)))
 assert hdr[39:46] == ["CNPJ", "nome CEO", "linkedin CEO", "nome diretor", "linkedin diretor", "nome gerente", "linkedin gerente"], hdr[39:46]
@@ -31,16 +34,30 @@ if os.path.exists(os.path.join(BK, "ultima_gravacao.json")):
     wb.close()
 os.makedirs(BK, exist_ok=True); shutil.copy2(CRM, os.path.join(BK, os.path.basename(CRM)))
 cel = {}; conf = []
+def li_cols(idc):
+    if LI is None: return []
+    li = LI.get(idc, {}); r = []
+    for papel in ("ceo", "dir", "ger"):
+        p = li.get(papel); r += [p["nome"], p["cargo"], p["via"], p["u"]] if p else ["", "", "", ""]
+    return r
 for lin, idc, loja, cat in linhas:
     v = P.get(idc, {"st": "SEM NOME"})
     if v["st"] == "OK":
         ceo, dire = nome(v["ceo"]), nome(v["dir"])
         cel[("AN", lin)] = (fmt(v["cnpj"]), 6)
-        cel[("AO", lin)] = (ceo, 6); cel[("AP", lin)] = (link(ceo) if ceo else "", 20 if ceo else 6)
-        cel[("AQ", lin)] = (dire, 6); cel[("AR", lin)] = (link(dire) if dire else "", 20 if dire else 6)
-        cel[("AS", lin)] = ("", 6); cel[("AT", lin)] = ("", 6)
+        if LI is None:  # 1a versao: link de busca do LinkedIn
+            cel[("AO", lin)] = (ceo, 6); cel[("AP", lin)] = (link(ceo) if ceo else "", 20 if ceo else 6)
+            cel[("AQ", lin)] = (dire, 6); cel[("AR", lin)] = (link(dire) if dire else "", 20 if dire else 6)
+            cel[("AS", lin)] = ("", 6); cel[("AT", lin)] = ("", 6)
+        else:  # so perfil achado; o nome da coluna e o da pessoa do link (socio do QSA ou quem tem o cargo na loja)
+            li = LI.get(idc, {})
+            for papel, cn, cl, padrao in (("ceo", "AO", "AP", ceo), ("dir", "AQ", "AR", dire), ("ger", "AS", "AT", "")):
+                p = li.get(papel)
+                if p and p["via"] == "cargo" and "perfil da loja" not in p["nome"]: nm = p["nome"]
+                else: nm = padrao or (p["nome"] if p else "")
+                cel[(cn, lin)] = (nm, 6); cel[(cl, lin)] = (perfil(p["u"]) if p else "", 20 if p else 6)
         conf.append([idc, loja, cat, "CNPJ " + v["nivel"], fmt(v["cnpj"]), v["razao"], v["fantasia"], v["cnae"], v["uf"],
-                     ", ".join(v["como"]), ceo, v["ceo_q"], dire, v["dir_q"], v["fonte"]])
+                     ", ".join(v["como"]), ceo, v["ceo_q"], dire, v["dir_q"], v["fonte"]] + li_cols(idc))
     else:
         for c in ("AN", "AO", "AP", "AQ", "AR", "AS", "AT"): cel[(c, lin)] = ("", 6)
         cc = C.get(idc, {})
@@ -53,7 +70,8 @@ gravar_celulas(CRM, "Leads", cel)
 json.dump({str(l): [cel[("AN", l)][0], cel[("AO", l)][0]] for _, (c, l) in enumerate(cel) if c == "AN"}, open(os.path.join(BK, "ultima_gravacao.json"), "w", encoding="utf8"), ensure_ascii=False)
 out = openpyxl.Workbook(); w = out.active; w.title = "Conferencia CNPJ"
 w.append(["ID CRM", "Loja", "Categoria", "Resultado", "CNPJ", "Razão social (Receita)", "Nome fantasia (Receita)", "CNAE",
-          "UF", "Como foi achado", "Nome CEO", "Qualificação no QSA", "Nome diretor", "Qualificação no QSA", "Observação"])
+          "UF", "Como foi achado", "Nome CEO", "Qualificação no QSA", "Nome diretor", "Qualificação no QSA", "Observação"]
+         + ([f"LinkedIn {p} - {c}" for p in ("CEO", "diretor", "gerente") for c in ("nome", "cargo no perfil", "como foi achado", "link")] if LI is not None else []))
 for r in conf: w.append(r)
 w.freeze_panes = "A2"; w.auto_filter.ref = w.dimensions
 for col, lg in zip("ABCDEFGHIJKLMNO", (8, 28, 28, 16, 20, 40, 28, 9, 5, 26, 32, 26, 32, 26, 60)): w.column_dimensions[col].width = lg

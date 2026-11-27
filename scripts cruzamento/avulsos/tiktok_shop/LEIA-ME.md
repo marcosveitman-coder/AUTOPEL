@@ -22,7 +22,11 @@ Regras:
 - CNPJ baixado/inapto na BrasilAPI não entra.
 - CEO = Presidente > Sócio-Administrador > Administrador > sócio único > titular do Empresário Individual (razão sem o
   CPF). Diretor = Diretor; senão o 2º sócio-administrador. Gerente: o QSA não tem.
-- **LinkedIn:** dono de loja pequena quase nunca aparece nos buscadores (0 de 6 no teste, WebSearch e Firecrawl). A
+- **LinkedIn (perfil, 27/11 à tarde):** buscar **pelo nome da loja** na conta do usuário (Claude in Chrome):
+  `linkedin_lista.py` → lotes com `linkedin_funcoes.js` (localStorage `__tm`/`__tb`/`__tr`) → `li_passo.py` (grava o lote em
+  `dados/li_result.json`) → `grava_crm.py ... dados/li_result.json`. Revisar cada lote à mão. Busca pelo nome do sócio não acha.
+  Cerca de 1 loja em 10 tem alguém no LinkedIn. A sessão caiu depois de ~340 buscas.
+- **LinkedIn (1ª versão):** dono de loja pequena quase nunca aparece nos buscadores (0 de 6 no teste, WebSearch e Firecrawl). A
   coluna leva um link "Buscar no LinkedIn" (busca de pessoas com o nome), no padrão do "Buscar no TikTok" da planilha.
 - O arquivo tem tabela e validação de dados: gravar pelo XML (`gravar_celulas`, que aceita fórmula `{"f","v"}`), nunca
   salvar pelo openpyxl.

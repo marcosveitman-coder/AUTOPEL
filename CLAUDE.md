@@ -135,7 +135,8 @@ Fontes de dados fora desta pasta (só leitura):
 - **Pesquisa completa de um cliente:** roteiro em `avulsos/pesquisa_cliente/LEIA-ME.md`. Instagram e Facebook não abrem
   nesta rede (curl 000; erro de certificado no navegador embutido) e o LinkedIn devolve 999: só os trechos dos buscadores.
 - **CNPJ pelo nome de loja online** (TikTok Shop, 27/11): só nome igual (também colado) + CNAE compatível com a categoria
-  (`avulsos/tiktok_shop/ramo.py`); vários candidatos = em branco. Dono de loja pequena quase nunca tem LinkedIn achável.
+  (`avulsos/tiktok_shop/ramo.py`); vários candidatos = em branco. LinkedIn de loja pequena: buscar **pelo nome da loja** na conta do usuário (~1 em 10 tem
+  alguém), nunca pelo nome do sócio; link só do perfil confirmado (`tiktok_shop/LEIA-ME.md`).
 - **CNPJ vindo de base de terceiros** (ex.: Neoway): validar o dígito verificador. Cerca de 28% vieram corrompidos;
   a razão social costuma estar certa e serve para corrigir.
 
