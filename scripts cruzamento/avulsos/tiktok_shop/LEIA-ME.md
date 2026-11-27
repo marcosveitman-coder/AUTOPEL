@@ -32,4 +32,5 @@ Regras:
 - pela web (Instagram, site, Shopee/Mercado Livre): a cidade ou o nome do vendedor que só um candidato tem → "PROVÁVEL (web)";
 - todos os candidatos na mesma cidade: o de razão com o nome, senão o mais novo → "PROVÁVEL (mesma cidade)";
 - os sites de consulta de CNPJ (cnpj.biz, Serasa, Econodata) listam os mesmos homônimos e não desempatam;
-- o Firecrawl gasta 2 créditos por busca e o crédito diário acaba em ~45 buscas; o WebSearch não acha loja brasileira pequena.
+- o Firecrawl gasta 2 créditos por busca e o crédito diário acaba em ~45 buscas; o WebSearch não acha loja brasileira pequena;
+- sem crédito: `busca_bing.py` (Bing por script) sugere a cidade, mas acerta pouco (2 de 96). Revisar antes de aceitar.

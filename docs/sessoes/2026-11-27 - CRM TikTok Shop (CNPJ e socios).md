@@ -37,6 +37,13 @@ Planilha de conferência (razão, fantasia, CNAE, UF, como foi achado, qualifica
 - Planilha regravada: 339 CNPJs, 336 CEOs, 34 diretores. Conferido: só AN–AT mudaram (68 células), Excel abre.
   A conferência mostra o nível (CONFIRMADO / PROVÁVEL (web) / PROVÁVEL (mesma cidade)) e a fonte de cada desempate.
 
+## 3ª rodada (mesmo dia): Bing por script
+- `tiktok_shop/busca_bing.py`: 2 buscas no Bing por loja (192 consultas, sem crédito; o DuckDuckGo bloqueia script) e cruzamento
+  automático com a cidade dos candidatos. Só 2 sugestões, aceitas após revisão (as duas de São Paulo).
+- Planilha final do dia: **341 CNPJs** (317 confirmados + 24 prováveis), 338 CEOs, 34 diretores; 96 ambíguas.
+  Conferido: só AN–AT mudaram, Excel abre.
+- Tarefa agendada para 28/11 9h15 (`tiktok-shop-desempate-ambiguos`) tenta as 96 com o crédito novo do Firecrawl.
+
 ## Pendências / ideias
 - Os 98 ambíguos restantes podem ser resolvidos (Firecrawl renova o crédito no dia seguinte) olhando a loja (cidade, produto) ou pela página da loja no TikTok, que não abre aqui.
 - Gerente (AS/AT) ficou em branco: o QSA não tem e loja pequena não tem gerente público.
