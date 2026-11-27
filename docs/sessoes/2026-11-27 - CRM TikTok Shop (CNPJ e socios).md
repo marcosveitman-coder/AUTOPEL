@@ -56,8 +56,8 @@ Planilha de conferência (razão, fantasia, CNAE, UF, como foi achado, qualifica
 - 310 das 340 lojas pesquisadas; **35 lojas com perfil** (27 CEO, 6 diretores, 9 gerentes). A sessão caiu na busca 311
   (tela de cadastro): parado sem mexer. Faltam 30 lojas de prioridade C.
 - Retomada após novo login: mais 20 lojas (o LinkedIn já mostrava só 3 cartões por busca = limite mensal), +5 lojas com
-  perfil. A sessão caiu de novo; **faltam 10 lojas** (L1569–L1604). Total: **40 lojas com perfil** (30 CEO, 9 diretores,
-  12 gerentes aprox.). O localStorage some quando a sessão cai: a função é recarregada de `linkedin_funcoes.js`.
+  perfil. A sessão caiu de novo; **faltam 10 lojas** (L1569–L1604). Total: **40 lojas com perfil** (28 CEO, 9 diretores,
+  11 gerentes). O localStorage some quando a sessão cai: a função é recarregada de `linkedin_funcoes.js`.
 - Planilha: AP/AR/AT = "Ver perfil" (link do perfil) ou vazio; AS = nome do gerente. Quando o decisor achado não é o sócio
   do QSA, a AO/AQ passa a ter o nome da pessoa do link. Conferência com nome, cargo no perfil, como achou e link.
 - Bugs da rotina: `''` dentro de string virou backspace (cargo nunca casava); lote de 20 estourou o tempo do navegador.
