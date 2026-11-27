@@ -57,6 +57,7 @@ Bases Claude/                       (fora do git: fat *.xlsx, supermercados*.xls
         ├── kraft_heinz/            prospecção de um grupo: Receita por razão social + linhas de uma raiz nas bases
         ├── mapa_final/             abas FINAL do MAPA (alimentação, lojas, construção, postos, pet, estacionamento) + LEIA-ME.md
         ├── organograma/            aba ORGANOGRAMA do MAPA MERCADO (equipe, segmentos, carteira do CRM, potencial) + LEIA-ME.md
+        ├── tiktok_shop/            CNPJ e sócios de uma lista de lojas do TikTok Shop pelo nome (Receita + QSA) + LEIA-ME.md
         ├── pesquisa_cliente/       "pesquisa completa" de um cliente (Receita, IE, TOTVS, bases, empresas ligadas) + LEIA-ME.md
         └── midia/                  ver fotos e vídeos sem ffmpeg/Pillow (folha de contato, servidor com Range)
 ```
@@ -133,6 +134,8 @@ Fontes de dados fora desta pasta (só leitura):
   `https://rdap.registro.br/domain/<domínio>` (404 = não registrado).
 - **Pesquisa completa de um cliente:** roteiro em `avulsos/pesquisa_cliente/LEIA-ME.md`. Instagram e Facebook não abrem
   nesta rede (curl 000; erro de certificado no navegador embutido) e o LinkedIn devolve 999: só os trechos dos buscadores.
+- **CNPJ pelo nome de loja online** (TikTok Shop, 27/11): só nome igual (também colado) + CNAE compatível com a categoria
+  (`avulsos/tiktok_shop/ramo.py`); vários candidatos = em branco. Dono de loja pequena quase nunca tem LinkedIn achável.
 - **CNPJ vindo de base de terceiros** (ex.: Neoway): validar o dígito verificador. Cerca de 28% vieram corrompidos;
   a razão social costuma estar certa e serve para corrigir.
 

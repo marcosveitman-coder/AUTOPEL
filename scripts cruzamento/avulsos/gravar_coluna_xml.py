@@ -99,7 +99,7 @@ def gravar_coluna(xlsx, aba, col, valores, cabecalho=None, backup=True, sobrescr
 
 def gravar_celulas(xlsx, aba, celulas, larguras=None, estilos_novos=None):
     """Grava varias celulas (qualquer coluna) numa aba, editando so o XML dela (e o styles.xml se houver estilo novo).
-    celulas: {(coluna, linha): (valor, estilo)}; valor str -> texto, int/float -> numero, None -> celula vazia com estilo.
+    celulas: {(coluna, linha): (valor, estilo)}; valor str -> texto, int/float -> numero, dict {f, v} -> formula, None -> celula vazia com estilo.
     Sobrescreve o que houver na celula.  larguras: {coluna: largura} para colunas novas.
     estilos_novos: lista de <xf .../> a acrescentar no fim de cellXfs; devolve os indices em 'estilos'."""
     z = zipfile.ZipFile(xlsx)
@@ -122,6 +122,8 @@ def gravar_celulas(xlsx, aba, celulas, larguras=None, estilos_novos=None):
             return f'<c r="{col}{r}"{s}/>'
         if isinstance(valor, (int, float)):
             return f'<c r="{col}{r}"{s}><v>{valor}</v></c>'
+        if isinstance(valor, dict):  # {"f": formula sem "=", "v": valor em cache (texto)}
+            return f'<c r="{col}{r}"{s} t="str"><f>{escape(valor["f"])}</f><v>{escape(str(valor.get("v", "")))}</v></c>'
         return f'<c r="{col}{r}"{s} t="inlineStr"><is><t xml:space="preserve">{escape(str(valor))}</t></is></c>'
 
     def linha(m):

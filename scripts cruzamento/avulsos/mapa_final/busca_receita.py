@@ -1,4 +1,4 @@
-"""Busca redes na copia local da Receita (C:\dados_receita\AAAA-MM).
+r"""Busca redes na copia local da Receita (C:\dados_receita\AAAA-MM).
 Entrada: JSON com [{id, terms:[nomes normalizados], cnpjs:[14 digitos]}].
 1) Empresas: razao social que contem um termo (sequencia de palavras inteiras) + razao das raizes dos CNPJs dados.
 2) Estabelecimentos: todas as linhas das raizes achadas (ou dadas) + linhas ATIVAS cujo nome fantasia contem um termo.
