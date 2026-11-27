@@ -578,6 +578,18 @@ Armadilhas reais já vistas:
 
 ---
 
+## 🧰 Ferramentas da máquina (27/11/2026)
+
+- **O usuário não é administrador do Windows.** Instalador que pede UAC (winget com MSI, como o `OpenJS.NodeJS.LTS`) fica
+  parado esperando uma permissão que ninguém pode dar. Instalar **só para o usuário**: zip oficial extraído em
+  `%LOCALAPPDATA%\Programs\...` e a pasta no PATH do usuário (`[Environment]::SetEnvironmentVariable(..., "User")`).
+- **Python 3.12** (Microsoft Store) com pip; não há o launcher `py`.
+- **Node.js 26 LTS + npm 11** em `%LOCALAPPDATA%\Programs\nodejs` (zip de nodejs.org, hash SHA-256 conferido contra o
+  `SHASUMS256.txt`). Sessão já aberta não enxerga o PATH novo: abrir um terminal novo.
+- Atualizar o Node: baixar o zip da versão nova, conferir o hash e trocar a pasta.
+
+---
+
 ## 📝 Gravar em planilha do usuário
 
 - **Sempre** fazer backup no scratchpad antes. Confirmar que o arquivo **não está aberto no Excel** (abrir `r+b`).
